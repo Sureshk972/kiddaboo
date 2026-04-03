@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { supabase } from "../../lib/supabase";
 import { MOCK_HOST_DASHBOARD } from "../../data/mockData";
 import RequestCard from "../../components/host/RequestCard";
 
@@ -10,30 +12,175 @@ const ACTIVITY_ICONS = {
   session: "\ud83d\udcc5",
 };
 
+// Helper: time ago string
+function timeAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
 export default function HostDashboard() {
   const navigate = useNavigate();
-  const data = MOCK_HOST_DASHBOARD;
-  const pg = data.playgroup;
+  const { user, profile } = useAuth();
 
-  const [requests, setRequests] = useState(data.pendingRequests);
-  const [members, setMembers] = useState(data.members);
+  // Real data from Supabase
+  const [realPlaygroup, setRealPlaygroup] = useState(null);
+  const [realRequests, setRealRequests] = useState([]);
+  const [realMembers, setRealMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchDashboard = async () => {
+      // 1. Find the playgroup this user created
+      const { data: playgroups, error: pgError } = await supabase
+        .from("playgroups")
+        .select("*")
+        .eq("creator_id", user.id)
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (pgError || !playgroups || playgroups.length === 0) {
+        setLoading(false);
+        return; // Fall back to mock
+      }
+
+      const pg = playgroups[0];
+      setRealPlaygroup(pg);
+
+      // 2. Fetch all memberships for this playgroup with profile data
+      const { data: memberships } = await supabase
+        .from("memberships")
+        .select(`
+          id, user_id, role, intro_message, screening_answers, created_at, joined_at,
+          profiles:user_id ( first_name, last_name, bio, philosophy_tags )
+        `)
+        .eq("playgroup_id", pg.id)
+        .order("created_at", { ascending: false });
+
+      if (memberships) {
+        // Split into pending requests and active members
+        const pending = memberships
+          .filter((m) => m.role === "pending")
+          .map((m) => {
+            const first = m.profiles?.first_name || "User";
+            const last = m.profiles?.last_name || "";
+            const initials =
+              (first[0] || "U").toUpperCase() + (last[0] || "").toUpperCase();
+
+            // Map screening_answers from {0: "answer", 1: "answer"} to [{question, answer}]
+            const answers = (pg.screening_questions || []).map((q, i) => ({
+              question: q,
+              answer: m.screening_answers?.[i] || m.screening_answers?.[String(i)] || "",
+            }));
+
+            return {
+              id: m.id,
+              userId: m.user_id,
+              name: `${first} ${last}`.trim(),
+              initials,
+              childrenAges: [], // TODO: fetch from children table later
+              philosophyTags: m.profiles?.philosophy_tags || [],
+              bio: m.profiles?.bio || "",
+              answers,
+              requestedAt: timeAgo(m.created_at),
+            };
+          });
+
+        const active = memberships
+          .filter((m) => m.role === "member" || m.role === "creator")
+          .map((m) => {
+            const first = m.profiles?.first_name || "User";
+            const last = m.profiles?.last_name || "";
+            return {
+              id: m.id,
+              name: `${first} ${last}`.trim(),
+              initials:
+                (first[0] || "U").toUpperCase() + (last[0] || "").toUpperCase(),
+              role: m.role === "creator" ? "host" : "member",
+              childrenAges: [],
+              joinedAt: m.joined_at
+                ? new Date(m.joined_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })
+                : new Date(m.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" }),
+              lastActive: timeAgo(m.created_at),
+            };
+          });
+
+        setRealRequests(pending);
+        setRealMembers(active);
+      }
+
+      setLoading(false);
+    };
+
+    fetchDashboard();
+  }, [user]);
+
+  // Decide whether to use real or mock data
+  const useMock = !realPlaygroup;
+  const mockData = MOCK_HOST_DASHBOARD;
+
+  const pg = useMock
+    ? mockData.playgroup
+    : {
+        ...realPlaygroup,
+        memberCount: realMembers.filter((m) => m.role !== "host").length,
+        trustScore: 0,
+        reviewCount: 0,
+        location: realPlaygroup.location_name,
+      };
+
   const [expandedRequest, setExpandedRequest] = useState(null);
   const [actionedIds, setActionedIds] = useState({});
 
-  const handleApprove = (id) => {
+  const requests = useMock ? mockData.pendingRequests : realRequests;
+  const members = useMock ? mockData.members : realMembers;
+
+  const handleApprove = async (id) => {
     setActionedIds((prev) => ({ ...prev, [id]: "approved" }));
-    // In a real app, move to members list
+
+    if (!useMock) {
+      await supabase
+        .from("memberships")
+        .update({ role: "member", joined_at: new Date().toISOString() })
+        .eq("id", id);
+    }
   };
 
-  const handleDecline = (id) => {
+  const handleDecline = async (id) => {
     setActionedIds((prev) => ({ ...prev, [id]: "declined" }));
+
+    if (!useMock) {
+      await supabase.from("memberships").update({ role: "declined" }).eq("id", id);
+    }
   };
 
-  const handleWaitlist = (id) => {
+  const handleWaitlist = async (id) => {
     setActionedIds((prev) => ({ ...prev, [id]: "waitlisted" }));
+
+    if (!useMock) {
+      await supabase.from("memberships").update({ role: "waitlisted" }).eq("id", id);
+    }
   };
 
   const activeRequests = requests.filter((r) => !actionedIds[r.id]);
+
+  if (loading) {
+    return (
+      <div className="bg-cream min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-sage border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-cream">
@@ -85,9 +232,11 @@ export default function HostDashboard() {
             <h3 className="text-sm font-heading font-bold text-charcoal">
               Next Session
             </h3>
-            <span className="text-[10px] bg-sage-light text-sage-dark px-2 py-0.5 rounded-full font-medium">
-              {data.nextSession.rsvpYes} confirmed
-            </span>
+            {useMock && (
+              <span className="text-[10px] bg-sage-light text-sage-dark px-2 py-0.5 rounded-full font-medium">
+                {mockData.nextSession.rsvpYes} confirmed
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2 text-sm text-taupe-dark mb-1">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -95,14 +244,16 @@ export default function HostDashboard() {
               <path d="M3 10H21" stroke="currentColor" strokeWidth="1.5" />
               <path d="M8 2V6M16 2V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
-            {data.nextSession.date} at {data.nextSession.time}
+            {useMock
+              ? `${mockData.nextSession.date} at ${mockData.nextSession.time}`
+              : pg.frequency || "Schedule your first session"}
           </div>
           <div className="flex items-center gap-2 text-sm text-taupe">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M7 1.5C4.5 1.5 2.5 3.5 2.5 6C2.5 9.5 7 12.5 7 12.5C7 12.5 11.5 9.5 11.5 6C11.5 3.5 9.5 1.5 7 1.5Z" stroke="currentColor" strokeWidth="1" />
               <circle cx="7" cy="6" r="1.5" stroke="currentColor" strokeWidth="1" />
             </svg>
-            {data.nextSession.location}
+            {useMock ? mockData.nextSession.location : pg.location || "Location TBD"}
           </div>
         </div>
 
@@ -201,24 +352,47 @@ export default function HostDashboard() {
           <h3 className="text-base font-heading font-bold text-charcoal mb-3">
             Recent Activity
           </h3>
-          <div className="flex flex-col gap-2">
-            {data.recentActivity.map((item, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-3 bg-white rounded-xl p-3 border border-cream-dark"
-              >
-                <span className="text-base flex-shrink-0">
-                  {ACTIVITY_ICONS[item.type]}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-taupe-dark">{item.text}</p>
+          {useMock ? (
+            <div className="flex flex-col gap-2">
+              {mockData.recentActivity.map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-3 bg-white rounded-xl p-3 border border-cream-dark"
+                >
+                  <span className="text-base flex-shrink-0">
+                    {ACTIVITY_ICONS[item.type]}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-taupe-dark">{item.text}</p>
+                  </div>
+                  <span className="text-[10px] text-taupe/50 flex-shrink-0 whitespace-nowrap">
+                    {item.time}
+                  </span>
                 </div>
-                <span className="text-[10px] text-taupe/50 flex-shrink-0 whitespace-nowrap">
-                  {item.time}
-                </span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : realRequests.length > 0 || realMembers.length > 1 ? (
+            <div className="flex flex-col gap-2">
+              {realRequests.map((req) => (
+                <div
+                  key={`req-${req.id}`}
+                  className="flex items-center gap-3 bg-white rounded-xl p-3 border border-cream-dark"
+                >
+                  <span className="text-base flex-shrink-0">📬</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-taupe-dark">{req.name} requested to join</p>
+                  </div>
+                  <span className="text-[10px] text-taupe/50 flex-shrink-0 whitespace-nowrap">
+                    {req.requestedAt}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl p-6 border border-cream-dark text-center">
+              <p className="text-sm text-taupe">No activity yet. Share your playgroup to get started!</p>
+            </div>
+          )}
         </div>
 
         {/* Quick actions */}
