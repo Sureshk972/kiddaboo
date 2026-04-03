@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
 import { OnboardingProvider } from "./context/OnboardingContext";
 import { HostProvider } from "./context/HostContext";
 import AppLayout from "./components/layout/AppLayout";
@@ -22,6 +23,7 @@ import HostDashboard from "./pages/host/HostDashboard";
 export default function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <AuthProvider>
       <OnboardingProvider>
         <HostProvider>
           <Routes>
@@ -51,6 +53,7 @@ export default function App() {
           </Routes>
         </HostProvider>
       </OnboardingProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }
