@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180">
+  <!-- Full bleed background (iOS clips to rounded rect) -->
+  <rect width="180" height="180" fill="#DAE4D0"/>
+  <!-- Sprout -->
+  <path d="M90 140V90M90 90C90 90 68 68 45 56C68 56 90 68 90 90ZM90 90C90 90 112 68 135 56C112 56 90 68 90 90Z" stroke="#5C7250" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="90" cy="48" r="13" fill="#7A8F6D" opacity="0.7"/>
+</svg>

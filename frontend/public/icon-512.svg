@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="100" fill="#DAE4D0"/>
+  <!-- Sprout -->
+  <path d="M256 400V256M256 256C256 256 192 192 128 160C192 160 256 192 256 256ZM256 256C256 256 320 192 384 160C320 160 256 192 256 256Z" stroke="#5C7250" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="256" cy="136" r="36" fill="#7A8F6D" opacity="0.7"/>
+</svg>
