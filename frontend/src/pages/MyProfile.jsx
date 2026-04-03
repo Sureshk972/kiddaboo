@@ -62,14 +62,15 @@ export default function MyProfile() {
         {/* Settings list */}
         <div className="bg-white rounded-2xl border border-cream-dark overflow-hidden">
           {[
-            { icon: "\ud83d\udc64", label: "Edit Profile" },
-            { icon: "\ud83d\udc76", label: "Manage Children" },
+            { icon: "\ud83d\udc64", label: "Edit Profile", path: "/edit-profile" },
+            { icon: "\ud83d\udc76", label: "Manage Children", path: "/edit-profile" },
             { icon: "\ud83d\udd14", label: "Notifications" },
             { icon: "\ud83d\udee1\ufe0f", label: "Privacy & Safety" },
             { icon: "\u2753", label: "Help & Support" },
           ].map((item, i, arr) => (
             <button
               key={item.label}
+              onClick={() => item.path && navigate(item.path)}
               className={`w-full flex items-center gap-3 px-4 py-4 text-left cursor-pointer bg-transparent border-none hover:bg-cream-dark/50 transition-colors ${
                 i < arr.length - 1 ? "border-b border-cream-dark" : ""
               }`}

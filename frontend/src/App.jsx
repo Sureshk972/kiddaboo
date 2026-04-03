@@ -13,6 +13,7 @@ import Browse from "./pages/Browse";
 import MyGroups from "./pages/MyGroups";
 import Messages from "./pages/Messages";
 import MyProfile from "./pages/MyProfile";
+import EditProfile from "./pages/EditProfile";
 import CreatePlaygroup from "./pages/host/CreatePlaygroup";
 import ScreeningQuestions from "./pages/host/ScreeningQuestions";
 import EnvironmentSetup from "./pages/host/EnvironmentSetup";
@@ -41,8 +42,9 @@ export default function App() {
             <Route path="/host/photos" element={<HostPhotos />} />
             <Route path="/host/success" element={<HostSuccess />} />
 
-            {/* Detail page — no tab bar (has back button) */}
+            {/* Detail pages — no tab bar (has back button) */}
             <Route path="/playgroup/:id" element={<PlaygroupDetail />} />
+            <Route path="/edit-profile" element={<EditProfile />} />
 
             {/* App pages — with tab bar */}
             <Route path="/browse" element={<AppLayout><Browse /></AppLayout>} />
