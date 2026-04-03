@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import PhotoCarousel from "../components/playgroup/PhotoCarousel";
 import HostCard from "../components/playgroup/HostCard";
@@ -8,6 +8,8 @@ import ReviewCard from "../components/playgroup/ReviewCard";
 import MemberAvatars from "../components/playgroup/MemberAvatars";
 import JoinRequestSheet from "../components/playgroup/JoinRequestSheet";
 import Button from "../components/ui/Button";
+import { useAuth } from "../context/AuthContext";
+import { supabase } from "../lib/supabase";
 import { MOCK_PLAYGROUP_DETAILS } from "../data/mockData";
 
 const ACCESS_LABELS = {
@@ -16,12 +18,103 @@ const ACCESS_LABELS = {
   invite: { text: "Invite Only", color: "bg-cream-dark text-taupe" },
 };
 
+// Transform a real Supabase playgroup into the shape PlaygroupDetail expects
+function transformRealPlaygroup(pg) {
+  const host = pg.profiles;
+  const hostFirst = host?.first_name || "Host";
+  const hostLast = host?.last_name || "";
+
+  const members = (pg.memberships || [])
+    .filter((m) => m.role === "member" || m.role === "creator")
+    .map((m) => ({
+      id: m.user_id,
+      name: m.profiles?.first_name
+        ? `${m.profiles.first_name} ${m.profiles.last_name || ""}`.trim()
+        : "Member",
+      initials:
+        (m.profiles?.first_name?.[0] || "M").toUpperCase() +
+        (m.profiles?.last_name?.[0] || "").toUpperCase(),
+      isHost: m.role === "creator",
+    }));
+
+  return {
+    id: pg.id,
+    name: pg.name,
+    description: pg.description || "",
+    location: pg.location_name || "Location TBD",
+    vibeTags: pg.vibe_tags || [],
+    ageRange: pg.age_range || "All ages",
+    frequency: pg.frequency || "TBD",
+    maxFamilies: pg.max_families || 8,
+    accessType: pg.access_type || "request",
+    screeningQuestions: pg.screening_questions || [],
+    photos: (pg.photos || []).length > 0 ? pg.photos : [],
+    environment: pg.environment || {},
+    host: {
+      name: `${hostFirst} ${hostLast}`.trim(),
+      initials:
+        (hostFirst[0] || "H").toUpperCase() + (hostLast[0] || "").toUpperCase(),
+      bio: host?.bio || "",
+      philosophyTags: host?.philosophy_tags || [],
+      verified: host?.is_verified || false,
+      trustScore: host?.trust_score || 0,
+    },
+    members,
+    ratings: { environment: 0, organization: 0, compatibility: 0, reliability: 0, overall: 0 },
+    reviews: [],
+    nextSession: { date: pg.frequency || "TBD", time: "", location: pg.location_name || "" },
+    isReal: true,
+  };
+}
+
 export default function PlaygroupDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [showJoinSheet, setShowJoinSheet] = useState(false);
+  const [realGroup, setRealGroup] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [joinStatus, setJoinStatus] = useState(null); // null | "pending" | "member" | "creator"
 
-  const group = MOCK_PLAYGROUP_DETAILS[id];
+  // Try fetching from Supabase first
+  useEffect(() => {
+    const fetchGroup = async () => {
+      const { data, error } = await supabase
+        .from("playgroups")
+        .select(`
+          *,
+          profiles:creator_id ( first_name, last_name, bio, philosophy_tags, is_verified, trust_score ),
+          memberships ( user_id, role, profiles:user_id ( first_name, last_name ) )
+        `)
+        .eq("id", id)
+        .single();
+
+      if (!error && data) {
+        setRealGroup(transformRealPlaygroup(data));
+
+        // Check if the current user already has a membership
+        if (user) {
+          const existing = (data.memberships || []).find(
+            (m) => m.user_id === user.id
+          );
+          if (existing) setJoinStatus(existing.role);
+        }
+      }
+      setLoading(false);
+    };
+    fetchGroup();
+  }, [id, user]);
+
+  // Use real data if found, otherwise fall back to mock
+  const group = realGroup || MOCK_PLAYGROUP_DETAILS[id];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-sage border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!group) {
     return (
@@ -41,11 +134,44 @@ export default function PlaygroupDetail() {
 
   const access = ACCESS_LABELS[group.accessType] || ACCESS_LABELS.request;
 
-  const handleJoinClick = () => {
-    if (group.accessType === "open") {
+  const handleJoinClick = async () => {
+    if (!user) {
+      navigate("/verify");
+      return;
+    }
+
+    if (group.accessType === "open" && group.isReal) {
+      // Directly join open groups
+      const { error } = await supabase.from("memberships").insert({
+        user_id: user.id,
+        playgroup_id: id,
+        role: "member",
+        joined_at: new Date().toISOString(),
+      });
+      if (!error) {
+        setJoinStatus("member");
+      }
+    } else if (group.accessType === "open") {
       alert("You've joined the group!");
     } else {
       setShowJoinSheet(true);
+    }
+  };
+
+  // Handle join request submission (for request-to-join groups)
+  const handleJoinSubmit = async ({ intro, answers }) => {
+    if (!user || !group.isReal) return;
+
+    const { error } = await supabase.from("memberships").insert({
+      user_id: user.id,
+      playgroup_id: id,
+      role: "pending",
+      intro_message: intro,
+      screening_answers: answers,
+    });
+
+    if (!error) {
+      setJoinStatus("pending");
     }
   };
 
@@ -229,7 +355,19 @@ export default function PlaygroupDetail() {
       {/* Sticky bottom CTA */}
       <div className="fixed bottom-0 left-0 right-0 bg-cream/90 backdrop-blur-md border-t border-cream-dark px-6 py-4 z-30">
         <div className="max-w-md mx-auto">
-          {group.accessType === "invite" ? (
+          {joinStatus === "member" || joinStatus === "creator" ? (
+            <Button fullWidth variant="secondary" disabled>
+              {joinStatus === "creator" ? "You're the Host" : "You're a Member"}
+            </Button>
+          ) : joinStatus === "pending" ? (
+            <Button fullWidth variant="secondary" disabled>
+              Request Pending
+            </Button>
+          ) : joinStatus === "waitlisted" ? (
+            <Button fullWidth variant="secondary" disabled>
+              On Waitlist
+            </Button>
+          ) : group.accessType === "invite" ? (
             <div className="text-center">
               <p className="text-xs text-taupe mb-2">
                 This group is invite-only. Ask a member for an invitation.
@@ -254,7 +392,7 @@ export default function PlaygroupDetail() {
         onClose={() => setShowJoinSheet(false)}
         screeningQuestions={group.screeningQuestions}
         playgroupName={group.name}
-        onSubmit={(data) => console.log("Join request:", data)}
+        onSubmit={group.isReal ? handleJoinSubmit : (data) => console.log("Join request:", data)}
       />
     </div>
   );
