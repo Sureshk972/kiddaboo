@@ -1,4 +1,12 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { supabase } from "../lib/supabase";
+
+const CARD_COLORS = [
+  "#A3B18A", "#E8C4B0", "#F0EBE3", "#C08B6E",
+  "#DAE4D0", "#7A8F6D", "#D4A574", "#B8C9A3",
+];
 
 const MOCK_MY_GROUPS = {
   hosting: {
@@ -65,7 +73,120 @@ const STATUS_BADGES = {
 
 export default function MyGroups() {
   const navigate = useNavigate();
-  const data = MOCK_MY_GROUPS;
+  const { user } = useAuth();
+
+  const [hosting, setHosting] = useState(null);
+  const [joined, setJoined] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [useMock, setUseMock] = useState(false);
+
+  useEffect(() => {
+    if (!user) {
+      setUseMock(true);
+      setLoading(false);
+      return;
+    }
+
+    const fetchGroups = async () => {
+      // Fetch all memberships for this user, joined with playgroup + host profile
+      const { data: memberships, error } = await supabase
+        .from("memberships")
+        .select(`
+          id, role, created_at,
+          playgroups:playgroup_id (
+            id, name, location_name, max_families, frequency,
+            creator_id,
+            profiles:creator_id ( first_name, last_name )
+          )
+        `)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error || !memberships) {
+        setUseMock(true);
+        setLoading(false);
+        return;
+      }
+
+      // Split into hosting vs joined
+      const hostingEntry = memberships.find((m) => m.role === "creator");
+      const joinedEntries = memberships.filter(
+        (m) => m.role !== "creator" && m.role !== "declined"
+      );
+
+      if (hostingEntry && hostingEntry.playgroups) {
+        const pg = hostingEntry.playgroups;
+
+        // Count members and pending for this playgroup
+        const { data: pgMembers } = await supabase
+          .from("memberships")
+          .select("role")
+          .eq("playgroup_id", pg.id);
+
+        const memberCount = (pgMembers || []).filter(
+          (m) => m.role === "member"
+        ).length;
+        const pendingCount = (pgMembers || []).filter(
+          (m) => m.role === "pending"
+        ).length;
+
+        setHosting({
+          id: pg.id,
+          name: pg.name,
+          location: pg.location_name || "Location TBD",
+          memberCount,
+          maxFamilies: pg.max_families || 8,
+          pendingRequests: pendingCount,
+          nextSession: pg.frequency || "TBD",
+          photoColor: CARD_COLORS[0],
+        });
+      }
+
+      // Map joined groups
+      const joinedMapped = joinedEntries
+        .filter((m) => m.playgroups)
+        .map((m, i) => {
+          const pg = m.playgroups;
+          const host = pg.profiles;
+          const hostFirst = host?.first_name || "Host";
+          const hostLast = host?.last_name || "";
+          return {
+            id: pg.id,
+            name: pg.name,
+            location: pg.location_name || "Location TBD",
+            status: m.role, // pending, member, waitlisted
+            hostName: `${hostFirst} ${hostLast}`.trim(),
+            hostInitials:
+              (hostFirst[0] || "H").toUpperCase() +
+              (hostLast[0] || "").toUpperCase(),
+            nextSession: pg.frequency || "TBD",
+            photoColor: CARD_COLORS[(i + 1) % CARD_COLORS.length],
+          };
+        });
+
+      setJoined(joinedMapped);
+
+      // If no real data at all, fall back to mock
+      if (!hostingEntry && joinedEntries.length === 0) {
+        setUseMock(true);
+      }
+
+      setLoading(false);
+    };
+
+    fetchGroups();
+  }, [user]);
+
+  const displayHosting = useMock ? MOCK_MY_GROUPS.hosting : hosting;
+  const displayJoined = useMock ? MOCK_MY_GROUPS.joined : joined;
+
+  if (loading) {
+    return (
+      <div className="bg-cream min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-sage border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-cream">
@@ -80,7 +201,7 @@ export default function MyGroups() {
 
       <div className="max-w-md mx-auto px-5 py-5 flex flex-col gap-6">
         {/* Hosting section */}
-        {data.hosting && (
+        {displayHosting && (
           <div>
             <h3 className="text-sm font-medium text-taupe mb-2">
               Your Playgroup
@@ -92,21 +213,21 @@ export default function MyGroups() {
               {/* Color strip */}
               <div
                 className="h-16 flex items-center justify-between px-4"
-                style={{ backgroundColor: data.hosting.photoColor + "30" }}
+                style={{ backgroundColor: displayHosting.photoColor + "30" }}
               >
                 <span className="text-[10px] bg-white/80 backdrop-blur-sm text-sage-dark px-2 py-0.5 rounded-full font-medium">
                   Host
                 </span>
-                {data.hosting.pendingRequests > 0 && (
+                {displayHosting.pendingRequests > 0 && (
                   <span className="text-[10px] bg-terracotta-light text-taupe-dark px-2 py-0.5 rounded-full font-medium">
-                    {data.hosting.pendingRequests} requests
+                    {displayHosting.pendingRequests} requests
                   </span>
                 )}
               </div>
 
               <div className="p-4">
                 <h3 className="font-heading font-bold text-charcoal text-base mb-1">
-                  {data.hosting.name}
+                  {displayHosting.name}
                 </h3>
                 <p className="text-xs text-taupe mb-3 flex items-center gap-1">
                   <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
@@ -123,12 +244,12 @@ export default function MyGroups() {
                       strokeWidth="1"
                     />
                   </svg>
-                  {data.hosting.location}
+                  {displayHosting.location}
                 </p>
 
                 <div className="flex items-center justify-between text-xs text-taupe">
                   <span>
-                    {data.hosting.memberCount} of {data.hosting.maxFamilies}{" "}
+                    {displayHosting.memberCount} of {displayHosting.maxFamilies}{" "}
                     families
                   </span>
                   <div className="flex items-center gap-1.5">
@@ -154,7 +275,7 @@ export default function MyGroups() {
                         strokeLinecap="round"
                       />
                     </svg>
-                    Next: {data.hosting.nextSession}
+                    Next: {displayHosting.nextSession}
                   </div>
                 </div>
               </div>
@@ -167,104 +288,129 @@ export default function MyGroups() {
           <h3 className="text-sm font-medium text-taupe mb-2">
             Joined Groups
           </h3>
-          <div className="flex flex-col gap-3">
-            {data.joined.map((group) => {
-              const badge = STATUS_BADGES[group.status];
-              return (
-                <div
-                  key={group.id}
-                  onClick={() => navigate(`/playgroup/${group.id}`)}
-                  className="bg-white rounded-2xl border border-cream-dark overflow-hidden cursor-pointer hover:border-sage-light transition-all hover:shadow-sm"
-                >
-                  {/* Color strip */}
+          {displayJoined.length > 0 ? (
+            <div className="flex flex-col gap-3">
+              {displayJoined.map((group) => {
+                const badge = STATUS_BADGES[group.status] || STATUS_BADGES.pending;
+                return (
                   <div
-                    className="h-12 flex items-center justify-end px-4"
-                    style={{
-                      backgroundColor: group.photoColor + "30",
-                    }}
+                    key={group.id}
+                    onClick={() => navigate(`/playgroup/${group.id}`)}
+                    className="bg-white rounded-2xl border border-cream-dark overflow-hidden cursor-pointer hover:border-sage-light transition-all hover:shadow-sm"
                   >
-                    <span
-                      className={`text-[10px] ${badge.bg} ${badge.text} px-2 py-0.5 rounded-full font-medium`}
+                    {/* Color strip */}
+                    <div
+                      className="h-12 flex items-center justify-end px-4"
+                      style={{
+                        backgroundColor: group.photoColor + "30",
+                      }}
                     >
-                      {badge.label}
-                    </span>
-                  </div>
-
-                  <div className="p-4">
-                    <h3 className="font-heading font-bold text-charcoal text-sm mb-1">
-                      {group.name}
-                    </h3>
-                    <p className="text-xs text-taupe mb-2 flex items-center gap-1">
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 14 14"
-                        fill="none"
+                      <span
+                        className={`text-[10px] ${badge.bg} ${badge.text} px-2 py-0.5 rounded-full font-medium`}
                       >
-                        <path
-                          d="M7 1.5C4.5 1.5 2.5 3.5 2.5 6C2.5 9.5 7 12.5 7 12.5C7 12.5 11.5 9.5 11.5 6C11.5 3.5 9.5 1.5 7 1.5Z"
-                          stroke="currentColor"
-                          strokeWidth="1"
-                        />
-                        <circle
-                          cx="7"
-                          cy="6"
-                          r="1.5"
-                          stroke="currentColor"
-                          strokeWidth="1"
-                        />
-                      </svg>
-                      {group.location}
-                    </p>
+                        {badge.label}
+                      </span>
+                    </div>
 
-                    <div className="flex items-center justify-between text-xs text-taupe">
-                      {/* Host */}
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-5 h-5 rounded-full bg-sage-light flex items-center justify-center">
-                          <span className="text-[8px] font-bold text-sage-dark">
-                            {group.hostInitials}
-                          </span>
-                        </div>
-                        <span>{group.hostName}</span>
-                      </div>
-
-                      {/* Next session */}
-                      <div className="flex items-center gap-1">
+                    <div className="p-4">
+                      <h3 className="font-heading font-bold text-charcoal text-sm mb-1">
+                        {group.name}
+                      </h3>
+                      <p className="text-xs text-taupe mb-2 flex items-center gap-1">
                         <svg
                           width="12"
                           height="12"
-                          viewBox="0 0 24 24"
+                          viewBox="0 0 14 14"
                           fill="none"
                         >
-                          <rect
-                            x="3"
-                            y="4"
-                            width="18"
-                            height="18"
-                            rx="2"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                          />
                           <path
-                            d="M3 10H21"
+                            d="M7 1.5C4.5 1.5 2.5 3.5 2.5 6C2.5 9.5 7 12.5 7 12.5C7 12.5 11.5 9.5 11.5 6C11.5 3.5 9.5 1.5 7 1.5Z"
                             stroke="currentColor"
-                            strokeWidth="1.5"
+                            strokeWidth="1"
                           />
-                          <path
-                            d="M8 2V6M16 2V6"
+                          <circle
+                            cx="7"
+                            cy="6"
+                            r="1.5"
                             stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
+                            strokeWidth="1"
                           />
                         </svg>
-                        {group.nextSession}
+                        {group.location}
+                      </p>
+
+                      <div className="flex items-center justify-between text-xs text-taupe">
+                        {/* Host */}
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-5 h-5 rounded-full bg-sage-light flex items-center justify-center">
+                            <span className="text-[8px] font-bold text-sage-dark">
+                              {group.hostInitials}
+                            </span>
+                          </div>
+                          <span>{group.hostName}</span>
+                        </div>
+
+                        {/* Next session */}
+                        <div className="flex items-center gap-1">
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                          >
+                            <rect
+                              x="3"
+                              y="4"
+                              width="18"
+                              height="18"
+                              rx="2"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                            />
+                            <path
+                              d="M3 10H21"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                            />
+                            <path
+                              d="M8 2V6M16 2V6"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                            />
+                          </svg>
+                          {group.nextSession}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl border border-cream-dark p-8 text-center">
+              <div className="w-14 h-14 bg-cream-dark rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-taupe/30">
+                  <path d="M17 21V19C17 16.79 15.21 15 13 15H5C2.79 15 1 16.79 1 19V21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.5" />
+                  <path d="M23 21V19C23 17.36 22.04 15.93 20.62 15.35" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  <path d="M16.5 3.13C17.92 3.71 18.88 5.14 18.88 6.78C18.88 8.42 17.92 9.85 16.5 10.43" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              </div>
+              <h3 className="font-heading font-bold text-charcoal mb-1">
+                No groups yet
+              </h3>
+              <p className="text-sm text-taupe mb-4">
+                Browse playgroups and request to join one!
+              </p>
+              <button
+                onClick={() => navigate("/browse")}
+                className="text-sm text-sage font-medium hover:text-sage-dark cursor-pointer bg-transparent border-none underline underline-offset-4"
+              >
+                Browse Playgroups
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
