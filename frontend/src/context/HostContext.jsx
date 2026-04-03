@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from "react";
+import { supabase } from "../lib/supabase";
 
 const HostContext = createContext(null);
 
@@ -82,6 +83,52 @@ export function HostProvider({ children }) {
     }));
   };
 
+  // Save playgroup to Supabase
+  const savePlaygroup = async (userId) => {
+    // Filter out empty screening questions
+    const questions = data.screeningQuestions.filter((q) => q.trim() !== "");
+
+    // Insert playgroup row
+    const { data: playgroup, error } = await supabase
+      .from("playgroups")
+      .insert({
+        creator_id: userId,
+        name: data.name.trim(),
+        description: data.description.trim(),
+        location_name: data.location.trim(),
+        age_range: data.ageRange,
+        frequency: data.frequency,
+        vibe_tags: data.vibeTags,
+        max_families: data.maxFamilies,
+        access_type: data.accessType,
+        screening_questions: questions,
+        environment: data.environment,
+        photos: data.photos,
+      })
+      .select()
+      .single();
+
+    if (error) return { data: null, error };
+
+    // Also create a membership record for the host (role = creator)
+    const { error: memberError } = await supabase.from("memberships").insert({
+      user_id: userId,
+      playgroup_id: playgroup.id,
+      role: "creator",
+    });
+
+    if (memberError) {
+      console.warn("Playgroup created but membership failed:", memberError);
+    }
+
+    return { data: playgroup, error: null };
+  };
+
+  // Reset form after successful save
+  const resetHost = () => {
+    setData(initialState);
+  };
+
   return (
     <HostContext.Provider
       value={{
@@ -93,6 +140,8 @@ export function HostProvider({ children }) {
         removeScreeningQuestion,
         addPhoto,
         removePhoto,
+        savePlaygroup,
+        resetHost,
       }}
     >
       {children}

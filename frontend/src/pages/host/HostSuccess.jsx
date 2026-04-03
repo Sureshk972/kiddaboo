@@ -1,8 +1,10 @@
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import OnboardingLayout from "../../components/layout/OnboardingLayout";
 import Button from "../../components/ui/Button";
 import { useHost } from "../../context/HostContext";
 import { useOnboarding } from "../../context/OnboardingContext";
+import { useAuth } from "../../context/AuthContext";
 
 const ACCESS_LABELS = {
   open: "Open",
@@ -12,8 +14,30 @@ const ACCESS_LABELS = {
 
 export default function HostSuccess() {
   const navigate = useNavigate();
-  const { data: hostData } = useHost();
+  const { data: hostData, savePlaygroup, resetHost } = useHost();
   const { data: userData } = useOnboarding();
+  const { user } = useAuth();
+  const [saveStatus, setSaveStatus] = useState("saving"); // saving | saved | error
+  const [errorMsg, setErrorMsg] = useState("");
+  const hasSaved = useRef(false);
+
+  // Save playgroup to Supabase when this page loads
+  useEffect(() => {
+    if (!user || hasSaved.current) return;
+    hasSaved.current = true;
+
+    const save = async () => {
+      setSaveStatus("saving");
+      const { error } = await savePlaygroup(user.id);
+      if (error) {
+        setSaveStatus("error");
+        setErrorMsg(error.message || "Something went wrong");
+      } else {
+        setSaveStatus("saved");
+      }
+    };
+    save();
+  }, [user]);
 
   return (
     <OnboardingLayout currentStep={5} totalSteps={5} showBack={false}>
@@ -177,8 +201,44 @@ export default function HostSuccess() {
           </div>
         </div>
 
-        <Button fullWidth onClick={() => navigate("/host/dashboard")}>
-          Go to Dashboard
+        {saveStatus === "saving" && (
+          <div className="flex items-center justify-center gap-2 py-3">
+            <div className="w-5 h-5 border-2 border-sage border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm text-taupe">Saving your playgroup...</span>
+          </div>
+        )}
+
+        {saveStatus === "error" && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-center">
+            <p className="text-sm text-red-600 mb-2">{errorMsg}</p>
+            <button
+              onClick={async () => {
+                hasSaved.current = false;
+                setSaveStatus("saving");
+                const { error } = await savePlaygroup(user.id);
+                if (error) {
+                  setSaveStatus("error");
+                  setErrorMsg(error.message || "Something went wrong");
+                } else {
+                  setSaveStatus("saved");
+                }
+              }}
+              className="text-sm text-sage-dark underline underline-offset-2 bg-transparent border-none cursor-pointer"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
+        <Button
+          fullWidth
+          onClick={() => {
+            resetHost();
+            navigate("/host/dashboard");
+          }}
+          disabled={saveStatus === "saving"}
+        >
+          {saveStatus === "saving" ? "Saving..." : "Go to Dashboard"}
         </Button>
       </div>
     </OnboardingLayout>
