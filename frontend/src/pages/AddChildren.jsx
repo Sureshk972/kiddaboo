@@ -1,20 +1,54 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import OnboardingLayout from "../components/layout/OnboardingLayout";
 import Input from "../components/ui/Input";
 import TagSelector from "../components/ui/TagSelector";
 import Button from "../components/ui/Button";
 import { useOnboarding } from "../context/OnboardingContext";
+import { useAuth } from "../context/AuthContext";
+import { supabase } from "../lib/supabase";
 import { AGE_RANGES, PERSONALITY_TAGS } from "../data/mockData";
 
 export default function AddChildren() {
   const navigate = useNavigate();
   const { data, addChild, removeChild, updateChild } = useOnboarding();
+  const { user } = useAuth();
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleContinue = () => {
-    const hasAtLeastOne = data.children.some((c) => c.name.trim());
-    if (hasAtLeastOne) {
+  const handleContinue = async () => {
+    const validChildren = data.children.filter((c) => c.name.trim());
+    if (validChildren.length === 0) return;
+
+    if (!user) {
       navigate("/success");
+      return;
     }
+
+    setSaving(true);
+    setError("");
+
+    // Delete existing children first (in case user goes back and re-does this step)
+    await supabase.from("children").delete().eq("user_id", user.id);
+
+    // Insert all valid children
+    const rows = validChildren.map((c) => ({
+      user_id: user.id,
+      name: c.name.trim(),
+      age_range: c.ageRange || null,
+      personality_tags: c.personalityTags,
+    }));
+
+    const { error: insertError } = await supabase.from("children").insert(rows);
+
+    setSaving(false);
+
+    if (insertError) {
+      setError("Could not save. Please try again.");
+      return;
+    }
+
+    navigate("/success");
   };
 
   return (
@@ -87,12 +121,16 @@ export default function AddChildren() {
           + Add another child
         </Button>
 
+        {error && (
+          <p className="text-sm text-red-500">{error}</p>
+        )}
+
         <Button
           fullWidth
           onClick={handleContinue}
-          disabled={!data.children.some((c) => c.name.trim())}
+          disabled={!data.children.some((c) => c.name.trim()) || saving}
         >
-          Continue
+          {saving ? "Saving..." : "Continue"}
         </Button>
       </div>
     </OnboardingLayout>
