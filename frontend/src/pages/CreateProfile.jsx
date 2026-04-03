@@ -5,12 +5,15 @@ import Input from "../components/ui/Input";
 import TagSelector from "../components/ui/TagSelector";
 import Button from "../components/ui/Button";
 import { useOnboarding } from "../context/OnboardingContext";
+import { useAuth } from "../context/AuthContext";
 import { PHILOSOPHY_TAGS } from "../data/mockData";
 
 export default function CreateProfile() {
   const navigate = useNavigate();
   const { data, updateField } = useOnboarding();
+  const { updateProfile } = useAuth();
   const [errors, setErrors] = useState({});
+  const [saving, setSaving] = useState(false);
 
   const handlePhotoChange = (e) => {
     const file = e.target.files?.[0];
@@ -20,12 +23,29 @@ export default function CreateProfile() {
     }
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     const newErrors = {};
     if (!data.firstName.trim()) newErrors.firstName = "First name is required";
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
+      setSaving(true);
+
+      // Save profile to Supabase
+      const { error } = await updateProfile({
+        first_name: data.firstName.trim(),
+        last_name: data.lastName.trim(),
+        bio: data.bio.trim(),
+        philosophy_tags: data.philosophyTags,
+      });
+
+      setSaving(false);
+
+      if (error) {
+        setErrors({ save: "Could not save profile. Please try again." });
+        return;
+      }
+
       navigate("/children");
     }
   };
@@ -118,8 +138,12 @@ export default function CreateProfile() {
           maxSelections={4}
         />
 
-        <Button fullWidth onClick={handleContinue}>
-          Continue
+        {errors.save && (
+          <p className="text-sm text-red-500">{errors.save}</p>
+        )}
+
+        <Button fullWidth onClick={handleContinue} disabled={saving}>
+          {saving ? "Saving..." : "Continue"}
         </Button>
       </div>
     </OnboardingLayout>

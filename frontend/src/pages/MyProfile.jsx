@@ -1,11 +1,19 @@
-import { useOnboarding } from "../context/OnboardingContext";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function MyProfile() {
-  const { data } = useOnboarding();
+  const navigate = useNavigate();
+  const { user, profile, signOut } = useAuth();
 
+  const firstName = profile?.first_name || "Your";
+  const lastName = profile?.last_name || "Name";
   const initials =
-    (data.firstName?.[0] || "Y").toUpperCase() +
-    (data.lastName?.[0] || "").toUpperCase();
+    (firstName[0] || "Y").toUpperCase() + (lastName[0] || "").toUpperCase();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <div className="bg-cream">
@@ -27,16 +35,19 @@ export default function MyProfile() {
             </span>
           </div>
           <h2 className="text-lg font-heading font-bold text-charcoal">
-            {data.firstName || "Your"} {data.lastName || "Name"}
+            {firstName} {lastName}
           </h2>
-          {data.bio && (
-            <p className="text-sm text-taupe mt-1 leading-relaxed max-w-xs">
-              {data.bio}
+          {user?.email && (
+            <p className="text-xs text-taupe mt-1">{user.email}</p>
+          )}
+          {profile?.bio && (
+            <p className="text-sm text-taupe mt-2 leading-relaxed max-w-xs">
+              {profile.bio}
             </p>
           )}
-          {data.philosophyTags?.length > 0 && (
+          {profile?.philosophy_tags?.length > 0 && (
             <div className="flex flex-wrap justify-center gap-1.5 mt-3">
-              {data.philosophyTags.map((tag) => (
+              {profile.philosophy_tags.map((tag) => (
                 <span
                   key={tag}
                   className="text-[11px] bg-sage-light text-sage-dark px-2 py-0.5 rounded-full"
@@ -87,7 +98,10 @@ export default function MyProfile() {
         </div>
 
         {/* Sign out */}
-        <button className="text-sm text-taupe hover:text-terracotta transition-colors cursor-pointer bg-transparent border-none underline underline-offset-4">
+        <button
+          onClick={handleSignOut}
+          className="text-sm text-taupe hover:text-terracotta transition-colors cursor-pointer bg-transparent border-none underline underline-offset-4"
+        >
           Sign out
         </button>
       </div>

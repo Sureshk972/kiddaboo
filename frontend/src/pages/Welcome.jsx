@@ -1,8 +1,26 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/ui/Button";
+import { useAuth } from "../context/AuthContext";
 
 export default function Welcome() {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
+
+  // If already logged in, go straight to browse
+  useEffect(() => {
+    if (!loading && user) {
+      navigate("/browse");
+    }
+  }, [user, loading, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-sage border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-6">
@@ -57,7 +75,10 @@ export default function Welcome() {
         <Button variant="secondary" fullWidth onClick={() => navigate("/host/create")}>
           Host a Playgroup
         </Button>
-        <button className="text-sm text-sage hover:text-sage-dark transition-colors cursor-pointer bg-transparent border-none">
+        <button
+          onClick={() => navigate("/verify")}
+          className="text-sm text-sage hover:text-sage-dark transition-colors cursor-pointer bg-transparent border-none"
+        >
           Already have an account? <span className="underline underline-offset-4">Sign in</span>
         </button>
       </div>
