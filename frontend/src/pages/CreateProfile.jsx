@@ -6,18 +6,21 @@ import TagSelector from "../components/ui/TagSelector";
 import Button from "../components/ui/Button";
 import { useOnboarding } from "../context/OnboardingContext";
 import { useAuth } from "../context/AuthContext";
+import { uploadProfilePhoto } from "../lib/storage";
 import { PHILOSOPHY_TAGS } from "../data/mockData";
 
 export default function CreateProfile() {
   const navigate = useNavigate();
   const { data, updateField } = useOnboarding();
-  const { updateProfile } = useAuth();
+  const { user, updateProfile } = useAuth();
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
+  const [photoFile, setPhotoFile] = useState(null);
 
   const handlePhotoChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
+      setPhotoFile(file);
       const url = URL.createObjectURL(file);
       updateField("photoUrl", url);
     }
@@ -31,13 +34,27 @@ export default function CreateProfile() {
     if (Object.keys(newErrors).length === 0) {
       setSaving(true);
 
+      // Upload profile photo if selected
+      let photoUrl = null;
+      if (photoFile && user) {
+        const { url, error: uploadErr } = await uploadProfilePhoto(photoFile, user.id);
+        if (uploadErr) {
+          console.warn("Photo upload failed:", uploadErr);
+        } else {
+          photoUrl = url;
+        }
+      }
+
       // Save profile to Supabase
-      const { error } = await updateProfile({
+      const profileData = {
         first_name: data.firstName.trim(),
         last_name: data.lastName.trim(),
         bio: data.bio.trim(),
         philosophy_tags: data.philosophyTags,
-      });
+      };
+      if (photoUrl) profileData.photo_url = photoUrl;
+
+      const { error } = await updateProfile(profileData);
 
       setSaving(false);
 

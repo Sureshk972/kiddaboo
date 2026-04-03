@@ -11,7 +11,7 @@ export default function HostPhotos() {
     const files = Array.from(e.target.files || []);
     files.forEach((file) => {
       const url = URL.createObjectURL(file);
-      addPhoto(url);
+      addPhoto(url, file);
     });
     // Reset the input so the same file can be selected again
     e.target.value = "";

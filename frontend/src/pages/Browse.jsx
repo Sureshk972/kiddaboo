@@ -52,6 +52,7 @@ function transformPlaygroup(pg, index) {
     hostInitials,
     verified: host?.is_verified || false,
     photoColor: CARD_COLORS[index % CARD_COLORS.length],
+    photos: pg.photos || [],
     isReal: true, // flag to distinguish from mock data
   };
 }
@@ -271,10 +272,17 @@ export default function Browse() {
               >
                 {/* Photo strip */}
                 <div
-                  className="h-28 flex items-end p-3"
+                  className="h-28 flex items-end p-3 relative overflow-hidden"
                   style={{ backgroundColor: group.photoColor + "40" }}
                 >
-                  <div className="flex items-center gap-1.5">
+                  {group.photos?.length > 0 && (
+                    <img
+                      src={group.photos[0]}
+                      alt={group.name}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  )}
+                  <div className="flex items-center gap-1.5 relative z-10">
                     {group.tags.slice(0, 3).map((tag) => (
                       <span
                         key={tag}

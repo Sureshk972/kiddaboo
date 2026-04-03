@@ -1,5 +1,6 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useRef } from "react";
 import { supabase } from "../lib/supabase";
+import { uploadPhoto } from "../lib/storage";
 
 const HostContext = createContext(null);
 
@@ -34,6 +35,7 @@ const initialState = {
 
 export function HostProvider({ children }) {
   const [data, setData] = useState(initialState);
+  const photoFilesRef = useRef([]); // Store actual File objects for upload
 
   const updateField = (key, value) => {
     setData((prev) => ({ ...prev, [key]: value }));
@@ -69,11 +71,14 @@ export function HostProvider({ children }) {
     }));
   };
 
-  const addPhoto = (url) => {
+  const addPhoto = (url, file) => {
     setData((prev) => ({
       ...prev,
       photos: [...prev.photos, url],
     }));
+    if (file) {
+      photoFilesRef.current = [...photoFilesRef.current, file];
+    }
   };
 
   const removePhoto = (index) => {
@@ -81,12 +86,23 @@ export function HostProvider({ children }) {
       ...prev,
       photos: prev.photos.filter((_, i) => i !== index),
     }));
+    photoFilesRef.current = photoFilesRef.current.filter((_, i) => i !== index);
   };
 
   // Save playgroup to Supabase
   const savePlaygroup = async (userId) => {
     // Filter out empty screening questions
     const questions = data.screeningQuestions.filter((q) => q.trim() !== "");
+
+    // Upload photos to Supabase Storage
+    let photoUrls = [];
+    if (photoFilesRef.current.length > 0) {
+      for (const file of photoFilesRef.current) {
+        const { url, error: uploadErr } = await uploadPhoto(file, "playgroups", userId);
+        if (url) photoUrls.push(url);
+        if (uploadErr) console.warn("Photo upload failed:", uploadErr);
+      }
+    }
 
     // Insert playgroup row
     const { data: playgroup, error } = await supabase
@@ -103,7 +119,7 @@ export function HostProvider({ children }) {
         access_type: data.accessType,
         screening_questions: questions,
         environment: data.environment,
-        photos: data.photos,
+        photos: photoUrls,
       })
       .select()
       .single();
@@ -127,6 +143,7 @@ export function HostProvider({ children }) {
   // Reset form after successful save
   const resetHost = () => {
     setData(initialState);
+    photoFilesRef.current = [];
   };
 
   return (

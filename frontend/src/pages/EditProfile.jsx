@@ -5,6 +5,7 @@ import TagSelector from "../components/ui/TagSelector";
 import Button from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
+import { uploadProfilePhoto } from "../lib/storage";
 import { PHILOSOPHY_TAGS, AGE_RANGES, PERSONALITY_TAGS } from "../data/mockData";
 
 export default function EditProfile() {
@@ -16,6 +17,8 @@ export default function EditProfile() {
   const [lastName, setLastName] = useState("");
   const [bio, setBio] = useState("");
   const [philosophyTags, setPhilosophyTags] = useState([]);
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [photoFile, setPhotoFile] = useState(null);
 
   // Children
   const [children, setChildren] = useState([
@@ -35,8 +38,17 @@ export default function EditProfile() {
       setLastName(profile.last_name || "");
       setBio(profile.bio || "");
       setPhilosophyTags(profile.philosophy_tags || []);
+      if (profile.photo_url) setPhotoPreview(profile.photo_url);
     }
   }, [profile]);
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPhotoFile(file);
+      setPhotoPreview(URL.createObjectURL(file));
+    }
+  };
 
   // Fetch children
   useEffect(() => {
@@ -98,13 +110,27 @@ export default function EditProfile() {
     setError("");
     setSaved(false);
 
-    // 1. Update profile
-    const { error: profileError } = await updateProfile({
+    // 1. Upload photo if changed
+    let photoUrl = null;
+    if (photoFile && user) {
+      const { url, error: uploadErr } = await uploadProfilePhoto(photoFile, user.id);
+      if (uploadErr) {
+        console.warn("Photo upload failed:", uploadErr);
+      } else {
+        photoUrl = url;
+      }
+    }
+
+    // 2. Update profile
+    const profileData = {
       first_name: firstName.trim(),
       last_name: lastName.trim(),
       bio: bio.trim(),
       philosophy_tags: philosophyTags,
-    });
+    };
+    if (photoUrl) profileData.photo_url = photoUrl;
+
+    const { error: profileError } = await updateProfile(profileData);
 
     if (profileError) {
       setError("Could not save profile. Please try again.");
@@ -171,6 +197,35 @@ export default function EditProfile() {
       </div>
 
       <div className="max-w-md mx-auto px-5 py-6 flex flex-col gap-6">
+        {/* Profile photo */}
+        <div className="flex justify-center">
+          <label className="cursor-pointer group">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoChange}
+              className="hidden"
+            />
+            <div className="w-24 h-24 rounded-full border-2 border-dashed border-taupe/30 bg-cream-dark flex items-center justify-center overflow-hidden group-hover:border-sage transition-colors">
+              {photoPreview ? (
+                <img
+                  src={photoPreview}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-taupe/50">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="12" cy="13" r="4" stroke="currentColor" strokeWidth="1.5"/>
+                </svg>
+              )}
+            </div>
+            <p className="text-xs text-taupe/60 text-center mt-2">
+              {photoPreview ? "Change photo" : "Add photo"}
+            </p>
+          </label>
+        </div>
+
         {/* Name fields */}
         <div className="grid grid-cols-2 gap-3">
           <Input
