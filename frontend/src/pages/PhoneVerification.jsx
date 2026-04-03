@@ -4,6 +4,7 @@ import OnboardingLayout from "../components/layout/OnboardingLayout";
 import Input from "../components/ui/Input";
 import Button from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
+import { supabase } from "../lib/supabase";
 
 export default function PhoneVerification() {
   const navigate = useNavigate();
@@ -46,9 +47,19 @@ export default function PhoneVerification() {
         return;
       }
 
-      // Check if profile is complete
+      // Check if profile is complete, redirect accordingly
       if (data?.user) {
-        navigate("/browse");
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("first_name")
+          .eq("id", data.user.id)
+          .single();
+
+        if (!prof?.first_name) {
+          navigate("/profile");
+        } else {
+          navigate("/browse");
+        }
       }
     }
   };
