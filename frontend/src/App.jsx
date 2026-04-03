@@ -20,6 +20,7 @@ import EnvironmentSetup from "./pages/host/EnvironmentSetup";
 import HostPhotos from "./pages/host/HostPhotos";
 import HostSuccess from "./pages/host/HostSuccess";
 import HostDashboard from "./pages/host/HostDashboard";
+import Admin from "./pages/Admin";
 
 export default function App() {
   return (
@@ -52,6 +53,9 @@ export default function App() {
             <Route path="/messages" element={<AppLayout><Messages /></AppLayout>} />
             <Route path="/my-profile" element={<AppLayout><MyProfile /></AppLayout>} />
             <Route path="/host/dashboard" element={<AppLayout><HostDashboard /></AppLayout>} />
+
+            {/* Admin — no tab bar */}
+            <Route path="/admin" element={<Admin />} />
           </Routes>
         </HostProvider>
       </OnboardingProvider>
