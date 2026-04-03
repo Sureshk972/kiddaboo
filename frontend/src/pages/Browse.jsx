@@ -1,6 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { MOCK_PLAYGROUPS, VIBE_TAGS, AGE_RANGES } from "../data/mockData";
+import { supabase } from "../lib/supabase";
 import FilterSheet from "../components/browse/FilterSheet";
 
 const SORT_OPTIONS = [
@@ -15,6 +16,46 @@ const ACCESS_ICONS = {
   invite: "Invite Only",
 };
 
+// Color palette for playgroup cards without photos
+const CARD_COLORS = [
+  "#A3B18A", "#E8C4B0", "#F0EBE3", "#C08B6E",
+  "#DAE4D0", "#7A8F6D", "#D4A574", "#B8C9A3",
+];
+
+// Transform a Supabase playgroup row into the shape Browse expects
+function transformPlaygroup(pg, index) {
+  const host = pg.profiles;
+  const hostFirst = host?.first_name || "Host";
+  const hostLast = host?.last_name || "";
+  const hostInitials =
+    (hostFirst[0] || "H").toUpperCase() + (hostLast[0] || "").toUpperCase();
+
+  // Count members (creator excluded) from the memberships join
+  const memberCount = pg.memberships
+    ? pg.memberships.filter((m) => m.role === "member").length
+    : 0;
+
+  return {
+    id: pg.id,
+    name: pg.name,
+    location: pg.location_name || "Location TBD",
+    tags: pg.vibe_tags || [],
+    familyCount: memberCount,
+    maxFamilies: pg.max_families || 8,
+    ageRange: pg.age_range || "All ages",
+    nextSession: pg.frequency || "TBD",
+    rating: 0,
+    reviewCount: 0,
+    accessType: pg.access_type || "request",
+    setting: pg.environment?.setting || "Indoor",
+    hostName: `${hostFirst} ${hostLast}`.trim(),
+    hostInitials,
+    verified: host?.is_verified || false,
+    photoColor: CARD_COLORS[index % CARD_COLORS.length],
+    isReal: true, // flag to distinguish from mock data
+  };
+}
+
 export default function Browse() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
@@ -27,6 +68,36 @@ export default function Browse() {
     accessType: [],
   });
 
+  // Real playgroups from Supabase
+  const [realPlaygroups, setRealPlaygroups] = useState([]);
+  const [loadingReal, setLoadingReal] = useState(true);
+
+  useEffect(() => {
+    const fetchPlaygroups = async () => {
+      const { data, error } = await supabase
+        .from("playgroups")
+        .select(`
+          *,
+          profiles:creator_id ( first_name, last_name, is_verified ),
+          memberships ( role )
+        `)
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
+
+      if (!error && data) {
+        setRealPlaygroups(data.map((pg, i) => transformPlaygroup(pg, i)));
+      }
+      setLoadingReal(false);
+    };
+    fetchPlaygroups();
+  }, []);
+
+  // Combine real + mock (real first, mock fills out the page)
+  const allPlaygroups = useMemo(() => {
+    if (loadingReal) return MOCK_PLAYGROUPS;
+    return [...realPlaygroups, ...MOCK_PLAYGROUPS];
+  }, [realPlaygroups, loadingReal]);
+
   // Count active filters
   const activeFilterCount = Object.values(filters).reduce(
     (sum, arr) => sum + arr.length,
@@ -35,7 +106,7 @@ export default function Browse() {
 
   // Filter and sort playgroups
   const results = useMemo(() => {
-    let list = [...MOCK_PLAYGROUPS];
+    let list = [...allPlaygroups];
 
     // Search
     if (search.trim()) {
@@ -83,7 +154,7 @@ export default function Browse() {
     }
 
     return list;
-  }, [search, filters, sortBy]);
+  }, [search, filters, sortBy, allPlaygroups]);
 
   return (
     <div className="bg-cream">
