@@ -73,7 +73,7 @@ const STATUS_BADGES = {
 
 export default function MyGroups() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   const [hosting, setHosting] = useState(null);
   const [joined, setJoined] = useState([]);
@@ -81,11 +81,16 @@ export default function MyGroups() {
   const [useMock, setUseMock] = useState(false);
 
   useEffect(() => {
+    if (authLoading) return; // wait for auth to resolve
+
     if (!user) {
       setUseMock(true);
       setLoading(false);
       return;
     }
+
+    // Reset mock flag when user is present
+    setUseMock(false);
 
     const fetchGroups = async () => {
       // Fetch all memberships for this user, joined with playgroup + host profile
@@ -166,16 +171,13 @@ export default function MyGroups() {
 
       setJoined(joinedMapped);
 
-      // If no real data at all, fall back to mock
-      if (!hostingEntry && joinedEntries.length === 0) {
-        setUseMock(true);
-      }
+      // No mock fallback when logged in — show real empty state
 
       setLoading(false);
     };
 
     fetchGroups();
-  }, [user]);
+  }, [user, authLoading]);
 
   const displayHosting = useMock ? MOCK_MY_GROUPS.hosting : hosting;
   const displayJoined = useMock ? MOCK_MY_GROUPS.joined : joined;
@@ -200,6 +202,31 @@ export default function MyGroups() {
       </div>
 
       <div className="max-w-md mx-auto px-5 py-5 flex flex-col gap-6">
+        {/* Host a playgroup CTA — show when user has no hosted group */}
+        {!displayHosting && !useMock && (
+          <div>
+            <h3 className="text-sm font-medium text-taupe mb-2">
+              Your Playgroup
+            </h3>
+            <div
+              onClick={() => navigate("/host/create")}
+              className="bg-white rounded-2xl border-2 border-dashed border-sage-light/60 p-6 text-center cursor-pointer hover:border-sage transition-all hover:shadow-sm"
+            >
+              <div className="w-12 h-12 bg-sage-light rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-sage-dark">
+                  <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              </div>
+              <h3 className="font-heading font-bold text-charcoal mb-1">
+                Host a Playgroup
+              </h3>
+              <p className="text-xs text-taupe">
+                Create your own curated group for families
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Hosting section */}
         {displayHosting && (
           <div>
