@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 import useGroupMessages from "../hooks/useGroupMessages";
+import { markChatRead } from "../hooks/useNotifications";
 import MessageBubble from "../components/messages/MessageBubble";
 import ChatInput from "../components/messages/ChatInput";
 
@@ -58,6 +59,9 @@ export default function GroupChat() {
     };
 
     fetchGroupInfo();
+
+    // Mark this chat as read
+    markChatRead(playgroupId);
   }, [playgroupId, user]);
 
   // Auto-scroll to bottom on new messages
@@ -76,6 +80,8 @@ export default function GroupChat() {
       }
     }
     prevMessageCount.current = messages.length;
+    // Keep last-read timestamp fresh while viewing
+    if (messages.length > 0) markChatRead(playgroupId);
   }, [messages.length]);
 
   // Handle send

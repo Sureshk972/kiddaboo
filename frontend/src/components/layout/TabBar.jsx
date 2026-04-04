@@ -102,7 +102,7 @@ const TABS = [
   },
 ];
 
-export default function TabBar() {
+export default function TabBar({ badges = {} }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -114,6 +114,8 @@ export default function TabBar() {
             ? tab.matchPaths.some((p) => location.pathname.startsWith(p))
             : location.pathname === tab.path;
 
+          const badgeCount = badges[tab.path] || 0;
+
           return (
             <button
               key={tab.path}
@@ -121,11 +123,18 @@ export default function TabBar() {
               className={`
                 flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl
                 transition-colors duration-150 cursor-pointer
-                bg-transparent border-none min-w-[60px]
+                bg-transparent border-none min-w-[60px] relative
                 ${isActive ? "text-sage-dark" : "text-taupe/50 hover:text-taupe"}
               `}
             >
-              {tab.icon(isActive)}
+              <div className="relative">
+                {tab.icon(isActive)}
+                {badgeCount > 0 && (
+                  <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] bg-terracotta text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 shadow-sm">
+                    {badgeCount > 99 ? "99+" : badgeCount}
+                  </span>
+                )}
+              </div>
               <span
                 className={`text-[10px] font-medium ${
                   isActive ? "text-sage-dark" : "text-taupe/50"
