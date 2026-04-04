@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import OnboardingLayout from "../components/layout/OnboardingLayout";
 import Input from "../components/ui/Input";
 import Button from "../components/ui/Button";
@@ -8,9 +8,10 @@ import { supabase } from "../lib/supabase";
 
 export default function PhoneVerification() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { signUp, signIn } = useAuth();
 
-  const [mode, setMode] = useState("signup"); // "signup" | "signin"
+  const [mode, setMode] = useState(searchParams.get("mode") === "signin" ? "signin" : "signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");

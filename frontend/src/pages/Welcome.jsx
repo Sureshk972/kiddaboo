@@ -80,7 +80,7 @@ export default function Welcome() {
           Host a Playgroup
         </Button>
         <button
-          onClick={() => navigate("/verify")}
+          onClick={() => navigate("/verify?mode=signin")}
           className="text-sm text-sage hover:text-sage-dark transition-colors cursor-pointer bg-transparent border-none"
         >
           Already have an account? <span className="underline underline-offset-4">Sign in</span>

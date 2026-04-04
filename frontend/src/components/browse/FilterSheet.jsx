@@ -69,13 +69,13 @@ export default function FilterSheet({ open, onClose, filters, onChange }) {
       />
 
       {/* Sheet */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-cream rounded-t-3xl max-h-[85vh] overflow-y-auto">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-cream rounded-t-3xl max-h-[85vh] flex flex-col">
         {/* Handle */}
-        <div className="flex justify-center pt-3 pb-2">
+        <div className="flex justify-center pt-3 pb-2 shrink-0">
           <div className="w-10 h-1 rounded-full bg-cream-dark" />
         </div>
 
-        <div className="px-6 pb-8">
+        <div className="px-6 pb-4 overflow-y-auto flex-1">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-heading font-bold text-charcoal">
@@ -124,12 +124,14 @@ export default function FilterSheet({ open, onClose, filters, onChange }) {
               onToggle={(v) => toggle("accessType", v)}
             />
           </div>
+        </div>
 
-          {/* Apply button */}
+        {/* Sticky Apply button */}
+        <div className="px-6 pb-8 pt-4 shrink-0 bg-cream border-t border-cream-dark/20">
           <button
             onClick={onClose}
             className="
-              w-full mt-8 bg-sage text-white font-medium text-base
+              w-full bg-sage text-white font-medium text-base
               rounded-2xl px-6 py-4 transition-all duration-150 cursor-pointer
               hover:bg-sage-dark active:scale-[0.98] shadow-sm
             "
