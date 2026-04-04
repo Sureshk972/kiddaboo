@@ -48,7 +48,7 @@ function transformRealPlaygroup(pg) {
     accessType: pg.access_type || "request",
     screeningQuestions: pg.screening_questions || [],
     photos: (pg.photos || []).length > 0 ? pg.photos : [],
-    environment: pg.environment || {},
+    environment: { ...(pg.environment || {}), maxGroupSize: pg.max_families || 8 },
     host: {
       name: `${hostFirst} ${hostLast}`.trim(),
       initials:
