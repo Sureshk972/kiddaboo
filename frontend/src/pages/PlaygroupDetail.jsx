@@ -10,7 +10,6 @@ import JoinRequestSheet from "../components/playgroup/JoinRequestSheet";
 import Button from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
-import { MOCK_PLAYGROUP_DETAILS } from "../data/mockData";
 
 const ACCESS_LABELS = {
   open: { text: "Open", color: "bg-sage-light text-sage-dark" },
@@ -105,8 +104,7 @@ export default function PlaygroupDetail() {
     fetchGroup();
   }, [id, user]);
 
-  // Use real data if found, otherwise fall back to mock
-  const group = realGroup || MOCK_PLAYGROUP_DETAILS[id];
+  const group = realGroup;
 
   if (loading) {
     return (

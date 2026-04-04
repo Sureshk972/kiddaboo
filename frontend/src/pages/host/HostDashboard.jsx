@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
-import { MOCK_HOST_DASHBOARD } from "../../data/mockData";
 import RequestCard from "../../components/host/RequestCard";
 
 const ACTIVITY_ICONS = {
@@ -125,51 +124,58 @@ export default function HostDashboard() {
     fetchDashboard();
   }, [user]);
 
-  // Decide whether to use real or mock data
-  const useMock = !realPlaygroup;
-  const mockData = MOCK_HOST_DASHBOARD;
+  const [expandedRequest, setExpandedRequest] = useState(null);
+  const [actionedIds, setActionedIds] = useState({});
 
-  const pg = useMock
-    ? mockData.playgroup
-    : {
+  if (!realPlaygroup && !loading) {
+    return (
+      <div className="bg-cream min-h-screen flex flex-col items-center justify-center px-6 text-center">
+        <h2 className="font-heading font-bold text-charcoal text-xl mb-2">
+          No playgroup yet
+        </h2>
+        <p className="text-taupe text-sm mb-6">
+          Create your first playgroup to see your dashboard.
+        </p>
+        <button
+          onClick={() => navigate("/host/create")}
+          className="bg-sage text-white font-medium rounded-2xl px-6 py-3 cursor-pointer border-none"
+        >
+          Host a Playgroup
+        </button>
+      </div>
+    );
+  }
+
+  const pg = realPlaygroup
+    ? {
         ...realPlaygroup,
         memberCount: realMembers.filter((m) => m.role !== "host").length,
         trustScore: 0,
         reviewCount: 0,
         location: realPlaygroup.location_name,
-      };
+      }
+    : {};
 
-  const [expandedRequest, setExpandedRequest] = useState(null);
-  const [actionedIds, setActionedIds] = useState({});
-
-  const requests = useMock ? mockData.pendingRequests : realRequests;
-  const members = useMock ? mockData.members : realMembers;
+  const requests = realRequests;
+  const members = realMembers;
 
   const handleApprove = async (id) => {
     setActionedIds((prev) => ({ ...prev, [id]: "approved" }));
 
-    if (!useMock) {
-      await supabase
-        .from("memberships")
-        .update({ role: "member", joined_at: new Date().toISOString() })
-        .eq("id", id);
-    }
+    await supabase
+      .from("memberships")
+      .update({ role: "member", joined_at: new Date().toISOString() })
+      .eq("id", id);
   };
 
   const handleDecline = async (id) => {
     setActionedIds((prev) => ({ ...prev, [id]: "declined" }));
-
-    if (!useMock) {
-      await supabase.from("memberships").update({ role: "declined" }).eq("id", id);
-    }
+    await supabase.from("memberships").update({ role: "declined" }).eq("id", id);
   };
 
   const handleWaitlist = async (id) => {
     setActionedIds((prev) => ({ ...prev, [id]: "waitlisted" }));
-
-    if (!useMock) {
-      await supabase.from("memberships").update({ role: "waitlisted" }).eq("id", id);
-    }
+    await supabase.from("memberships").update({ role: "waitlisted" }).eq("id", id);
   };
 
   const activeRequests = requests.filter((r) => !actionedIds[r.id]);
@@ -232,11 +238,6 @@ export default function HostDashboard() {
             <h3 className="text-sm font-heading font-bold text-charcoal">
               Next Session
             </h3>
-            {useMock && (
-              <span className="text-[10px] bg-sage-light text-sage-dark px-2 py-0.5 rounded-full font-medium">
-                {mockData.nextSession.rsvpYes} confirmed
-              </span>
-            )}
           </div>
           <div className="flex items-center gap-2 text-sm text-taupe-dark mb-1">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -244,16 +245,14 @@ export default function HostDashboard() {
               <path d="M3 10H21" stroke="currentColor" strokeWidth="1.5" />
               <path d="M8 2V6M16 2V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
-            {useMock
-              ? `${mockData.nextSession.date} at ${mockData.nextSession.time}`
-              : pg.frequency || "Schedule your first session"}
+            {pg.frequency || "Schedule your first session"}
           </div>
           <div className="flex items-center gap-2 text-sm text-taupe">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M7 1.5C4.5 1.5 2.5 3.5 2.5 6C2.5 9.5 7 12.5 7 12.5C7 12.5 11.5 9.5 11.5 6C11.5 3.5 9.5 1.5 7 1.5Z" stroke="currentColor" strokeWidth="1" />
               <circle cx="7" cy="6" r="1.5" stroke="currentColor" strokeWidth="1" />
             </svg>
-            {useMock ? mockData.nextSession.location : pg.location || "Location TBD"}
+            {pg.location || "Location TBD"}
           </div>
         </div>
 
@@ -352,26 +351,7 @@ export default function HostDashboard() {
           <h3 className="text-base font-heading font-bold text-charcoal mb-3">
             Recent Activity
           </h3>
-          {useMock ? (
-            <div className="flex flex-col gap-2">
-              {mockData.recentActivity.map((item, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 bg-white rounded-xl p-3 border border-cream-dark"
-                >
-                  <span className="text-base flex-shrink-0">
-                    {ACTIVITY_ICONS[item.type]}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-taupe-dark">{item.text}</p>
-                  </div>
-                  <span className="text-[10px] text-taupe/50 flex-shrink-0 whitespace-nowrap">
-                    {item.time}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : realRequests.length > 0 || realMembers.length > 1 ? (
+          {realRequests.length > 0 || realMembers.length > 1 ? (
             <div className="flex flex-col gap-2">
               {realRequests.map((req) => (
                 <div

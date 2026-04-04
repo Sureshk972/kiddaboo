@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { MOCK_PLAYGROUPS, VIBE_TAGS, AGE_RANGES } from "../data/mockData";
+import { VIBE_TAGS, AGE_RANGES } from "../data/mockData";
 import { supabase } from "../lib/supabase";
 import FilterSheet from "../components/browse/FilterSheet";
 
@@ -93,11 +93,10 @@ export default function Browse() {
     fetchPlaygroups();
   }, []);
 
-  // Combine real + mock (real first, mock fills out the page)
+  // Use only real playgroups
   const allPlaygroups = useMemo(() => {
-    if (loadingReal) return MOCK_PLAYGROUPS;
-    return [...realPlaygroups, ...MOCK_PLAYGROUPS];
-  }, [realPlaygroups, loadingReal]);
+    return realPlaygroups;
+  }, [realPlaygroups]);
 
   // Count active filters
   const activeFilterCount = Object.values(filters).reduce(
@@ -394,21 +393,40 @@ export default function Browse() {
                 <path d="M16 16L21 21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
             </div>
-            <h3 className="font-heading font-bold text-charcoal mb-1">
-              No playgroups found
-            </h3>
-            <p className="text-sm text-taupe mb-4">
-              Try adjusting your search or filters.
-            </p>
-            <button
-              onClick={() => {
-                setSearch("");
-                setFilters({ vibeTags: [], ageRange: [], setting: [], accessType: [] });
-              }}
-              className="text-sm text-sage font-medium hover:text-sage-dark cursor-pointer bg-transparent border-none underline underline-offset-4"
-            >
-              Clear all filters
-            </button>
+            {search || activeFilterCount > 0 ? (
+              <>
+                <h3 className="font-heading font-bold text-charcoal mb-1">
+                  No playgroups found
+                </h3>
+                <p className="text-sm text-taupe mb-4">
+                  Try adjusting your search or filters.
+                </p>
+                <button
+                  onClick={() => {
+                    setSearch("");
+                    setFilters({ vibeTags: [], ageRange: [], setting: [], accessType: [] });
+                  }}
+                  className="text-sm text-sage font-medium hover:text-sage-dark cursor-pointer bg-transparent border-none underline underline-offset-4"
+                >
+                  Clear all filters
+                </button>
+              </>
+            ) : (
+              <>
+                <h3 className="font-heading font-bold text-charcoal mb-1">
+                  No playgroups yet
+                </h3>
+                <p className="text-sm text-taupe mb-4">
+                  Be the first to create one in your area!
+                </p>
+                <button
+                  onClick={() => navigate("/host/create")}
+                  className="bg-sage text-white font-medium text-sm rounded-2xl px-6 py-3 cursor-pointer border-none hover:bg-sage-dark transition-colors"
+                >
+                  Host a Playgroup
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>

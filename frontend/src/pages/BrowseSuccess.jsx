@@ -1,12 +1,40 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import OnboardingLayout from "../components/layout/OnboardingLayout";
 import Button from "../components/ui/Button";
 import { useOnboarding } from "../context/OnboardingContext";
-import { MOCK_PLAYGROUPS } from "../data/mockData";
+import { supabase } from "../lib/supabase";
 
 export default function BrowseSuccess() {
   const navigate = useNavigate();
   const { data } = useOnboarding();
+  const [playgroups, setPlaygroups] = useState([]);
+
+  useEffect(() => {
+    const fetchPlaygroups = async () => {
+      const { data: pgs } = await supabase
+        .from("playgroups")
+        .select("id, name, location_name, vibe_tags, max_families, memberships(role)")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(6);
+
+      if (pgs) {
+        setPlaygroups(
+          pgs.map((pg) => ({
+            id: pg.id,
+            name: pg.name,
+            location: pg.location_name || "Location TBD",
+            tags: pg.vibe_tags || [],
+            familyCount: (pg.memberships || []).filter(
+              (m) => m.role === "member" || m.role === "creator"
+            ).length,
+          }))
+        );
+      }
+    };
+    fetchPlaygroups();
+  }, []);
 
   const confettiColors = ["#A3B18A", "#C08B6E", "#DAE4D0", "#E8C4B0", "#7A8F6D"];
 
@@ -15,7 +43,6 @@ export default function BrowseSuccess() {
       <div className="flex flex-col gap-8 pt-4">
         {/* Success message with confetti */}
         <div className="text-center relative">
-          {/* Confetti dots */}
           <div className="absolute inset-0 flex justify-center pointer-events-none">
             {confettiColors.map((color, i) => (
               <div
@@ -61,52 +88,47 @@ export default function BrowseSuccess() {
         </div>
 
         {/* Playgroup previews */}
-        <div>
-          <h3 className="text-lg font-heading font-bold text-charcoal mb-3">
-            Nearby Playgroups
-          </h3>
-          <div className="flex flex-col gap-3">
-            {MOCK_PLAYGROUPS.map((group) => (
-              <div
-                key={group.id}
-                onClick={() => navigate(`/playgroup/${group.id}`)}
-                className="bg-white rounded-2xl p-4 border border-cream-dark flex items-center gap-4 hover:border-sage-light transition-colors cursor-pointer"
-              >
-                {/* Icon */}
-                <div className="w-12 h-12 bg-sage-light rounded-xl flex items-center justify-center flex-shrink-0">
-                  <span className="text-lg">
-                    {group.tags[0] === "Outdoorsy" ? "🌿" : group.tags[0] === "Faith-based" ? "🕊" : "🌱"}
-                  </span>
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-heading font-bold text-charcoal text-sm">
-                    {group.name}
-                  </h4>
-                  <p className="text-xs text-taupe mt-0.5">
-                    {group.location} &middot; {group.familyCount} families
-                  </p>
-                  <div className="flex gap-1.5 mt-1.5">
-                    {group.tags.slice(0, 2).map((tag) => (
-                      <span
-                        key={tag}
-                        className="text-[11px] bg-sage-light text-sage-dark px-2 py-0.5 rounded-full"
-                      >
-                        {tag}
-                      </span>
-                    ))}
+        {playgroups.length > 0 && (
+          <div>
+            <h3 className="text-lg font-heading font-bold text-charcoal mb-3">
+              Nearby Playgroups
+            </h3>
+            <div className="flex flex-col gap-3">
+              {playgroups.map((group) => (
+                <div
+                  key={group.id}
+                  onClick={() => navigate(`/playgroup/${group.id}`)}
+                  className="bg-white rounded-2xl p-4 border border-cream-dark flex items-center gap-4 hover:border-sage-light transition-colors cursor-pointer"
+                >
+                  <div className="w-12 h-12 bg-sage-light rounded-xl flex items-center justify-center flex-shrink-0">
+                    <span className="text-lg">🌱</span>
                   </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-heading font-bold text-charcoal text-sm">
+                      {group.name}
+                    </h4>
+                    <p className="text-xs text-taupe mt-0.5">
+                      {group.location} &middot; {group.familyCount} {group.familyCount === 1 ? "family" : "families"}
+                    </p>
+                    <div className="flex gap-1.5 mt-1.5">
+                      {group.tags.slice(0, 2).map((tag) => (
+                        <span
+                          key={tag}
+                          className="text-[11px] bg-sage-light text-sage-dark px-2 py-0.5 rounded-full"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-taupe/40 flex-shrink-0">
+                    <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                 </div>
-
-                {/* Chevron */}
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-taupe/40 flex-shrink-0">
-                  <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <Button fullWidth onClick={() => navigate("/browse")}>
           Start Browsing

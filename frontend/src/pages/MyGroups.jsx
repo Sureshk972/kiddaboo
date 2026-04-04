@@ -8,50 +8,6 @@ const CARD_COLORS = [
   "#DAE4D0", "#7A8F6D", "#D4A574", "#B8C9A3",
 ];
 
-const MOCK_MY_GROUPS = {
-  hosting: {
-    id: "pg-1",
-    name: "Little Explorers",
-    location: "Presidio, SF",
-    memberCount: 4,
-    maxFamilies: 6,
-    pendingRequests: 3,
-    nextSession: "Saturday, 10am",
-    photoColor: "#A3B18A",
-  },
-  joined: [
-    {
-      id: "pg-2",
-      name: "Tender Sprouts",
-      location: "Noe Valley, SF",
-      status: "member",
-      hostName: "Priya Sharma",
-      hostInitials: "PS",
-      nextSession: "Wednesday, 9:30am",
-      photoColor: "#E8C4B0",
-    },
-    {
-      id: "pg-5",
-      name: "Bilingual Buddies",
-      location: "Sunset, SF",
-      status: "pending",
-      hostName: "Mei Lin Wu",
-      hostInitials: "MW",
-      nextSession: "Tuesday, 9am",
-      photoColor: "#DAE4D0",
-    },
-    {
-      id: "pg-7",
-      name: "Waldorf Wonderland",
-      location: "Pacific Heights, SF",
-      status: "waitlisted",
-      hostName: "Astrid Holm",
-      hostInitials: "AH",
-      nextSession: "Monday, 10am",
-      photoColor: "#E8C4B0",
-    },
-  ],
-};
 
 const STATUS_BADGES = {
   member: {
@@ -78,19 +34,14 @@ export default function MyGroups() {
   const [hosting, setHosting] = useState(null);
   const [joined, setJoined] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [useMock, setUseMock] = useState(false);
 
   useEffect(() => {
     if (authLoading) return; // wait for auth to resolve
 
     if (!user) {
-      setUseMock(true);
       setLoading(false);
       return;
     }
-
-    // Reset mock flag when user is present
-    setUseMock(false);
 
     const fetchGroups = async () => {
       // Fetch all memberships for this user, joined with playgroup + host profile
@@ -179,8 +130,8 @@ export default function MyGroups() {
     fetchGroups();
   }, [user, authLoading]);
 
-  const displayHosting = useMock ? MOCK_MY_GROUPS.hosting : hosting;
-  const displayJoined = useMock ? MOCK_MY_GROUPS.joined : joined;
+  const displayHosting = hosting;
+  const displayJoined = joined;
 
   if (loading) {
     return (
@@ -203,7 +154,7 @@ export default function MyGroups() {
 
       <div className="max-w-md mx-auto px-5 py-5 flex flex-col gap-6">
         {/* Host a playgroup CTA — show when user has no hosted group */}
-        {!displayHosting && !useMock && (
+        {!displayHosting && (
           <div>
             <h3 className="text-sm font-medium text-taupe mb-2">
               Your Playgroup
