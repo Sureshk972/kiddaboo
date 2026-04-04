@@ -17,6 +17,8 @@ export default function PhoneVerification() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [checkEmail, setCheckEmail] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
 
   const handleSubmit = async () => {
     setError("");
@@ -65,7 +67,65 @@ export default function PhoneVerification() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email.includes("@")) {
+      setError("Enter your email above, then tap Forgot password.");
+      return;
+    }
+    setError("");
+    setResetLoading(true);
+
+    const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    setResetLoading(false);
+
+    if (err) {
+      setError(err.message);
+      return;
+    }
+
+    setResetSent(true);
+  };
+
   const isValid = email.includes("@") && password.length >= 6;
+
+  // Password reset sent confirmation
+  if (resetSent) {
+    return (
+      <OnboardingLayout currentStep={1} showBack onBack={() => setResetSent(false)}>
+        <div className="flex flex-col gap-6 pt-8 items-center text-center">
+          <div className="w-16 h-16 bg-sage-light rounded-full flex items-center justify-center">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M22 6L12 13L2 6" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <div>
+            <h1 className="text-2xl font-heading font-bold text-charcoal mb-2">
+              Check your email
+            </h1>
+            <p className="text-taupe leading-relaxed">
+              We sent a password reset link to{" "}
+              <span className="text-charcoal font-medium">{email}</span>.
+              Click the link to set a new password.
+            </p>
+          </div>
+          <Button
+            fullWidth
+            variant="secondary"
+            onClick={() => {
+              setResetSent(false);
+              setMode("signin");
+            }}
+          >
+            Back to Sign in
+          </Button>
+        </div>
+      </OnboardingLayout>
+    );
+  }
 
   if (checkEmail) {
     return (
@@ -127,14 +187,25 @@ export default function PhoneVerification() {
           type="email"
         />
 
-        <Input
-          label="Password"
-          value={password}
-          onChange={setPassword}
-          placeholder={mode === "signup" ? "At least 6 characters" : "Your password"}
-          type="password"
-          error={error}
-        />
+        <div>
+          <Input
+            label="Password"
+            value={password}
+            onChange={setPassword}
+            placeholder={mode === "signup" ? "At least 6 characters" : "Your password"}
+            type="password"
+            error={error}
+          />
+          {mode === "signin" && (
+            <button
+              onClick={handleForgotPassword}
+              disabled={resetLoading}
+              className="text-xs text-sage hover:text-sage-dark transition-colors cursor-pointer bg-transparent border-none mt-2"
+            >
+              {resetLoading ? "Sending..." : "Forgot password?"}
+            </button>
+          )}
+        </div>
 
         <Button
           fullWidth

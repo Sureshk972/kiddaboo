@@ -22,6 +22,7 @@ import HostSuccess from "./pages/host/HostSuccess";
 import HostDashboard from "./pages/host/HostDashboard";
 import Admin from "./pages/Admin";
 import GroupChat from "./pages/GroupChat";
+import ResetPassword from "./pages/ResetPassword";
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
             {/* Onboarding — no tab bar */}
             <Route path="/" element={<Welcome />} />
             <Route path="/verify" element={<PhoneVerification />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/profile" element={<CreateProfile />} />
             <Route path="/children" element={<AddChildren />} />
             <Route path="/success" element={<BrowseSuccess />} />
