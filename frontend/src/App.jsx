@@ -21,6 +21,7 @@ import HostPhotos from "./pages/host/HostPhotos";
 import HostSuccess from "./pages/host/HostSuccess";
 import HostDashboard from "./pages/host/HostDashboard";
 import Admin from "./pages/Admin";
+import GroupChat from "./pages/GroupChat";
 
 export default function App() {
   return (
@@ -45,6 +46,7 @@ export default function App() {
 
             {/* Detail pages — no tab bar (has back button) */}
             <Route path="/playgroup/:id" element={<PlaygroupDetail />} />
+            <Route path="/messages/:playgroupId" element={<GroupChat />} />
             <Route path="/edit-profile" element={<EditProfile />} />
 
             {/* App pages — with tab bar */}

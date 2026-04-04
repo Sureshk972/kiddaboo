@@ -356,8 +356,8 @@ export default function PlaygroupDetail() {
       <div className="fixed bottom-0 left-0 right-0 bg-cream/90 backdrop-blur-md border-t border-cream-dark px-6 py-4 z-30">
         <div className="max-w-md mx-auto">
           {joinStatus === "member" || joinStatus === "creator" ? (
-            <Button fullWidth variant="secondary" disabled>
-              {joinStatus === "creator" ? "You're the Host" : "You're a Member"}
+            <Button fullWidth onClick={() => navigate(`/messages/${id}`)}>
+              Group Chat
             </Button>
           ) : joinStatus === "pending" ? (
             <Button fullWidth variant="secondary" disabled>
