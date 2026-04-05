@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 
 const ADMIN_EMAIL = "rooblix2000@gmail.com";
+const ADMIN_ID = "7fdf9710-231d-40c8-bea5-6a139709c07c";
 
 function timeAgo(dateString) {
   if (!dateString) return "";
@@ -119,7 +120,7 @@ export default function Admin() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Auth gate
-  const isAdmin = user?.email === ADMIN_EMAIL;
+  const isAdmin = user?.email === ADMIN_EMAIL || user?.id === ADMIN_ID;
 
   useEffect(() => {
     if (authLoading) return;
