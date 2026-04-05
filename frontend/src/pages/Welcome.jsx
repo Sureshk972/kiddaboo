@@ -86,6 +86,22 @@ export default function Welcome() {
           Already have an account? <span className="underline underline-offset-4">Sign in</span>
         </button>
       </div>
+
+      {/* Legal links */}
+      <div className="mt-8 flex gap-4">
+        <button
+          onClick={() => navigate("/terms")}
+          className="text-xs text-taupe/60 hover:text-taupe transition-colors cursor-pointer bg-transparent border-none underline underline-offset-2"
+        >
+          Terms of Service
+        </button>
+        <button
+          onClick={() => navigate("/privacy")}
+          className="text-xs text-taupe/60 hover:text-taupe transition-colors cursor-pointer bg-transparent border-none underline underline-offset-2"
+        >
+          Privacy Policy
+        </button>
+      </div>
     </div>
   );
 }

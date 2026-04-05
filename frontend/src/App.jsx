@@ -25,6 +25,8 @@ import Admin from "./pages/Admin";
 import NotificationSettings from "./pages/NotificationSettings";
 import GroupChat from "./pages/GroupChat";
 import ResetPassword from "./pages/ResetPassword";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 export default function App() {
   return (
@@ -54,6 +56,8 @@ export default function App() {
             <Route path="/edit-profile" element={<EditProfile />} />
             <Route path="/notifications" element={<NotificationSettings />} />
             <Route path="/host/edit/:id" element={<EditPlaygroup />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
 
             {/* App pages — with tab bar */}
             <Route path="/browse" element={<AppLayout><Browse /></AppLayout>} />
