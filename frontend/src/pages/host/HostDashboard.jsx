@@ -5,6 +5,7 @@ import { supabase } from "../../lib/supabase";
 import RequestCard from "../../components/host/RequestCard";
 import ScheduleSessionSheet from "../../components/host/ScheduleSessionSheet";
 import useSessions from "../../hooks/useSessions";
+import RsvpCount from "../../components/host/RsvpCount";
 import { friendlyDate, formatSessionTime, formatDuration } from "../../lib/dateUtils";
 
 // Helper: time ago string
@@ -280,6 +281,7 @@ export default function HostDashboard() {
                 {nextSession.notes}
               </p>
             )}
+            <RsvpCount sessionId={nextSession.id} />
           </div>
         ) : (
           <button
@@ -315,34 +317,37 @@ export default function HostDashboard() {
               {sessions.slice(1, 4).map((session) => (
                 <div
                   key={session.id}
-                  className="bg-white rounded-xl p-3 border border-cream-dark flex items-center justify-between"
+                  className="bg-white rounded-xl p-3 border border-cream-dark"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-sage-light rounded-lg flex items-center justify-center flex-shrink-0">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 bg-sage-light rounded-lg flex items-center justify-center flex-shrink-0">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                          <rect x="3" y="4" width="18" height="18" rx="2" stroke="#7A8F6D" strokeWidth="1.5" />
+                          <path d="M3 10H21" stroke="#7A8F6D" strokeWidth="1.5" />
+                          <path d="M8 2V6M16 2V6" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-charcoal">
+                          {friendlyDate(session.scheduled_at)}
+                        </p>
+                        <p className="text-xs text-taupe">
+                          {formatSessionTime(session.scheduled_at)} &middot; {formatDuration(session.duration_minutes)}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => deleteSession(session.id)}
+                      className="text-taupe/40 hover:text-terracotta transition-colors bg-transparent border-none cursor-pointer p-1"
+                      title="Cancel session"
+                    >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                        <rect x="3" y="4" width="18" height="18" rx="2" stroke="#7A8F6D" strokeWidth="1.5" />
-                        <path d="M3 10H21" stroke="#7A8F6D" strokeWidth="1.5" />
-                        <path d="M8 2V6M16 2V6" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" />
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                       </svg>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-charcoal">
-                        {friendlyDate(session.scheduled_at)}
-                      </p>
-                      <p className="text-xs text-taupe">
-                        {formatSessionTime(session.scheduled_at)} &middot; {formatDuration(session.duration_minutes)}
-                      </p>
-                    </div>
+                    </button>
                   </div>
-                  <button
-                    onClick={() => deleteSession(session.id)}
-                    className="text-taupe/40 hover:text-terracotta transition-colors bg-transparent border-none cursor-pointer p-1"
-                    title="Cancel session"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                      <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                    </svg>
-                  </button>
+                  <RsvpCount sessionId={session.id} />
                 </div>
               ))}
             </div>

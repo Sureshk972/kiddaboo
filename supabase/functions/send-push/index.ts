@@ -168,6 +168,47 @@ serve(async (req: Request) => {
       }
     }
 
+    if (table === "rsvps" && type === "INSERT") {
+      // RSVP → notify the host
+      // Look up session → playgroup → host
+      const { data: session } = await supabase
+        .from("sessions")
+        .select("playgroup_id, scheduled_at")
+        .eq("id", record.session_id)
+        .single();
+
+      if (session) {
+        const { data: pg } = await supabase
+          .from("playgroups")
+          .select("creator_id, name")
+          .eq("id", session.playgroup_id)
+          .single();
+
+        const { data: rsvpUser } = await supabase
+          .from("profiles")
+          .select("first_name")
+          .eq("id", record.user_id)
+          .single();
+
+        const scheduledDate = new Date(session.scheduled_at).toLocaleDateString("en-US", {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+        });
+
+        if (pg && pg.creator_id !== record.user_id) {
+          const statusText = record.status === "going" ? "is going to" : "can't make";
+          notifications.push({
+            userId: pg.creator_id as string,
+            title: "Session RSVP",
+            body: `${rsvpUser?.first_name || "Someone"} ${statusText} the ${scheduledDate} session`,
+            url: "/host/dashboard",
+            tag: `rsvp-${record.id}`,
+          });
+        }
+      }
+    }
+
     // ── Send push notifications ──
 
     let sent = 0;
