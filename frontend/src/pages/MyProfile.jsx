@@ -1,9 +1,13 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { supabase } from "../lib/supabase";
 
 export default function MyProfile() {
   const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const firstName = profile?.first_name || "Your";
   const lastName = profile?.last_name || "Name";
@@ -122,7 +126,77 @@ export default function MyProfile() {
         >
           Sign out
         </button>
+
+        {/* Delete account */}
+        <button
+          onClick={() => setShowDeleteConfirm(true)}
+          className="text-xs text-taupe/40 hover:text-red-500 transition-colors cursor-pointer bg-transparent border-none underline underline-offset-4 mb-8"
+        >
+          Delete my account
+        </button>
       </div>
+
+      {/* Delete confirmation modal */}
+      {showDeleteConfirm && (
+        <>
+          <div
+            className="fixed inset-0 bg-charcoal/40 z-40"
+            onClick={() => !deleting && setShowDeleteConfirm(false)}
+          />
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
+            <div className="bg-cream rounded-2xl p-6 max-w-sm w-full shadow-xl">
+              <h3 className="font-heading font-bold text-charcoal text-lg mb-2">
+                Delete your account?
+              </h3>
+              <p className="text-sm text-taupe leading-relaxed mb-1">
+                This will permanently delete:
+              </p>
+              <ul className="text-sm text-taupe leading-relaxed list-disc pl-5 mb-4 space-y-0.5">
+                <li>Your profile and children's info</li>
+                <li>All playgroups you created</li>
+                <li>Your memberships, messages, and reviews</li>
+              </ul>
+              <p className="text-sm text-red-600 font-medium mb-5">
+                This action cannot be undone.
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={async () => {
+                    setDeleting(true);
+                    try {
+                      const { data: { session } } = await supabase.auth.getSession();
+                      const res = await supabase.functions.invoke("delete-account", {
+                        headers: {
+                          Authorization: `Bearer ${session?.access_token}`,
+                        },
+                      });
+                      if (res.error) throw res.error;
+                      await signOut();
+                      navigate("/");
+                    } catch (err) {
+                      console.error("Delete failed:", err);
+                      alert("Failed to delete account. Please try again.");
+                      setDeleting(false);
+                    }
+                  }}
+                  disabled={deleting}
+                  className="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl py-3 text-sm cursor-pointer border-none transition-colors disabled:opacity-50"
+                >
+                  {deleting ? "Deleting..." : "Yes, delete everything"}
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={deleting}
+                  className="flex-1 bg-white border border-cream-dark text-charcoal font-medium rounded-xl py-3 text-sm cursor-pointer transition-colors hover:bg-cream-dark/50 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
