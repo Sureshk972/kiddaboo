@@ -162,8 +162,8 @@ export default function HostDashboard() {
     ? {
         ...realPlaygroup,
         memberCount: realMembers.filter((m) => m.role !== "host").length,
-        trustScore: 0,
-        reviewCount: 0,
+        trustScore: Number(realPlaygroup.trust_score) || 0,
+        reviewCount: realPlaygroup.review_count || 0,
         location: realPlaygroup.location_name,
       }
     : {};

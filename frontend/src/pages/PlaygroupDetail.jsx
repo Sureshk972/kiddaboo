@@ -8,9 +8,11 @@ import ReviewCard from "../components/playgroup/ReviewCard";
 import MemberAvatars from "../components/playgroup/MemberAvatars";
 import JoinRequestSheet from "../components/playgroup/JoinRequestSheet";
 import Button from "../components/ui/Button";
+import ReviewFormSheet from "../components/playgroup/ReviewFormSheet";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 import useSessions from "../hooks/useSessions";
+import useReviews from "../hooks/useReviews";
 import { friendlyDate, formatSessionTime, formatDuration } from "../lib/dateUtils";
 
 const ACCESS_LABELS = {
@@ -73,12 +75,24 @@ export default function PlaygroupDetail() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [showJoinSheet, setShowJoinSheet] = useState(false);
+  const [showReviewSheet, setShowReviewSheet] = useState(false);
+  const [selectedSession, setSelectedSession] = useState(null);
+  const [editingReview, setEditingReview] = useState(null);
   const [realGroup, setRealGroup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [joinStatus, setJoinStatus] = useState(null); // null | "pending" | "member" | "creator"
 
   // Fetch upcoming sessions for this playgroup
   const { sessions, nextSession } = useSessions(id);
+
+  // Fetch reviews
+  const {
+    reviews,
+    ratings,
+    reviewableSessions,
+    submitReview,
+    updateReview,
+  } = useReviews(id);
 
   // Try fetching from Supabase first
   useEffect(() => {
@@ -383,13 +397,69 @@ export default function PlaygroupDetail() {
           <h3 className="font-heading font-bold text-charcoal mb-4">
             Ratings & Reviews
           </h3>
-          <RatingBreakdown ratings={group.ratings} />
+          <RatingBreakdown ratings={ratings} />
 
-          <div className="flex flex-col gap-3 mt-5">
-            {group.reviews.map((review) => (
-              <ReviewCard key={review.id} review={review} />
-            ))}
-          </div>
+          {/* Write a Review CTA */}
+          {reviewableSessions.length > 0 && joinStatus === "member" && (
+            <div className="mt-4 mb-2">
+              <button
+                onClick={() => {
+                  setSelectedSession(reviewableSessions[0]);
+                  setEditingReview(null);
+                  setShowReviewSheet(true);
+                }}
+                className="w-full bg-sage text-white font-medium text-sm rounded-2xl px-4 py-3 cursor-pointer border-none hover:bg-sage-dark transition-colors flex items-center justify-center gap-2"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Write a Review
+                {reviewableSessions.length > 1 && (
+                  <span className="text-white/70 text-xs">
+                    ({reviewableSessions.length} sessions)
+                  </span>
+                )}
+              </button>
+              {reviewableSessions.length > 1 && (
+                <div className="flex gap-2 mt-2 overflow-x-auto scrollbar-hide">
+                  {reviewableSessions.map((s) => (
+                    <button
+                      key={s.id}
+                      onClick={() => {
+                        setSelectedSession(s);
+                        setEditingReview(null);
+                        setShowReviewSheet(true);
+                      }}
+                      className="text-[11px] text-sage-dark bg-sage-light/50 px-3 py-1.5 rounded-full whitespace-nowrap cursor-pointer border-none flex-shrink-0"
+                    >
+                      {friendlyDate(s.scheduled_at)}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {reviews.length > 0 ? (
+            <div className="flex flex-col gap-3 mt-4">
+              {reviews.map((review) => (
+                <ReviewCard
+                  key={review.id}
+                  review={review}
+                  isOwn={user && review.reviewer_id === user.id}
+                  onEdit={(r) => {
+                    setEditingReview(r);
+                    setSelectedSession({ id: r.session_id, scheduled_at: r.created_at });
+                    setShowReviewSheet(true);
+                  }}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-taupe mt-4 text-center">
+              No reviews yet. Be the first to share your experience!
+            </p>
+          )}
         </div>
 
         {/* Divider */}
@@ -446,6 +516,24 @@ export default function PlaygroupDetail() {
         screeningQuestions={group.screeningQuestions}
         playgroupName={group.name}
         onSubmit={group.isReal ? handleJoinSubmit : (data) => console.log("Join request:", data)}
+      />
+
+      {/* Review form bottom sheet */}
+      <ReviewFormSheet
+        isOpen={showReviewSheet}
+        onClose={() => {
+          setShowReviewSheet(false);
+          setSelectedSession(null);
+          setEditingReview(null);
+        }}
+        session={selectedSession}
+        existingReview={editingReview}
+        onSubmit={async (reviewData) => {
+          if (editingReview) {
+            return updateReview(editingReview.id, reviewData);
+          }
+          return submitReview(reviewData);
+        }}
       />
     </div>
   );
