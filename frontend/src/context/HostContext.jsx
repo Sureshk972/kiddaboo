@@ -35,7 +35,10 @@ const initialState = {
 
 export function HostProvider({ children }) {
   const [data, setData] = useState(initialState);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingPlaygroupId, setEditingPlaygroupId] = useState(null);
   const photoFilesRef = useRef([]); // Store actual File objects for upload
+  const existingPhotoUrls = useRef([]); // Track original remote URLs in edit mode
 
   const updateField = (key, value) => {
     setData((prev) => ({ ...prev, [key]: value }));
@@ -140,16 +143,85 @@ export function HostProvider({ children }) {
     return { data: playgroup, error: null };
   };
 
+  // Load existing playgroup data for editing
+  const loadPlaygroup = (pg) => {
+    const questions = pg.screening_questions || [];
+    setData({
+      name: pg.name || "",
+      description: pg.description || "",
+      vibeTags: pg.vibe_tags || [],
+      accessType: pg.access_type || "request",
+      ageRange: pg.age_range || "",
+      maxFamilies: pg.max_families || 6,
+      frequency: pg.frequency || "",
+      location: pg.location_name || "",
+      screeningQuestions: questions.length > 0 ? questions : [""],
+      environment: pg.environment || initialState.environment,
+      photos: pg.photos || [],
+    });
+    existingPhotoUrls.current = [...(pg.photos || [])];
+    photoFilesRef.current = [];
+    setIsEditing(true);
+    setEditingPlaygroupId(pg.id);
+  };
+
+  // Update existing playgroup in Supabase
+  const updatePlaygroup = async (userId) => {
+    const questions = data.screeningQuestions.filter((q) => q.trim() !== "");
+
+    // Handle photos: keep existing remote URLs + upload new blob URLs
+    const keptUrls = data.photos.filter((url) => !url.startsWith("blob:"));
+    const newFiles = photoFilesRef.current;
+
+    let newPhotoUrls = [];
+    if (newFiles.length > 0) {
+      for (const file of newFiles) {
+        const { url, error: uploadErr } = await uploadPhoto(file, "playgroups", userId);
+        if (url) newPhotoUrls.push(url);
+        if (uploadErr) console.warn("Photo upload failed:", uploadErr);
+      }
+    }
+
+    const allPhotos = [...keptUrls, ...newPhotoUrls];
+
+    const { data: updated, error } = await supabase
+      .from("playgroups")
+      .update({
+        name: data.name.trim(),
+        description: data.description.trim(),
+        location_name: data.location.trim(),
+        age_range: data.ageRange,
+        frequency: data.frequency,
+        vibe_tags: data.vibeTags,
+        max_families: data.maxFamilies,
+        access_type: data.accessType,
+        screening_questions: questions,
+        environment: data.environment,
+        photos: allPhotos,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", editingPlaygroupId)
+      .select()
+      .single();
+
+    return { data: updated, error };
+  };
+
   // Reset form after successful save
   const resetHost = () => {
     setData(initialState);
     photoFilesRef.current = [];
+    existingPhotoUrls.current = [];
+    setIsEditing(false);
+    setEditingPlaygroupId(null);
   };
 
   return (
     <HostContext.Provider
       value={{
         data,
+        isEditing,
+        editingPlaygroupId,
         updateField,
         updateEnvironment,
         addScreeningQuestion,
@@ -158,6 +230,8 @@ export function HostProvider({ children }) {
         addPhoto,
         removePhoto,
         savePlaygroup,
+        updatePlaygroup,
+        loadPlaygroup,
         resetHost,
       }}
     >

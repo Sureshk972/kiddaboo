@@ -20,6 +20,7 @@ import EnvironmentSetup from "./pages/host/EnvironmentSetup";
 import HostPhotos from "./pages/host/HostPhotos";
 import HostSuccess from "./pages/host/HostSuccess";
 import HostDashboard from "./pages/host/HostDashboard";
+import EditPlaygroup from "./pages/host/EditPlaygroup";
 import Admin from "./pages/Admin";
 import GroupChat from "./pages/GroupChat";
 import ResetPassword from "./pages/ResetPassword";
@@ -50,6 +51,7 @@ export default function App() {
             <Route path="/playgroup/:id" element={<PlaygroupDetail />} />
             <Route path="/messages/:playgroupId" element={<GroupChat />} />
             <Route path="/edit-profile" element={<EditProfile />} />
+            <Route path="/host/edit/:id" element={<EditPlaygroup />} />
 
             {/* App pages — with tab bar */}
             <Route path="/browse" element={<AppLayout><Browse /></AppLayout>} />

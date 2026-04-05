@@ -488,7 +488,7 @@ export default function HostDashboard() {
                   </svg>
                 ),
                 label: "Edit Group",
-                onClick: () => navigate("/host/create"),
+                onClick: () => realPlaygroup && navigate(`/host/edit/${realPlaygroup.id}`),
               },
               {
                 icon: (
