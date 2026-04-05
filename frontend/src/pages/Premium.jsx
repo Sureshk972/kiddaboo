@@ -1,6 +1,8 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSubscription } from "../hooks/useSubscription";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "../context/AuthContext";
 
 const PLANS = [
   {
@@ -35,18 +37,48 @@ const FEATURES = [
 
 export default function Premium() {
   const navigate = useNavigate();
-  const { isPremium, subscription, loading } = useSubscription();
+  const [searchParams] = useSearchParams();
+  const { user } = useAuth();
+  const { isPremium, subscription, loading, refresh } = useSubscription();
   const [selectedPlan, setSelectedPlan] = useState("annual");
   const [processing, setProcessing] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  // Handle return from Stripe Checkout
+  useEffect(() => {
+    if (searchParams.get("success") === "true") {
+      setSuccessMessage("Payment successful! Your premium access is now active.");
+      refresh();
+    }
+  }, [searchParams]);
 
   const handleSubscribe = async () => {
+    if (!user) {
+      navigate("/verify");
+      return;
+    }
+
     setProcessing(true);
-    // TODO: Integrate Stripe Checkout here
-    // For now, show coming soon message
-    setTimeout(() => {
-      alert("Payment integration coming soon! You'll be able to subscribe via Stripe.");
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { plan: selectedPlan },
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
+    } catch (err) {
+      console.error("Checkout error:", err);
+      alert("Failed to start checkout. Please try again.");
       setProcessing(false);
-    }, 500);
+    }
   };
 
   if (loading) {
@@ -78,6 +110,13 @@ export default function Premium() {
       </div>
 
       <div className="max-w-md mx-auto px-6 py-6">
+        {/* Success message */}
+        {successMessage && (
+          <div className="bg-sage-light border border-sage rounded-xl p-4 mb-6 text-center">
+            <p className="text-sm text-sage-dark font-medium">{successMessage}</p>
+          </div>
+        )}
+
         {/* Already premium */}
         {isPremium ? (
           <div className="space-y-6">
