@@ -30,10 +30,17 @@ export function OnboardingProvider({ children }) {
   };
 
   const removeChild = (id) => {
-    setData((prev) => ({
-      ...prev,
-      children: prev.children.filter((c) => c.id !== id),
-    }));
+    setData((prev) => {
+      const filtered = prev.children.filter((c) => c.id !== id);
+      // Always keep at least one child form
+      if (filtered.length === 0) {
+        return {
+          ...prev,
+          children: [{ id: crypto.randomUUID(), name: "", ageRange: "", personalityTags: [] }],
+        };
+      }
+      return { ...prev, children: filtered };
+    });
   };
 
   const updateChild = (id, key, value) => {
