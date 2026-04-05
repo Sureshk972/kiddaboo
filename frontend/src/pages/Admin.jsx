@@ -328,7 +328,7 @@ export default function Admin() {
   // Redirect non-admins
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) {
-      const timer = setTimeout(() => navigate("/browse"), 15000);
+      const timer = setTimeout(() => navigate("/browse"), 2000);
       return () => clearTimeout(timer);
     }
   }, [user, authLoading, isAdmin]);
@@ -342,11 +342,8 @@ export default function Admin() {
           <h1 className="font-heading text-2xl text-charcoal font-semibold mb-2">
             Access Denied
           </h1>
-          <p className="text-taupe text-sm mb-2">
+          <p className="text-taupe text-sm mb-4">
             You do not have permission to view this page. Redirecting...
-          </p>
-          <p className="text-[10px] text-taupe/50 mb-4 break-all">
-            ID: {user?.id || "none"} | Email: {user?.email || "none"}
           </p>
           <button
             onClick={() => navigate("/browse")}
