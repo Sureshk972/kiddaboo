@@ -60,23 +60,21 @@ export default function Premium() {
 
     setProcessing(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: { plan: selectedPlan },
-        headers: {
-          Authorization: `Bearer ${session?.access_token}`,
-        },
       });
 
       if (error) throw error;
       if (data?.url) {
         window.location.href = data.url;
+      } else if (data?.error) {
+        throw new Error(data.error);
       } else {
         throw new Error("No checkout URL returned");
       }
     } catch (err) {
       console.error("Checkout error:", err);
-      alert("Failed to start checkout. Please try again.");
+      alert("Failed to start checkout: " + (err.message || "Please try again."));
       setProcessing(false);
     }
   };
