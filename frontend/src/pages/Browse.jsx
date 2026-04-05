@@ -1,19 +1,18 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { haversineDistance } from "../lib/distance";
+import { useUserLocation } from "../hooks/useUserLocation";
 import FilterSheet from "../components/browse/FilterSheet";
+import PlaygroupCard from "../components/browse/PlaygroupCard";
+import MapView from "../components/browse/MapView";
 
 const SORT_OPTIONS = [
   { value: "rating", label: "Top Rated" },
   { value: "reviews", label: "Most Reviewed" },
   { value: "spots", label: "Spots Open" },
+  { value: "distance", label: "Nearest" },
 ];
-
-const ACCESS_ICONS = {
-  open: "Open",
-  request: "Request",
-  invite: "Invite Only",
-};
 
 // Color palette for playgroup cards without photos
 const CARD_COLORS = [
@@ -29,7 +28,6 @@ function transformPlaygroup(pg, index) {
   const hostInitials =
     (hostFirst[0] || "H").toUpperCase() + (hostLast[0] || "").toUpperCase();
 
-  // Count members (creator excluded) from the memberships join
   const memberCount = pg.memberships
     ? pg.memberships.filter((m) => m.role === "member").length
     : 0;
@@ -52,13 +50,17 @@ function transformPlaygroup(pg, index) {
     verified: host?.is_verified || false,
     photoColor: CARD_COLORS[index % CARD_COLORS.length],
     photos: pg.photos || [],
+    latitude: pg.latitude || null,
+    longitude: pg.longitude || null,
   };
 }
 
 export default function Browse() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [sortBy, setSortBy] = useState("rating");
+  const [viewMode, setViewMode] = useState("list");
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     vibeTags: [],
@@ -66,6 +68,14 @@ export default function Browse() {
     setting: [],
     accessType: [],
   });
+
+  const { userLocation, loading: locationLoading, error: locationError, requestLocation } = useUserLocation();
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   // Real playgroups from Supabase
   const [realPlaygroups, setRealPlaygroups] = useState([]);
@@ -91,10 +101,7 @@ export default function Browse() {
     fetchPlaygroups();
   }, []);
 
-  // Use only real playgroups
-  const allPlaygroups = useMemo(() => {
-    return realPlaygroups;
-  }, [realPlaygroups]);
+  const allPlaygroups = useMemo(() => realPlaygroups, [realPlaygroups]);
 
   // Count active filters
   const activeFilterCount = Object.values(filters).reduce(
@@ -107,8 +114,8 @@ export default function Browse() {
     let list = [...allPlaygroups];
 
     // Search
-    if (search.trim()) {
-      const q = search.toLowerCase();
+    if (debouncedSearch.trim()) {
+      const q = debouncedSearch.toLowerCase();
       list = list.filter(
         (g) =>
           g.name.toLowerCase().includes(q) ||
@@ -139,8 +146,26 @@ export default function Browse() {
       list = list.filter((g) => filters.accessType.includes(g.accessType));
     }
 
+    // Compute distance if user location is available
+    if (userLocation) {
+      list = list.map((g) => ({
+        ...g,
+        distance:
+          g.latitude && g.longitude
+            ? haversineDistance(userLocation.lat, userLocation.lng, g.latitude, g.longitude)
+            : null,
+      }));
+    }
+
     // Sort
-    if (sortBy === "rating") {
+    if (sortBy === "distance" && userLocation) {
+      list.sort((a, b) => {
+        if (a.distance == null && b.distance == null) return 0;
+        if (a.distance == null) return 1;
+        if (b.distance == null) return -1;
+        return a.distance - b.distance;
+      });
+    } else if (sortBy === "rating") {
       list.sort((a, b) => b.rating - a.rating);
     } else if (sortBy === "reviews") {
       list.sort((a, b) => b.reviewCount - a.reviewCount);
@@ -152,18 +177,58 @@ export default function Browse() {
     }
 
     return list;
-  }, [search, filters, sortBy, allPlaygroups]);
+  }, [debouncedSearch, filters, sortBy, allPlaygroups, userLocation]);
+
+  // When user taps "Nearest", request location and switch sort
+  const handleNearestSort = () => {
+    if (!userLocation && !locationLoading) {
+      requestLocation();
+    }
+    setSortBy("distance");
+  };
 
   return (
     <div className="bg-cream">
       {/* Sticky header */}
       <div className="sticky top-0 z-20 bg-cream/95 backdrop-blur-sm border-b border-cream-dark">
         <div className="max-w-md mx-auto px-5 pt-4 pb-3">
-          {/* Title row */}
-          <div className="mb-3">
+          {/* Title row with view toggle */}
+          <div className="mb-3 flex items-center justify-between">
             <h1 className="text-xl font-heading font-bold text-charcoal">
               Discover
             </h1>
+
+            {/* List / Map toggle */}
+            <div className="flex items-center bg-white border border-cream-dark rounded-xl overflow-hidden">
+              <button
+                onClick={() => setViewMode("list")}
+                className={`p-2 border-none cursor-pointer transition-colors ${
+                  viewMode === "list"
+                    ? "bg-sage-light text-sage-dark"
+                    : "bg-transparent text-taupe hover:text-sage-dark"
+                }`}
+                aria-label="List view"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M8 6H21M8 12H21M8 18H21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  <path d="M3 6H3.01M3 12H3.01M3 18H3.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setViewMode("map")}
+                className={`p-2 border-none cursor-pointer transition-colors ${
+                  viewMode === "map"
+                    ? "bg-sage-light text-sage-dark"
+                    : "bg-transparent text-taupe hover:text-sage-dark"
+                }`}
+                aria-label="Map view"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="12" cy="10" r="3" stroke="currentColor" strokeWidth="1.5"/>
+                </svg>
+              </button>
+            </div>
           </div>
 
           {/* Search bar */}
@@ -233,10 +298,12 @@ export default function Browse() {
               {SORT_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
-                  onClick={() => setSortBy(opt.value)}
+                  onClick={() =>
+                    opt.value === "distance" ? handleNearestSort() : setSortBy(opt.value)
+                  }
                   className={`
                     px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap
-                    transition-all duration-150 cursor-pointer border
+                    transition-all duration-150 cursor-pointer border flex items-center gap-1.5
                     ${
                       sortBy === opt.value
                         ? "bg-sage-light text-sage-dark border-sage"
@@ -244,11 +311,25 @@ export default function Browse() {
                     }
                   `}
                 >
+                  {opt.value === "distance" && (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <circle cx="12" cy="10" r="3" stroke="currentColor" strokeWidth="1.5"/>
+                    </svg>
+                  )}
                   {opt.label}
+                  {opt.value === "distance" && locationLoading && (
+                    <div className="w-3 h-3 border border-sage border-t-transparent rounded-full animate-spin" />
+                  )}
                 </button>
               ))}
             </div>
           </div>
+
+          {/* Location error */}
+          {locationError && sortBy === "distance" && (
+            <p className="text-xs text-terracotta mt-2">{locationError}</p>
+          )}
         </div>
       </div>
 
@@ -261,138 +342,34 @@ export default function Browse() {
           </div>
         )}
 
-        {/* Result count */}
-        {!loadingReal && (
+        {/* Result count (list view only) */}
+        {!loadingReal && viewMode === "list" && (
           <p className="text-xs text-taupe mb-3">
             {results.length} playgroup{results.length !== 1 ? "s" : ""} found
           </p>
         )}
 
-        {/* Playgroup cards */}
-        {!loadingReal && results.length > 0 ? (
+        {/* Map view */}
+        {!loadingReal && viewMode === "map" && (
+          <MapView
+            playgroups={results}
+            onSelectPlaygroup={(id) => navigate(`/playgroup/${id}`)}
+            userLocation={userLocation}
+          />
+        )}
+
+        {/* List view — Playgroup cards */}
+        {!loadingReal && viewMode === "list" && results.length > 0 ? (
           <div className="flex flex-col gap-3">
             {results.map((group) => (
-              <div
+              <PlaygroupCard
                 key={group.id}
+                group={group}
                 onClick={() => navigate(`/playgroup/${group.id}`)}
-                className="bg-white rounded-2xl border border-cream-dark overflow-hidden hover:border-sage-light transition-all duration-150 cursor-pointer hover:shadow-sm"
-              >
-                {/* Photo strip */}
-                <div
-                  className="h-28 flex items-end p-3 relative overflow-hidden"
-                  style={{ backgroundColor: group.photoColor + "40" }}
-                >
-                  {group.photos?.length > 0 && (
-                    <img
-                      src={group.photos[0]}
-                      alt={group.name}
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                  )}
-                  <div className="flex items-center gap-1.5 relative z-10">
-                    {group.tags.slice(0, 3).map((tag) => (
-                      <span
-                        key={tag}
-                        className="text-[10px] bg-white/80 backdrop-blur-sm text-sage-dark px-2 py-0.5 rounded-full font-medium"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Card body */}
-                <div className="p-4">
-                  {/* Title row */}
-                  <div className="flex items-start justify-between gap-2 mb-1.5">
-                    <h3 className="font-heading font-bold text-charcoal text-base leading-tight">
-                      {group.name}
-                    </h3>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="#7A8F6D">
-                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-                      </svg>
-                      <span className="text-sm font-medium text-charcoal">
-                        {group.rating}
-                      </span>
-                      <span className="text-xs text-taupe">
-                        ({group.reviewCount})
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Location */}
-                  <p className="text-xs text-taupe mb-3 flex items-center gap-1">
-                    <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                      <path
-                        d="M7 1.5C4.5 1.5 2.5 3.5 2.5 6C2.5 9.5 7 12.5 7 12.5C7 12.5 11.5 9.5 11.5 6C11.5 3.5 9.5 1.5 7 1.5Z"
-                        stroke="currentColor"
-                        strokeWidth="1"
-                      />
-                      <circle cx="7" cy="6" r="1.5" stroke="currentColor" strokeWidth="1" />
-                    </svg>
-                    {group.location}
-                  </p>
-
-                  {/* Info row */}
-                  <div className="flex items-center justify-between">
-                    {/* Host info */}
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-sage-light flex items-center justify-center">
-                        <span className="text-[9px] font-bold text-sage-dark">
-                          {group.hostInitials}
-                        </span>
-                      </div>
-                      <span className="text-xs text-taupe-dark">
-                        {group.hostName}
-                      </span>
-                      {group.verified && (
-                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                          <circle cx="8" cy="8" r="7" fill="#A3B18A" />
-                          <path d="M5 8L7 10L11 6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      )}
-                    </div>
-
-                    {/* Meta */}
-                    <div className="flex items-center gap-2 text-[11px] text-taupe">
-                      <span>Ages {group.ageRange}</span>
-                      <span className="w-0.5 h-0.5 rounded-full bg-taupe/40" />
-                      <span>
-                        {group.maxFamilies - group.familyCount > 0
-                          ? `${group.maxFamilies - group.familyCount} spots`
-                          : "Full"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Next session */}
-                  <div className="mt-3 pt-3 border-t border-cream-dark flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-xs text-taupe">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                        <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="1.5" />
-                        <path d="M3 10H21" stroke="currentColor" strokeWidth="1.5" />
-                        <path d="M8 2V6M16 2V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                      </svg>
-                      Next: {group.nextSession}
-                    </div>
-                    <span
-                      className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                        group.accessType === "open"
-                          ? "bg-sage-light/50 text-sage-dark"
-                          : group.accessType === "request"
-                          ? "bg-terracotta-light/50 text-taupe-dark"
-                          : "bg-cream-dark text-taupe"
-                      }`}
-                    >
-                      {ACCESS_ICONS[group.accessType]}
-                    </span>
-                  </div>
-                </div>
-              </div>
+              />
             ))}
           </div>
-        ) : !loadingReal ? (
+        ) : !loadingReal && viewMode === "list" ? (
           /* Empty state */
           <div className="text-center py-16">
             <div className="w-16 h-16 bg-cream-dark rounded-full flex items-center justify-center mx-auto mb-4">

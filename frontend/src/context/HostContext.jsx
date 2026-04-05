@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { uploadPhoto } from "../lib/storage";
+import { geocodeAddress } from "../lib/geocode";
 
 const HostContext = createContext(null);
 
@@ -107,6 +108,9 @@ export function HostProvider({ children }) {
       }
     }
 
+    // Geocode the location to get lat/lng
+    const geo = await geocodeAddress(data.location);
+
     // Insert playgroup row
     const { data: playgroup, error } = await supabase
       .from("playgroups")
@@ -115,6 +119,8 @@ export function HostProvider({ children }) {
         name: data.name.trim(),
         description: data.description.trim(),
         location_name: data.location.trim(),
+        latitude: geo?.lat || null,
+        longitude: geo?.lng || null,
         age_range: data.ageRange,
         frequency: data.frequency,
         vibe_tags: data.vibeTags,
@@ -184,12 +190,17 @@ export function HostProvider({ children }) {
 
     const allPhotos = [...keptUrls, ...newPhotoUrls];
 
+    // Geocode the location to get lat/lng
+    const geo = await geocodeAddress(data.location);
+
     const { data: updated, error } = await supabase
       .from("playgroups")
       .update({
         name: data.name.trim(),
         description: data.description.trim(),
         location_name: data.location.trim(),
+        latitude: geo?.lat || null,
+        longitude: geo?.lng || null,
         age_range: data.ageRange,
         frequency: data.frequency,
         vibe_tags: data.vibeTags,
