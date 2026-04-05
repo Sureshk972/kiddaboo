@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "../ui/Button";
 import StarRating from "../ui/StarRating";
 import { friendlyDate } from "../../lib/dateUtils";
@@ -10,14 +10,33 @@ export default function ReviewFormSheet({
   existingReview,
   onSubmit,
 }) {
-  const [environment, setEnvironment] = useState(existingReview?.rating_environment || 0);
-  const [organization, setOrganization] = useState(existingReview?.rating_organization || 0);
-  const [compatibility, setCompatibility] = useState(existingReview?.rating_compatibility || 0);
-  const [reliability, setReliability] = useState(existingReview?.rating_reliability || 0);
-  const [comment, setComment] = useState(existingReview?.comment || "");
+  const [environment, setEnvironment] = useState(0);
+  const [organization, setOrganization] = useState(0);
+  const [compatibility, setCompatibility] = useState(0);
+  const [reliability, setReliability] = useState(0);
+  const [comment, setComment] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+
+  // Sync state when existingReview changes (edit mode)
+  useEffect(() => {
+    if (existingReview) {
+      setEnvironment(existingReview.rating_environment || 0);
+      setOrganization(existingReview.rating_organization || 0);
+      setCompatibility(existingReview.rating_compatibility || 0);
+      setReliability(existingReview.rating_reliability || 0);
+      setComment(existingReview.comment || "");
+    } else {
+      setEnvironment(0);
+      setOrganization(0);
+      setCompatibility(0);
+      setReliability(0);
+      setComment("");
+    }
+    setSubmitted(false);
+    setError(null);
+  }, [existingReview, isOpen]);
 
   const canSubmit = environment > 0 && organization > 0 && compatibility > 0 && reliability > 0;
 
