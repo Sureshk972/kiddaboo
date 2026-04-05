@@ -60,15 +60,26 @@ export default function Premium() {
 
     setProcessing(true);
     try {
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { plan: selectedPlan },
-      });
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not logged in");
 
-      if (error) throw error;
-      if (data?.url) {
-        window.location.href = data.url;
-      } else if (data?.error) {
-        throw new Error(data.error);
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({ plan: selectedPlan }),
+        }
+      );
+
+      const result = await resp.json();
+      if (!resp.ok) throw new Error(result.error || `Server error ${resp.status}`);
+      if (result.url) {
+        window.location.href = result.url;
       } else {
         throw new Error("No checkout URL returned");
       }

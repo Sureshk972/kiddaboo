@@ -138,7 +138,7 @@ serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
-    console.error("Checkout error:", err);
+    console.error("Checkout error:", err.message, err.stack || err);
     return new Response(
       JSON.stringify({ error: err.message || "Failed to create checkout session" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
