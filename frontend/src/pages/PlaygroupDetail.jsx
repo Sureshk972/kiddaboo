@@ -13,6 +13,7 @@ import ReviewFormSheet from "../components/playgroup/ReviewFormSheet";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 import useSessions from "../hooks/useSessions";
+import { useSubscription } from "../hooks/useSubscription";
 import useReviews from "../hooks/useReviews";
 import useBlocks from "../hooks/useBlocks";
 import ReportSheet from "../components/ui/ReportSheet";
@@ -85,8 +86,10 @@ export default function PlaygroupDetail() {
   const [loading, setLoading] = useState(true);
   const [joinStatus, setJoinStatus] = useState(null);
   const [reportTarget, setReportTarget] = useState(null);
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
 
   const { blockUser, submitReport } = useBlocks(user?.id);
+  const { canSendJoinRequest, joinRequestsRemaining, joinRequestLimit, isPremium, incrementUsage } = useSubscription();
 
   // Fetch upcoming sessions for this playgroup
   const { sessions, nextSession } = useSessions(id);
@@ -163,8 +166,15 @@ export default function PlaygroupDetail() {
       return;
     }
 
+    // Check join request limit for free users
+    if (!canSendJoinRequest) {
+      setShowUpgradePrompt(true);
+      return;
+    }
+
     if (group.accessType === "open") {
       // Directly join open groups
+      await incrementUsage();
       const { error } = await supabase.from("memberships").insert({
         user_id: user.id,
         playgroup_id: id,
@@ -183,6 +193,7 @@ export default function PlaygroupDetail() {
   const handleJoinSubmit = async ({ intro, answers }) => {
     if (!user) return;
 
+    await incrementUsage();
     const { error } = await supabase.from("memberships").insert({
       user_id: user.id,
       playgroup_id: id,
@@ -488,11 +499,18 @@ export default function PlaygroupDetail() {
               </Button>
             </div>
           ) : (
-            <Button fullWidth onClick={handleJoinClick}>
-              {group.accessType === "open"
-                ? "Join Group"
-                : "Request to Join"}
-            </Button>
+            <>
+              <Button fullWidth onClick={handleJoinClick}>
+                {group.accessType === "open"
+                  ? "Join Group"
+                  : "Request to Join"}
+              </Button>
+              {!isPremium && user && (
+                <p className="text-[11px] text-taupe/60 text-center mt-2">
+                  {joinRequestsRemaining} of {joinRequestLimit} free requests remaining
+                </p>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -523,6 +541,46 @@ export default function PlaygroupDetail() {
           await blockUser(reportTarget.userId);
         }}
       />
+
+      {/* Upgrade prompt */}
+      {showUpgradePrompt && (
+        <>
+          <div
+            className="fixed inset-0 bg-charcoal/40 z-40"
+            onClick={() => setShowUpgradePrompt(false)}
+          />
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
+            <div className="bg-cream rounded-2xl p-6 max-w-sm w-full shadow-xl text-center">
+              <div className="w-14 h-14 bg-sage-light rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7A8F6D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+              </div>
+              <h3 className="font-heading font-bold text-charcoal text-lg mb-2">
+                You've used all {joinRequestLimit} free requests
+              </h3>
+              <p className="text-sm text-taupe leading-relaxed mb-5">
+                Upgrade to Premium for unlimited join requests, advanced filters, and priority placement.
+              </p>
+              <button
+                onClick={() => {
+                  setShowUpgradePrompt(false);
+                  navigate("/premium");
+                }}
+                className="w-full bg-sage hover:bg-sage-dark text-white font-heading font-bold text-sm py-3 rounded-xl transition-colors cursor-pointer border-none mb-2"
+              >
+                View Premium — $7.99/mo
+              </button>
+              <button
+                onClick={() => setShowUpgradePrompt(false)}
+                className="text-xs text-taupe hover:text-charcoal transition-colors cursor-pointer bg-transparent border-none"
+              >
+                Maybe later
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Review form bottom sheet */}
       <ReviewFormSheet

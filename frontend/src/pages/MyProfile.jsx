@@ -2,10 +2,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
+import { useSubscription } from "../hooks/useSubscription";
 
 export default function MyProfile() {
   const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
+  const { isPremium, subscription } = useSubscription();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -78,6 +80,7 @@ export default function MyProfile() {
         {/* Settings list */}
         <div className="bg-white rounded-2xl border border-cream-dark overflow-hidden">
           {[
+            { icon: "\u2b50", label: isPremium ? "Premium Member" : "Upgrade to Premium", path: "/premium", highlight: true },
             { icon: "\ud83d\udc64", label: "Edit Profile", path: "/edit-profile" },
             { icon: "\ud83d\udc76", label: "Manage Children", path: "/edit-profile" },
             { icon: "\ud83d\udd14", label: "Notifications", path: "/notifications" },
@@ -93,7 +96,7 @@ export default function MyProfile() {
               } ${item.comingSoon ? "opacity-50 cursor-default" : "cursor-pointer hover:bg-cream-dark/50"}`}
             >
               <span className="text-base">{item.icon}</span>
-              <span className="text-sm text-charcoal font-medium flex-1">
+              <span className={`text-sm font-medium flex-1 ${item.highlight ? "text-sage-dark" : "text-charcoal"}`}>
                 {item.label}
               </span>
               {item.comingSoon ? (

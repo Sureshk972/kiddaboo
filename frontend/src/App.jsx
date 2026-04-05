@@ -27,6 +27,7 @@ import GroupChat from "./pages/GroupChat";
 import ResetPassword from "./pages/ResetPassword";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Premium from "./pages/Premium";
 
 export default function App() {
   return (
@@ -56,6 +57,7 @@ export default function App() {
             <Route path="/edit-profile" element={<EditProfile />} />
             <Route path="/notifications" element={<NotificationSettings />} />
             <Route path="/host/edit/:id" element={<EditPlaygroup />} />
+            <Route path="/premium" element={<Premium />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
 
