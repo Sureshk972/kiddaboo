@@ -1,4 +1,4 @@
-export default function ReviewCard({ review, isOwn, onEdit }) {
+export default function ReviewCard({ review, isOwn, onEdit, onReport }) {
   if (!review) return null;
 
   // Support both old shape (mock) and new shape (real)
@@ -62,6 +62,14 @@ export default function ReviewCard({ review, isOwn, onEdit }) {
           className="mt-2 text-xs text-sage font-medium bg-transparent border-none cursor-pointer underline underline-offset-2"
         >
           Edit your review
+        </button>
+      )}
+      {!isOwn && onReport && (
+        <button
+          onClick={() => onReport(review.reviewer_id, name)}
+          className="mt-2 text-xs text-taupe/50 hover:text-taupe font-medium bg-transparent border-none cursor-pointer underline underline-offset-2"
+        >
+          Report
         </button>
       )}
     </div>

@@ -3,9 +3,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 import useGroupMessages from "../hooks/useGroupMessages";
+import useBlocks from "../hooks/useBlocks";
 import { markChatRead } from "../hooks/useNotifications";
 import MessageBubble from "../components/messages/MessageBubble";
 import ChatInput from "../components/messages/ChatInput";
+import ReportSheet from "../components/ui/ReportSheet";
 
 export default function GroupChat() {
   const { playgroupId } = useParams();
@@ -18,6 +20,9 @@ export default function GroupChat() {
 
   const { messages, loading, sending, hasMore, sendMessage, loadMore } =
     useGroupMessages(playgroupId, user?.id);
+  const { blockUser, submitReport, isBlocked } = useBlocks(user?.id);
+
+  const [reportTarget, setReportTarget] = useState(null); // { userId, userName }
 
   const scrollRef = useRef(null);
   const bottomRef = useRef(null);
@@ -238,12 +243,17 @@ export default function GroupChat() {
                   </span>
                 </div>
               )}
+              {!isBlocked(msg.sender_id) && (
               <MessageBubble
                 message={msg}
                 isOwn={isOwn}
                 showSender={showSender}
                 showAvatar={showAvatar}
+                onReport={(senderId, senderName) =>
+                  setReportTarget({ userId: senderId, userName: senderName })
+                }
               />
+              )}
             </div>
           );
         })}
@@ -253,6 +263,24 @@ export default function GroupChat() {
 
       {/* Input */}
       <ChatInput onSend={handleSend} disabled={sending} />
+
+      {/* Report/Block sheet */}
+      <ReportSheet
+        isOpen={!!reportTarget}
+        onClose={() => setReportTarget(null)}
+        userName={reportTarget?.userName || ""}
+        onReport={async ({ reportType, description }) => {
+          await submitReport({
+            reportedUserId: reportTarget.userId,
+            reportType,
+            context: "message",
+            description,
+          });
+        }}
+        onBlock={async () => {
+          await blockUser(reportTarget.userId);
+        }}
+      />
     </div>
   );
 }

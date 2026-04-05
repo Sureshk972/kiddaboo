@@ -11,6 +11,7 @@ export default function MessageBubble({
   isOwn,
   showSender,
   showAvatar,
+  onReport,
 }) {
   const senderName = message.profiles
     ? `${message.profiles.first_name || ""} ${message.profiles.last_name || ""}`.trim()
@@ -68,13 +69,28 @@ export default function MessageBubble({
           {message.content}
         </div>
 
-        <p
-          className={`text-[10px] text-taupe/50 mt-0.5 px-1 ${
-            isOwn ? "text-right" : "text-left"
+        <div
+          className={`flex items-center gap-2 mt-0.5 px-1 ${
+            isOwn ? "justify-end" : "justify-start"
           }`}
         >
-          {formatTime(message.created_at)}
-        </p>
+          <p className="text-[10px] text-taupe/50">
+            {formatTime(message.created_at)}
+          </p>
+          {!isOwn && onReport && (
+            <button
+              onClick={() => onReport(message.sender_id, senderName)}
+              className="text-[10px] text-taupe/30 hover:text-taupe bg-transparent border-none cursor-pointer p-0"
+              aria-label="Report message"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="1" fill="currentColor"/>
+                <circle cx="19" cy="12" r="1" fill="currentColor"/>
+                <circle cx="5" cy="12" r="1" fill="currentColor"/>
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

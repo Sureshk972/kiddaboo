@@ -14,6 +14,8 @@ import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 import useSessions from "../hooks/useSessions";
 import useReviews from "../hooks/useReviews";
+import useBlocks from "../hooks/useBlocks";
+import ReportSheet from "../components/ui/ReportSheet";
 import { friendlyDate, formatSessionTime, formatDuration } from "../lib/dateUtils";
 
 const ACCESS_LABELS = {
@@ -55,6 +57,7 @@ function transformRealPlaygroup(pg) {
     photos: (pg.photos || []).length > 0 ? pg.photos : [],
     environment: { ...(pg.environment || {}), maxGroupSize: pg.max_families || 8 },
     host: {
+      userId: pg.creator_id,
       name: `${hostFirst} ${hostLast}`.trim(),
       initials:
         (hostFirst[0] || "H").toUpperCase() + (hostLast[0] || "").toUpperCase(),
@@ -80,7 +83,10 @@ export default function PlaygroupDetail() {
   const [editingReview, setEditingReview] = useState(null);
   const [realGroup, setRealGroup] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [joinStatus, setJoinStatus] = useState(null); // null | "pending" | "member" | "creator"
+  const [joinStatus, setJoinStatus] = useState(null);
+  const [reportTarget, setReportTarget] = useState(null);
+
+  const { blockUser, submitReport } = useBlocks(user?.id);
 
   // Fetch upcoming sessions for this playgroup
   const { sessions, nextSession } = useSessions(id);
@@ -209,9 +215,27 @@ export default function PlaygroupDetail() {
             />
           </svg>
         </button>
-        <h2 className="font-heading font-bold text-charcoal text-sm truncate">
+        <h2 className="font-heading font-bold text-charcoal text-sm truncate flex-1">
           {group.name}
         </h2>
+        {user && joinStatus !== "creator" && (
+          <button
+            onClick={() =>
+              setReportTarget({
+                userId: group.host?.userId,
+                userName: group.host?.name || group.name,
+              })
+            }
+            className="w-8 h-8 rounded-full bg-white border border-cream-dark flex items-center justify-center cursor-pointer hover:border-sage-light transition-colors flex-shrink-0"
+            aria-label="Report"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="5" r="1.5" fill="#8B7E74"/>
+              <circle cx="12" cy="12" r="1.5" fill="#8B7E74"/>
+              <circle cx="12" cy="19" r="1.5" fill="#8B7E74"/>
+            </svg>
+          </button>
+        )}
       </div>
 
       <div className="max-w-md mx-auto w-full px-6">
@@ -408,6 +432,9 @@ export default function PlaygroupDetail() {
                   key={review.id}
                   review={review}
                   isOwn={user && review.reviewer_id === user.id}
+                  onReport={(reviewerId, reviewerName) =>
+                    setReportTarget({ userId: reviewerId, userName: reviewerName })
+                  }
                   onEdit={(r) => {
                     setEditingReview(r);
                     setSelectedSession({ id: r.session_id, scheduled_at: r.created_at });
@@ -477,6 +504,24 @@ export default function PlaygroupDetail() {
         screeningQuestions={group.screeningQuestions}
         playgroupName={group.name}
         onSubmit={handleJoinSubmit}
+      />
+
+      {/* Report/Block sheet */}
+      <ReportSheet
+        isOpen={!!reportTarget}
+        onClose={() => setReportTarget(null)}
+        userName={reportTarget?.userName || ""}
+        onReport={async ({ reportType, description }) => {
+          await submitReport({
+            reportedUserId: reportTarget.userId,
+            reportType,
+            context: "profile",
+            description,
+          });
+        }}
+        onBlock={async () => {
+          await blockUser(reportTarget.userId);
+        }}
       />
 
       {/* Review form bottom sheet */}
