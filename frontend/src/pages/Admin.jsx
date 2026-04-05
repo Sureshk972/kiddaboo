@@ -328,7 +328,7 @@ export default function Admin() {
   // Redirect non-admins
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) {
-      const timer = setTimeout(() => navigate("/browse"), 2000);
+      const timer = setTimeout(() => navigate("/browse"), 15000);
       return () => clearTimeout(timer);
     }
   }, [user, authLoading, isAdmin]);
