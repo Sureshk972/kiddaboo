@@ -342,8 +342,11 @@ export default function Admin() {
           <h1 className="font-heading text-2xl text-charcoal font-semibold mb-2">
             Access Denied
           </h1>
-          <p className="text-taupe text-sm mb-4">
+          <p className="text-taupe text-sm mb-2">
             You do not have permission to view this page. Redirecting...
+          </p>
+          <p className="text-[10px] text-taupe/50 mb-4 break-all">
+            ID: {user?.id || "none"} | Email: {user?.email || "none"}
           </p>
           <button
             onClick={() => navigate("/browse")}
