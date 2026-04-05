@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
 import RequestCard from "../../components/host/RequestCard";
+import ScheduleSessionSheet from "../../components/host/ScheduleSessionSheet";
+import useSessions from "../../hooks/useSessions";
+import { friendlyDate, formatSessionTime, formatDuration } from "../../lib/dateUtils";
 
 const ACTIVITY_ICONS = {
   review: "\u2b50",
@@ -126,6 +129,15 @@ export default function HostDashboard() {
 
   const [expandedRequest, setExpandedRequest] = useState(null);
   const [actionedIds, setActionedIds] = useState({});
+  const [showScheduleSheet, setShowScheduleSheet] = useState(false);
+
+  // Session scheduling
+  const {
+    sessions,
+    nextSession,
+    createSession,
+    deleteSession,
+  } = useSessions(realPlaygroup?.id);
 
   if (!realPlaygroup && !loading) {
     return (
@@ -233,28 +245,114 @@ export default function HostDashboard() {
         </div>
 
         {/* Next session card */}
-        <div className="bg-sage-light/30 rounded-2xl p-4 border border-sage-light">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-heading font-bold text-charcoal">
-              Next Session
+        {nextSession ? (
+          <div className="bg-sage-light/30 rounded-2xl p-4 border border-sage-light">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-heading font-bold text-charcoal">
+                Next Session
+              </h3>
+              <button
+                onClick={() => setShowScheduleSheet(true)}
+                className="text-[11px] text-sage-dark font-medium bg-transparent border-none cursor-pointer underline underline-offset-2"
+              >
+                + Add
+              </button>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-taupe-dark mb-1">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M3 10H21" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M8 2V6M16 2V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              {friendlyDate(nextSession.scheduled_at)} &middot; {formatSessionTime(nextSession.scheduled_at)}
+            </div>
+            <div className="flex items-center gap-2 text-sm text-taupe mb-1">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M12 7V12L15 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              {formatDuration(nextSession.duration_minutes)}
+            </div>
+            <div className="flex items-center gap-2 text-sm text-taupe">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M7 1.5C4.5 1.5 2.5 3.5 2.5 6C2.5 9.5 7 12.5 7 12.5C7 12.5 11.5 9.5 11.5 6C11.5 3.5 9.5 1.5 7 1.5Z" stroke="currentColor" strokeWidth="1" />
+                <circle cx="7" cy="6" r="1.5" stroke="currentColor" strokeWidth="1" />
+              </svg>
+              {nextSession.location_name || pg.location || "Location TBD"}
+            </div>
+            {nextSession.notes && (
+              <p className="text-xs text-taupe/70 mt-2 pl-[22px] italic">
+                {nextSession.notes}
+              </p>
+            )}
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowScheduleSheet(true)}
+            className="bg-sage-light/30 rounded-2xl p-4 border border-sage-light border-dashed cursor-pointer w-full text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-sage-light rounded-xl flex items-center justify-center flex-shrink-0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="4" width="18" height="18" rx="2" stroke="#7A8F6D" strokeWidth="1.5" />
+                  <path d="M3 10H21" stroke="#7A8F6D" strokeWidth="1.5" />
+                  <path d="M8 2V6M16 2V6" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" />
+                  <path d="M12 14V18M10 16H14" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-charcoal">Schedule your first session</p>
+                <p className="text-xs text-taupe">Tap to pick a date and time</p>
+              </div>
+            </div>
+          </button>
+        )
+
+        }
+
+        {/* Upcoming sessions list (if more than 1) */}
+        {sessions.length > 1 && (
+          <div>
+            <h3 className="text-base font-heading font-bold text-charcoal mb-3">
+              Upcoming Sessions
             </h3>
+            <div className="flex flex-col gap-2">
+              {sessions.slice(1, 4).map((session) => (
+                <div
+                  key={session.id}
+                  className="bg-white rounded-xl p-3 border border-cream-dark flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 bg-sage-light rounded-lg flex items-center justify-center flex-shrink-0">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <rect x="3" y="4" width="18" height="18" rx="2" stroke="#7A8F6D" strokeWidth="1.5" />
+                        <path d="M3 10H21" stroke="#7A8F6D" strokeWidth="1.5" />
+                        <path d="M8 2V6M16 2V6" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-charcoal">
+                        {friendlyDate(session.scheduled_at)}
+                      </p>
+                      <p className="text-xs text-taupe">
+                        {formatSessionTime(session.scheduled_at)} &middot; {formatDuration(session.duration_minutes)}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => deleteSession(session.id)}
+                    className="text-taupe/40 hover:text-terracotta transition-colors bg-transparent border-none cursor-pointer p-1"
+                    title="Cancel session"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="flex items-center gap-2 text-sm text-taupe-dark mb-1">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M3 10H21" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M8 2V6M16 2V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-            {pg.frequency || "Schedule your first session"}
-          </div>
-          <div className="flex items-center gap-2 text-sm text-taupe">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M7 1.5C4.5 1.5 2.5 3.5 2.5 6C2.5 9.5 7 12.5 7 12.5C7 12.5 11.5 9.5 11.5 6C11.5 3.5 9.5 1.5 7 1.5Z" stroke="currentColor" strokeWidth="1" />
-              <circle cx="7" cy="6" r="1.5" stroke="currentColor" strokeWidth="1" />
-            </svg>
-            {pg.location || "Location TBD"}
-          </div>
-        </div>
+        )}
 
         {/* Pending requests */}
         <div>
@@ -402,7 +500,7 @@ export default function HostDashboard() {
                   </svg>
                 ),
                 label: "Schedule Session",
-                onClick: () => {},
+                onClick: () => setShowScheduleSheet(true),
               },
               {
                 icon: (
@@ -423,7 +521,7 @@ export default function HostDashboard() {
                   </svg>
                 ),
                 label: "Message Group",
-                onClick: () => {},
+                onClick: () => realPlaygroup && navigate(`/messages/${realPlaygroup.id}`),
               },
             ].map((action, i) => (
               <button
@@ -441,6 +539,21 @@ export default function HostDashboard() {
         {/* Spacer */}
         <div className="h-4" />
       </div>
+
+      {/* Schedule session bottom sheet */}
+      <ScheduleSessionSheet
+        isOpen={showScheduleSheet}
+        onClose={() => setShowScheduleSheet(false)}
+        defaultLocation={realPlaygroup?.location_name || ""}
+        playgroupName={realPlaygroup?.name || ""}
+        onSchedule={async (sessionData) => {
+          const result = await createSession({
+            ...sessionData,
+            created_by: user.id,
+          });
+          return result;
+        }}
+      />
     </div>
   );
 }

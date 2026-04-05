@@ -10,6 +10,8 @@ import JoinRequestSheet from "../components/playgroup/JoinRequestSheet";
 import Button from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
+import useSessions from "../hooks/useSessions";
+import { friendlyDate, formatSessionTime, formatDuration } from "../lib/dateUtils";
 
 const ACCESS_LABELS = {
   open: { text: "Open", color: "bg-sage-light text-sage-dark" },
@@ -74,6 +76,9 @@ export default function PlaygroupDetail() {
   const [realGroup, setRealGroup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [joinStatus, setJoinStatus] = useState(null); // null | "pending" | "member" | "creator"
+
+  // Fetch upcoming sessions for this playgroup
+  const { sessions, nextSession } = useSessions(id);
 
   // Try fetching from Supabase first
   useEffect(() => {
@@ -275,49 +280,99 @@ export default function PlaygroupDetail() {
           <h3 className="font-heading font-bold text-charcoal mb-3">
             Schedule
           </h3>
-          <div className="bg-white rounded-2xl p-4 border border-cream-dark">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-sage-light rounded-xl flex items-center justify-center flex-shrink-0">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <rect
-                    x="3"
-                    y="4"
-                    width="14"
-                    height="13"
-                    rx="2"
-                    stroke="#7A8F6D"
-                    strokeWidth="1.5"
-                  />
-                  <path d="M3 8H17" stroke="#7A8F6D" strokeWidth="1.5" />
-                  <path
-                    d="M7 2V5M13 2V5"
-                    stroke="#7A8F6D"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
+
+          {nextSession ? (
+            <div className="flex flex-col gap-2">
+              {/* Next session - featured */}
+              <div className="bg-white rounded-2xl p-4 border border-cream-dark">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-sage-light rounded-xl flex items-center justify-center flex-shrink-0">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <rect x="3" y="4" width="14" height="13" rx="2" stroke="#7A8F6D" strokeWidth="1.5" />
+                      <path d="M3 8H17" stroke="#7A8F6D" strokeWidth="1.5" />
+                      <path d="M7 2V5M13 2V5" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-charcoal">
+                      {friendlyDate(nextSession.scheduled_at)} &middot; {formatSessionTime(nextSession.scheduled_at)}
+                    </p>
+                    <p className="text-xs text-taupe">
+                      {formatDuration(nextSession.duration_minutes)}
+                    </p>
+                    <p className="text-xs text-taupe">
+                      {nextSession.location_name || group.location}
+                    </p>
+                  </div>
+                </div>
+                {nextSession.notes && (
+                  <p className="text-xs text-taupe/70 mt-2 italic">
+                    {nextSession.notes}
+                  </p>
+                )}
+                <div className="mt-3 pt-3 border-t border-cream-dark">
+                  <p className="text-xs text-taupe">
+                    <span className="text-sage-dark font-medium">
+                      {group.frequency}
+                    </span>{" "}
+                    &middot; Ages {group.ageRange}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium text-charcoal">
-                  {group.nextSession.date}
-                </p>
+
+              {/* Additional upcoming sessions */}
+              {sessions.length > 1 && sessions.slice(1, 3).map((session) => (
+                <div
+                  key={session.id}
+                  className="bg-white rounded-xl p-3 border border-cream-dark flex items-center gap-3"
+                >
+                  <div className="w-9 h-9 bg-sage-light rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
+                      <rect x="3" y="4" width="14" height="13" rx="2" stroke="#7A8F6D" strokeWidth="1.5" />
+                      <path d="M3 8H17" stroke="#7A8F6D" strokeWidth="1.5" />
+                      <path d="M7 2V5M13 2V5" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-charcoal">
+                      {friendlyDate(session.scheduled_at)} &middot; {formatSessionTime(session.scheduled_at)}
+                    </p>
+                    <p className="text-xs text-taupe">
+                      {formatDuration(session.duration_minutes)} &middot; {session.location_name || group.location}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl p-4 border border-cream-dark">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-sage-light rounded-xl flex items-center justify-center flex-shrink-0">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <rect x="3" y="4" width="14" height="13" rx="2" stroke="#7A8F6D" strokeWidth="1.5" />
+                    <path d="M3 8H17" stroke="#7A8F6D" strokeWidth="1.5" />
+                    <path d="M7 2V5M13 2V5" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-charcoal">
+                    No sessions scheduled yet
+                  </p>
+                  <p className="text-xs text-taupe">
+                    Check back soon for upcoming playdates
+                  </p>
+                </div>
+              </div>
+              <div className="mt-3 pt-3 border-t border-cream-dark">
                 <p className="text-xs text-taupe">
-                  {group.nextSession.time}
-                </p>
-                <p className="text-xs text-taupe">
-                  {group.nextSession.location}
+                  <span className="text-sage-dark font-medium">
+                    {group.frequency}
+                  </span>{" "}
+                  &middot; Ages {group.ageRange}
                 </p>
               </div>
             </div>
-            <div className="mt-3 pt-3 border-t border-cream-dark">
-              <p className="text-xs text-taupe">
-                <span className="text-sage-dark font-medium">
-                  {group.frequency}
-                </span>{" "}
-                &middot; Ages {group.ageRange}
-              </p>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Divider */}
