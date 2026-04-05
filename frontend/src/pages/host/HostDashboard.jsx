@@ -64,6 +64,19 @@ export default function HostDashboard() {
         .order("created_at", { ascending: false });
 
       if (memberships) {
+        // Fetch children for all member user IDs
+        const userIds = memberships.map((m) => m.user_id);
+        const { data: allChildren } = await supabase
+          .from("children")
+          .select("user_id, name, age_range")
+          .in("user_id", userIds);
+
+        const childrenByUser = {};
+        (allChildren || []).forEach((c) => {
+          if (!childrenByUser[c.user_id]) childrenByUser[c.user_id] = [];
+          childrenByUser[c.user_id].push(c);
+        });
+
         // Split into pending requests and active members
         const pending = memberships
           .filter((m) => m.role === "pending")
@@ -79,12 +92,14 @@ export default function HostDashboard() {
               answer: m.screening_answers?.[i] || m.screening_answers?.[String(i)] || "",
             }));
 
+            const kids = childrenByUser[m.user_id] || [];
+
             return {
               id: m.id,
               userId: m.user_id,
               name: `${first} ${last}`.trim(),
               initials,
-              childrenAges: [], // TODO: fetch from children table later
+              childrenAges: kids.map((c) => c.age_range ? `${c.name} (${c.age_range})` : c.name),
               philosophyTags: m.profiles?.philosophy_tags || [],
               bio: m.profiles?.bio || "",
               answers,
@@ -97,13 +112,14 @@ export default function HostDashboard() {
           .map((m) => {
             const first = m.profiles?.first_name || "User";
             const last = m.profiles?.last_name || "";
+            const kids = childrenByUser[m.user_id] || [];
             return {
               id: m.id,
               name: `${first} ${last}`.trim(),
               initials:
                 (first[0] || "U").toUpperCase() + (last[0] || "").toUpperCase(),
               role: m.role === "creator" ? "host" : "member",
-              childrenAges: [],
+              childrenAges: kids.map((c) => c.age_range ? `${c.name} (${c.age_range})` : c.name),
               joinedAt: m.joined_at
                 ? new Date(m.joined_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })
                 : new Date(m.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" }),

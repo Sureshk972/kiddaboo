@@ -68,8 +68,10 @@ export default function RequestCard({
             )}
           </div>
           <p className="text-xs text-taupe">
-            Kids: {request.childrenAges.join(", ")} yrs &middot;{" "}
-            {request.requestedAt}
+            {request.childrenAges.length > 0
+              ? `Kids: ${request.childrenAges.join(", ")}`
+              : "No children listed"}
+            {" "}&middot; {request.requestedAt}
           </p>
         </div>
 

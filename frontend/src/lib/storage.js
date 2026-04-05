@@ -1,6 +1,18 @@
 import { supabase } from "./supabase";
 
 const BUCKET = "photos";
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+
+function validateFile(file) {
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    return `Only JPEG, PNG, WebP, and HEIC images are allowed. Got: ${file.type || "unknown"}`;
+  }
+  if (file.size > MAX_FILE_SIZE) {
+    return `File is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum is 10 MB.`;
+  }
+  return null;
+}
 
 /**
  * Upload a file to Supabase Storage.
@@ -10,6 +22,9 @@ const BUCKET = "photos";
  * @returns {{ url: string|null, error: string|null }}
  */
 export async function uploadPhoto(file, folder, userId) {
+  const validationError = validateFile(file);
+  if (validationError) return { url: null, error: validationError };
+
   // Create a unique filename
   const ext = file.name.split(".").pop();
   const fileName = `${folder}/${userId}/${Date.now()}.${ext}`;
@@ -38,6 +53,9 @@ export async function uploadPhoto(file, folder, userId) {
  * @returns {{ url: string|null, error: string|null }}
  */
 export async function uploadProfilePhoto(file, userId) {
+  const validationError = validateFile(file);
+  if (validationError) return { url: null, error: validationError };
+
   const ext = file.name.split(".").pop();
   const fileName = `profiles/${userId}/avatar.${ext}`;
 
