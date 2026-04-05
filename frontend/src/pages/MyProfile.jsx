@@ -11,8 +11,12 @@ export default function MyProfile() {
     (firstName[0] || "Y").toUpperCase() + (lastName[0] || "").toUpperCase();
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate("/");
+    try {
+      await signOut();
+      navigate("/");
+    } catch {
+      navigate("/");
+    }
   };
 
   return (
@@ -72,36 +76,40 @@ export default function MyProfile() {
           {[
             { icon: "\ud83d\udc64", label: "Edit Profile", path: "/edit-profile" },
             { icon: "\ud83d\udc76", label: "Manage Children", path: "/edit-profile" },
-            { icon: "\ud83d\udd14", label: "Notifications" },
-            { icon: "\ud83d\udee1\ufe0f", label: "Privacy & Safety" },
-            { icon: "\u2753", label: "Help & Support" },
+            { icon: "\ud83d\udd14", label: "Notifications", comingSoon: true },
+            { icon: "\ud83d\udee1\ufe0f", label: "Privacy & Safety", comingSoon: true },
+            { icon: "\u2753", label: "Help & Support", comingSoon: true },
           ].map((item, i, arr) => (
             <button
               key={item.label}
               onClick={() => item.path && navigate(item.path)}
-              className={`w-full flex items-center gap-3 px-4 py-4 text-left cursor-pointer bg-transparent border-none hover:bg-cream-dark/50 transition-colors ${
+              className={`w-full flex items-center gap-3 px-4 py-4 text-left bg-transparent border-none transition-colors ${
                 i < arr.length - 1 ? "border-b border-cream-dark" : ""
-              }`}
+              } ${item.comingSoon ? "opacity-50 cursor-default" : "cursor-pointer hover:bg-cream-dark/50"}`}
             >
               <span className="text-base">{item.icon}</span>
               <span className="text-sm text-charcoal font-medium flex-1">
                 {item.label}
               </span>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                className="text-taupe/30"
-              >
-                <path
-                  d="M6 4L10 8L6 12"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              {item.comingSoon ? (
+                <span className="text-[10px] text-taupe/50">Soon</span>
+              ) : (
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  className="text-taupe/30"
+                >
+                  <path
+                    d="M6 4L10 8L6 12"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
             </button>
           ))}
         </div>

@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { VIBE_TAGS, AGE_RANGES } from "../data/mockData";
 import { supabase } from "../lib/supabase";
 import FilterSheet from "../components/browse/FilterSheet";
 
@@ -53,7 +52,6 @@ function transformPlaygroup(pg, index) {
     verified: host?.is_verified || false,
     photoColor: CARD_COLORS[index % CARD_COLORS.length],
     photos: pg.photos || [],
-    isReal: true, // flag to distinguish from mock data
   };
 }
 
@@ -194,6 +192,7 @@ export default function Browse() {
             {search && (
               <button
                 onClick={() => setSearch("")}
+                aria-label="Clear search"
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-taupe/40 hover:text-taupe cursor-pointer bg-transparent border-none"
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -255,13 +254,22 @@ export default function Browse() {
 
       {/* Results */}
       <div className="max-w-md mx-auto px-5 py-4">
+        {/* Loading state */}
+        {loadingReal && (
+          <div className="flex items-center justify-center py-16">
+            <div className="w-8 h-8 border-2 border-sage border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+
         {/* Result count */}
-        <p className="text-xs text-taupe mb-3">
-          {results.length} playgroup{results.length !== 1 ? "s" : ""} found
-        </p>
+        {!loadingReal && (
+          <p className="text-xs text-taupe mb-3">
+            {results.length} playgroup{results.length !== 1 ? "s" : ""} found
+          </p>
+        )}
 
         {/* Playgroup cards */}
-        {results.length > 0 ? (
+        {!loadingReal && results.length > 0 ? (
           <div className="flex flex-col gap-3">
             {results.map((group) => (
               <div
@@ -384,7 +392,7 @@ export default function Browse() {
               </div>
             ))}
           </div>
-        ) : (
+        ) : !loadingReal ? (
           /* Empty state */
           <div className="text-center py-16">
             <div className="w-16 h-16 bg-cream-dark rounded-full flex items-center justify-center mx-auto mb-4">
@@ -428,7 +436,7 @@ export default function Browse() {
               </>
             )}
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Filter bottom sheet */}

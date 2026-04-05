@@ -59,7 +59,6 @@ export default function MyGroups() {
         .order("created_at", { ascending: false });
 
       if (error || !memberships) {
-        setUseMock(true);
         setLoading(false);
         return;
       }
@@ -130,8 +129,10 @@ export default function MyGroups() {
     fetchGroups();
   }, [user, authLoading]);
 
+  // Use real data directly
   const displayHosting = hosting;
   const displayJoined = joined;
+
 
   if (loading) {
     return (

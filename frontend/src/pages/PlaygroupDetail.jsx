@@ -66,7 +66,6 @@ function transformRealPlaygroup(pg) {
     ratings: { environment: 0, organization: 0, compatibility: 0, reliability: 0, overall: 0 },
     reviews: [],
     nextSession: { date: pg.frequency || "TBD", time: "", location: pg.location_name || "" },
-    isReal: true,
   };
 }
 
@@ -157,7 +156,7 @@ export default function PlaygroupDetail() {
       return;
     }
 
-    if (group.accessType === "open" && group.isReal) {
+    if (group.accessType === "open") {
       // Directly join open groups
       const { error } = await supabase.from("memberships").insert({
         user_id: user.id,
@@ -168,8 +167,6 @@ export default function PlaygroupDetail() {
       if (!error) {
         setJoinStatus("member");
       }
-    } else if (group.accessType === "open") {
-      alert("You've joined the group!");
     } else {
       setShowJoinSheet(true);
     }
@@ -177,7 +174,7 @@ export default function PlaygroupDetail() {
 
   // Handle join request submission (for request-to-join groups)
   const handleJoinSubmit = async ({ intro, answers }) => {
-    if (!user || !group.isReal) return;
+    if (!user) return;
 
     const { error } = await supabase.from("memberships").insert({
       user_id: user.id,
@@ -198,6 +195,7 @@ export default function PlaygroupDetail() {
       <div className="sticky top-0 z-10 bg-cream/80 backdrop-blur-md px-6 py-3 flex items-center gap-3">
         <button
           onClick={() => navigate(-1)}
+          aria-label="Go back"
           className="w-9 h-9 rounded-full bg-white border border-cream-dark flex items-center justify-center cursor-pointer hover:border-sage-light transition-colors"
         >
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
@@ -515,7 +513,7 @@ export default function PlaygroupDetail() {
         onClose={() => setShowJoinSheet(false)}
         screeningQuestions={group.screeningQuestions}
         playgroupName={group.name}
-        onSubmit={group.isReal ? handleJoinSubmit : (data) => console.log("Join request:", data)}
+        onSubmit={handleJoinSubmit}
       />
 
       {/* Review form bottom sheet */}

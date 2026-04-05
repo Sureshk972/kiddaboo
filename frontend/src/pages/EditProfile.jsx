@@ -110,57 +110,66 @@ export default function EditProfile() {
     setError("");
     setSaved(false);
 
-    // 1. Upload photo if changed
-    let photoUrl = null;
-    if (photoFile && user) {
-      const { url, error: uploadErr } = await uploadProfilePhoto(photoFile, user.id);
-      if (uploadErr) {
-        console.warn("Photo upload failed:", uploadErr);
-      } else {
-        photoUrl = url;
+    try {
+      // 1. Upload photo if changed
+      let photoUrl = null;
+      if (photoFile && user) {
+        const { url, error: uploadErr } = await uploadProfilePhoto(photoFile, user.id);
+        if (!uploadErr) {
+          photoUrl = url;
+        }
+        // Photo upload failure is non-critical — continue saving other fields
       }
-    }
 
-    // 2. Update profile
-    const profileData = {
-      first_name: firstName.trim(),
-      last_name: lastName.trim(),
-      bio: bio.trim(),
-      philosophy_tags: philosophyTags,
-    };
-    if (photoUrl) profileData.photo_url = photoUrl;
+      // 2. Update profile
+      const profileData = {
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        bio: bio.trim(),
+        philosophy_tags: philosophyTags,
+      };
+      if (photoUrl) profileData.photo_url = photoUrl;
 
-    const { error: profileError } = await updateProfile(profileData);
+      const { error: profileError } = await updateProfile(profileData);
 
-    if (profileError) {
-      setError("Could not save profile. Please try again.");
-      setSaving(false);
-      return;
-    }
+      if (profileError) {
+        setError("Could not save profile. Please try again.");
+        setSaving(false);
+        return;
+      }
 
-    // 2. Replace children
-    await supabase.from("children").delete().eq("user_id", user.id);
-
-    const validChildren = children.filter((c) => c.name.trim());
-    if (validChildren.length > 0) {
-      const rows = validChildren.map((c) => ({
-        user_id: user.id,
-        name: c.name.trim(),
-        age_range: c.ageRange || null,
-        personality_tags: c.personalityTags,
-      }));
-
-      const { error: childError } = await supabase.from("children").insert(rows);
-      if (childError) {
+      // 3. Replace children
+      const { error: deleteError } = await supabase.from("children").delete().eq("user_id", user.id);
+      if (deleteError) {
         setError("Profile saved but children could not be updated.");
         setSaving(false);
         return;
       }
-    }
 
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => navigate("/my-profile"), 800);
+      const validChildren = children.filter((c) => c.name.trim());
+      if (validChildren.length > 0) {
+        const rows = validChildren.map((c) => ({
+          user_id: user.id,
+          name: c.name.trim(),
+          age_range: c.ageRange || null,
+          personality_tags: c.personalityTags,
+        }));
+
+        const { error: childError } = await supabase.from("children").insert(rows);
+        if (childError) {
+          setError("Profile saved but children could not be updated.");
+          setSaving(false);
+          return;
+        }
+      }
+
+      setSaving(false);
+      setSaved(true);
+      setTimeout(() => navigate("/my-profile"), 800);
+    } catch {
+      setError("Something went wrong. Please try again.");
+      setSaving(false);
+    }
   };
 
   if (loadingChildren) {
@@ -178,6 +187,7 @@ export default function EditProfile() {
         <div className="max-w-md mx-auto px-5 py-4 flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
+            aria-label="Go back"
             className="w-9 h-9 rounded-full bg-white border border-cream-dark flex items-center justify-center cursor-pointer hover:border-sage-light transition-colors"
           >
             <svg width="18" height="18" viewBox="0 0 20 20" fill="none">

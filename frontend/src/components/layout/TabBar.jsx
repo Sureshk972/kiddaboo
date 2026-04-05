@@ -107,7 +107,7 @@ export default function TabBar({ badges = {} }) {
   const location = useLocation();
 
   return (
-    <nav className="sticky bottom-0 z-30 bg-cream/95 backdrop-blur-sm border-t border-cream-dark pb-[env(safe-area-inset-bottom)]">
+    <nav aria-label="Main navigation" className="sticky bottom-0 z-30 bg-cream/95 backdrop-blur-sm border-t border-cream-dark pb-[env(safe-area-inset-bottom)]">
       <div className="max-w-md mx-auto flex items-center justify-around px-2 pt-2 pb-1">
         {TABS.map((tab) => {
           const isActive = tab.matchPaths
@@ -120,6 +120,8 @@ export default function TabBar({ badges = {} }) {
             <button
               key={tab.path}
               onClick={() => navigate(tab.path)}
+              aria-label={tab.label}
+              aria-current={isActive ? "page" : undefined}
               className={`
                 flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl
                 transition-colors duration-150 cursor-pointer

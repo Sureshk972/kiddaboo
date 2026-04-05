@@ -7,13 +7,6 @@ import ScheduleSessionSheet from "../../components/host/ScheduleSessionSheet";
 import useSessions from "../../hooks/useSessions";
 import { friendlyDate, formatSessionTime, formatDuration } from "../../lib/dateUtils";
 
-const ACTIVITY_ICONS = {
-  review: "\u2b50",
-  join: "\ud83d\udcec",
-  rsvp: "\u2705",
-  session: "\ud83d\udcc5",
-};
-
 // Helper: time ago string
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -53,7 +46,7 @@ export default function HostDashboard() {
 
       if (pgError || !playgroups || playgroups.length === 0) {
         setLoading(false);
-        return; // Fall back to mock
+        return;
       }
 
       const pg = playgroups[0];
@@ -173,21 +166,23 @@ export default function HostDashboard() {
 
   const handleApprove = async (id) => {
     setActionedIds((prev) => ({ ...prev, [id]: "approved" }));
-
-    await supabase
+    const { error } = await supabase
       .from("memberships")
       .update({ role: "member", joined_at: new Date().toISOString() })
       .eq("id", id);
+    if (error) setActionedIds((prev) => { const next = { ...prev }; delete next[id]; return next; });
   };
 
   const handleDecline = async (id) => {
     setActionedIds((prev) => ({ ...prev, [id]: "declined" }));
-    await supabase.from("memberships").update({ role: "declined" }).eq("id", id);
+    const { error } = await supabase.from("memberships").update({ role: "declined" }).eq("id", id);
+    if (error) setActionedIds((prev) => { const next = { ...prev }; delete next[id]; return next; });
   };
 
   const handleWaitlist = async (id) => {
     setActionedIds((prev) => ({ ...prev, [id]: "waitlisted" }));
-    await supabase.from("memberships").update({ role: "waitlisted" }).eq("id", id);
+    const { error } = await supabase.from("memberships").update({ role: "waitlisted" }).eq("id", id);
+    if (error) setActionedIds((prev) => { const next = { ...prev }; delete next[id]; return next; });
   };
 
   const activeRequests = requests.filter((r) => !actionedIds[r.id]);
@@ -430,8 +425,7 @@ export default function HostDashboard() {
                     )}
                   </div>
                   <p className="text-xs text-taupe">
-                    Kids: {member.childrenAges.join(", ")} yrs &middot; Joined{" "}
-                    {member.joinedAt}
+                    Joined {member.joinedAt}
                   </p>
                 </div>
 
@@ -512,6 +506,7 @@ export default function HostDashboard() {
                   </svg>
                 ),
                 label: "Invite Families",
+                disabled: true,
                 onClick: () => {},
               },
               {
@@ -526,11 +521,18 @@ export default function HostDashboard() {
             ].map((action, i) => (
               <button
                 key={i}
-                onClick={action.onClick}
-                className="bg-white rounded-2xl p-4 border border-cream-dark flex flex-col items-center gap-2 cursor-pointer hover:border-sage-light transition-colors text-taupe-dark"
+                onClick={action.disabled ? undefined : action.onClick}
+                className={`bg-white rounded-2xl p-4 border border-cream-dark flex flex-col items-center gap-2 transition-colors text-taupe-dark ${
+                  action.disabled
+                    ? "opacity-50 cursor-default"
+                    : "cursor-pointer hover:border-sage-light"
+                }`}
               >
                 {action.icon}
                 <span className="text-xs font-medium">{action.label}</span>
+                {action.disabled && (
+                  <span className="text-[9px] text-taupe/50">Coming soon</span>
+                )}
               </button>
             ))}
           </div>

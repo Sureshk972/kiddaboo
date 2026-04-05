@@ -145,6 +145,7 @@ export default function GroupChat() {
         <div className="max-w-md mx-auto px-4 py-3 flex items-center gap-3">
           <button
             onClick={() => navigate("/messages")}
+            aria-label="Back to messages"
             className="w-8 h-8 rounded-full bg-white border border-cream-dark flex items-center justify-center cursor-pointer hover:border-sage-light transition-colors"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
