@@ -22,6 +22,7 @@ import HostSuccess from "./pages/host/HostSuccess";
 import HostDashboard from "./pages/host/HostDashboard";
 import EditPlaygroup from "./pages/host/EditPlaygroup";
 import Admin from "./pages/Admin";
+import NotificationSettings from "./pages/NotificationSettings";
 import GroupChat from "./pages/GroupChat";
 import ResetPassword from "./pages/ResetPassword";
 
@@ -51,6 +52,7 @@ export default function App() {
             <Route path="/playgroup/:id" element={<PlaygroupDetail />} />
             <Route path="/messages/:playgroupId" element={<GroupChat />} />
             <Route path="/edit-profile" element={<EditProfile />} />
+            <Route path="/notifications" element={<NotificationSettings />} />
             <Route path="/host/edit/:id" element={<EditPlaygroup />} />
 
             {/* App pages — with tab bar */}
