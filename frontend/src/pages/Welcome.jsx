@@ -45,8 +45,8 @@ export default function Welcome() {
         </div>
 
         {/* Brand name */}
-        <h1 className="text-4xl font-heading font-bold text-charcoal tracking-tight">
-          kiddaboo
+        <h1 className="text-4xl font-bold tracking-tight" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
+          Kiddaboo
         </h1>
 
         {/* Tagline */}
