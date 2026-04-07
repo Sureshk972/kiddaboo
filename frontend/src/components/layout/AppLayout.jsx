@@ -1,3 +1,5 @@
+import { useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import TabBar from "./TabBar";
 import { useAuth } from "../../context/AuthContext";
 import useNotifications from "../../hooks/useNotifications";
@@ -9,6 +11,13 @@ export default function AppLayout({ children }) {
   const { user } = useAuth();
   const { unreadMessages, pendingRequests } = useNotifications(user?.id);
   const { shouldShowPrompt, subscribe, dismissPrompt } = usePushNotifications(user?.id);
+  const location = useLocation();
+  const scrollRef = useRef(null);
+
+  // Scroll to top on route change
+  useEffect(() => {
+    scrollRef.current?.scrollTo(0, 0);
+  }, [location.pathname]);
 
   const badges = {
     "/my-groups": pendingRequests,
@@ -17,7 +26,7 @@ export default function AppLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-cream flex flex-col">
-      <div className="flex-1 overflow-y-auto pb-16">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto pb-16">
         {shouldShowPrompt && (
           <div className="pt-3">
             <PushPermissionPrompt

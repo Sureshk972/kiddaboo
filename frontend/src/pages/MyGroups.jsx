@@ -148,7 +148,7 @@ export default function MyGroups() {
       {/* Header */}
       <div className="sticky top-0 z-20 bg-cream/95 backdrop-blur-sm border-b border-cream-dark">
         <div className="max-w-md mx-auto px-5 py-4">
-          <h1 className="text-xl font-heading font-bold text-charcoal">
+          <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
             My Groups
           </h1>
         </div>

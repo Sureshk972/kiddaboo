@@ -415,7 +415,7 @@ export default function Browse() {
           </div>
         ) : !loadingReal && viewMode === "list" ? (
           /* Empty state */
-          <div className="text-center py-16">
+          <div className="text-center py-16 min-h-[60vh] flex flex-col items-center justify-center">
             <div className="w-16 h-16 bg-cream-dark rounded-full flex items-center justify-center mx-auto mb-4">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-taupe/30">
                 <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.5" />
