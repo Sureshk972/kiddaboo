@@ -150,7 +150,7 @@ export default function Admin() {
   async function fetchProfiles() {
     const { data, error } = await supabase
       .from("profiles")
-      .select("*")
+      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, created_at, updated_at, notification_prefs")
       .order("created_at", { ascending: false });
     if (!error && data) {
       setProfiles(data);
