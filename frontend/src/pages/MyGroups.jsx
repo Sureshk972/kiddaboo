@@ -49,13 +49,14 @@ export default function MyGroups() {
         .from("memberships")
         .select(`
           id, role, created_at,
-          playgroups:playgroup_id (
+          playgroups:playgroup_id !inner (
             id, name, location_name, max_families, frequency,
-            creator_id,
+            creator_id, is_active,
             profiles:creator_id ( first_name, last_name )
           )
         `)
         .eq("user_id", user.id)
+        .eq("playgroups.is_active", true)
         .order("created_at", { ascending: false });
 
       if (error || !memberships) {

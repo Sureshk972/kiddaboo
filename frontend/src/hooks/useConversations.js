@@ -17,12 +17,13 @@ export default function useConversations(userId) {
       .select(`
         playgroup_id,
         role,
-        playgroups:playgroup_id (
-          id, name, photos,
+        playgroups:playgroup_id !inner (
+          id, name, photos, is_active,
           profiles:creator_id ( first_name, last_name, photo_url )
         )
       `)
       .eq("user_id", userId)
+      .eq("playgroups.is_active", true)
       .in("role", ["creator", "member"]);
 
     if (error || !memberships) {
