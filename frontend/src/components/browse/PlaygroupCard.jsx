@@ -22,6 +22,8 @@ export default function PlaygroupCard({ group, onClick }) {
             className="absolute inset-0 w-full h-full object-cover"
           />
         )}
+        {/* Gradient overlay for tag readability */}
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
         <div className="flex items-center gap-1.5 relative z-10">
           {group.tags.slice(0, 3).map((tag) => (
             <span
