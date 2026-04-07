@@ -274,7 +274,7 @@ export default function Browse() {
               onClick={() => setShowFilters(true)}
               className={`
                 flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium
-                transition-all duration-150 cursor-pointer border
+                transition-all duration-150 cursor-pointer border active:scale-95
                 ${
                   activeFilterCount > 0
                     ? "bg-sage-light text-sage-dark border-sage"
@@ -304,6 +304,7 @@ export default function Browse() {
                   className={`
                     px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap
                     transition-all duration-150 cursor-pointer border flex items-center gap-1.5
+                    active:scale-95
                     ${
                       sortBy === opt.value
                         ? "bg-sage-light text-sage-dark border-sage"
@@ -335,10 +336,28 @@ export default function Browse() {
 
       {/* Results */}
       <div className="max-w-md mx-auto px-5 py-4">
-        {/* Loading state */}
+        {/* Loading skeleton */}
         {loadingReal && (
-          <div className="flex items-center justify-center py-16">
-            <div className="w-8 h-8 border-2 border-sage border-t-transparent rounded-full animate-spin" />
+          <div className="flex flex-col gap-3">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="bg-white rounded-2xl border border-cream-dark overflow-hidden animate-pulse">
+                <div className="h-28 bg-cream-dark/60" />
+                <div className="p-4">
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className="h-4 bg-cream-dark rounded-full w-3/5" />
+                    <div className="h-3 bg-cream-dark rounded-full w-12" />
+                  </div>
+                  <div className="h-3 bg-cream-dark/60 rounded-full w-2/5 mb-3" />
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-cream-dark" />
+                      <div className="h-3 bg-cream-dark/60 rounded-full w-20" />
+                    </div>
+                    <div className="h-3 bg-cream-dark/60 rounded-full w-24" />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
