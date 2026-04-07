@@ -368,6 +368,31 @@ export default function Browse() {
                 onClick={() => navigate(`/playgroup/${group.id}`)}
               />
             ))}
+
+            {/* Prompt when few results */}
+            {results.length <= 3 && !search && activeFilterCount === 0 && (
+              <div className="mt-4 bg-white rounded-2xl border border-dashed border-sage-light/60 p-6 text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-sage-light flex items-center justify-center">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 5V19M5 12H19" stroke="#7A8F6D" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                  </div>
+                  <h4 className="font-heading font-bold text-charcoal text-sm">
+                    Know a great playgroup spot?
+                  </h4>
+                </div>
+                <p className="text-xs text-taupe mb-3 leading-relaxed">
+                  Help your community grow by hosting a playgroup for local families.
+                </p>
+                <button
+                  onClick={() => navigate("/host/create")}
+                  className="text-xs text-sage font-medium hover:text-sage-dark cursor-pointer bg-transparent border-none underline underline-offset-4"
+                >
+                  Start hosting
+                </button>
+              </div>
+            )}
           </div>
         ) : !loadingReal && viewMode === "list" ? (
           /* Empty state */

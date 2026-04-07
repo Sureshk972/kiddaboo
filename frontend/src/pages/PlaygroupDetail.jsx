@@ -66,6 +66,7 @@ function transformRealPlaygroup(pg) {
       philosophyTags: host?.philosophy_tags || [],
       verified: host?.is_verified || false,
       trustScore: host?.trust_score || 0,
+      memberSince: pg.created_at,
     },
     members,
     ratings: { environment: 0, organization: 0, compatibility: 0, reliability: 0, overall: 0 },

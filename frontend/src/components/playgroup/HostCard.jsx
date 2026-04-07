@@ -1,5 +1,14 @@
+function formatHostSince(dateStr) {
+  if (!dateStr) return null;
+  const date = new Date(dateStr);
+  if (isNaN(date)) return null;
+  return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+}
+
 export default function HostCard({ host }) {
   if (!host) return null;
+
+  const hostSince = formatHostSince(host.memberSince);
 
   return (
     <div className="bg-white rounded-2xl p-5 border border-cream-dark">
@@ -33,7 +42,8 @@ export default function HostCard({ host }) {
             )}
           </div>
           <p className="text-xs text-taupe mb-2">
-            Host since {host.memberSince} &middot; Trust score{" "}
+            {hostSince ? `Host since ${hostSince}` : "Host"}
+            {" "}&middot; Trust score{" "}
             <span className="text-sage-dark font-medium">{host.trustScore}</span>
           </p>
           <p className="text-sm text-taupe-dark leading-relaxed">{host.bio}</p>
