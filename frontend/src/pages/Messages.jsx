@@ -42,36 +42,38 @@ export default function Messages() {
 
         {/* Empty state */}
         {!loading && conversations.length === 0 && (
-          <div className="flex flex-col items-center text-center py-16">
-            <div className="w-16 h-16 bg-cream-dark rounded-full flex items-center justify-center mb-4">
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                className="text-taupe/30"
-              >
-                <path
-                  d="M21 15C21 15.55 20.78 16.05 20.41 16.41C20.05 16.78 19.55 17 19 17H7L3 21V5C3 3.9 3.9 3 5 3H19C20.1 3 21 3.9 21 5V15Z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+          <div className="flex flex-col items-center text-center py-12">
+            {/* Illustration: chat bubbles */}
+            <div className="relative w-28 h-24 mb-5">
+              {/* Left bubble */}
+              <div className="absolute left-0 bottom-2 w-16 h-12 bg-sage-light rounded-2xl rounded-bl-sm flex items-center justify-center">
+                <div className="flex gap-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-sage/50" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-sage/50" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-sage/50" />
+                </div>
+              </div>
+              {/* Right bubble */}
+              <div className="absolute right-0 top-0 w-18 h-14 bg-terracotta-light rounded-2xl rounded-br-sm flex items-center justify-center px-3">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z" stroke="#C08B6E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              {/* Small decorative dot */}
+              <div className="absolute left-14 top-8 w-3 h-3 rounded-full bg-cream-dark" />
             </div>
+
             <h3 className="font-heading font-bold text-charcoal text-lg mb-2">
-              No messages yet
+              Conversations start here
             </h3>
-            <p className="text-sm text-taupe leading-relaxed max-w-xs mb-6">
-              Join a playgroup to start chatting with the host and other
-              families.
+            <p className="text-sm text-taupe leading-relaxed max-w-[260px] mb-5">
+              Once you join a playgroup, you can chat with the host and other families to plan playdates.
             </p>
             <button
               onClick={() => navigate("/browse")}
-              className="text-sm text-sage font-medium hover:text-sage-dark cursor-pointer bg-transparent border-none underline underline-offset-4"
+              className="bg-sage hover:bg-sage-dark text-white text-sm font-medium px-6 py-2.5 rounded-xl cursor-pointer border-none transition-colors"
             >
-              Browse Playgroups
+              Find a Playgroup
             </button>
           </div>
         )}
