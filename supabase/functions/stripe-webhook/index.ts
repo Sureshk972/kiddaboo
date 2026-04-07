@@ -58,7 +58,7 @@ serve(async (req) => {
             user_id: userId,
             plan,
             status: "active",
-            price_cents: plan === "monthly" ? 799 : 5999,
+            price_cents: plan === "monthly" ? 799 : 7999,
             started_at: new Date(subscription.current_period_start * 1000).toISOString(),
             current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
             stripe_customer_id: session.customer as string,

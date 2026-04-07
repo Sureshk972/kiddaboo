@@ -24,7 +24,7 @@ const corsHeaders = {
 // Price lookup — we create products/prices on first use and cache the IDs
 const PRICES: Record<string, { amount: number; interval: string; name: string }> = {
   monthly: { amount: 799, interval: "month", name: "Kiddaboo Premium Monthly" },
-  annual: { amount: 5999, interval: "year", name: "Kiddaboo Premium Annual" },
+  annual: { amount: 7999, interval: "year", name: "Kiddaboo Premium Annual" },
 };
 
 async function getOrCreatePrice(plan: string): Promise<string> {

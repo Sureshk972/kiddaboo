@@ -16,10 +16,10 @@ const PLANS = [
   {
     key: "annual",
     label: "Annual",
-    price: "$59.99",
+    price: "$79.99",
     period: "/yr",
-    priceCents: 5999,
-    description: "Save 37% — just $5/mo",
+    priceCents: 7999,
+    description: "2 months free — just $6.67/mo",
     badge: "Best Value",
   },
 ];
