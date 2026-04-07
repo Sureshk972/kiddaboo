@@ -194,7 +194,7 @@ export default function Browse() {
         <div className="max-w-md mx-auto px-5 pt-4 pb-3">
           {/* Title row with view toggle */}
           <div className="mb-3 flex items-center justify-between">
-            <h1 className="text-2xl font-heading font-bold text-charcoal italic tracking-tight">
+            <h1 className="text-2xl font-bold text-charcoal tracking-tight" style={{ fontFamily: "'ChunkFive', serif" }}>
               Kiddaboo
             </h1>
 
