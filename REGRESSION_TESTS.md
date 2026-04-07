@@ -199,6 +199,43 @@ Run all tests against the live site (https://kiddaboo.com) in a mobile viewport 
 | XCT-12 | 404 handling | Visit `/nonexistent-page` | Does not show blank page | |
 | XCT-13 | Legal pages transition | Navigate to Terms/Privacy | Pages have fade-up animation and back button | |
 
+## 11. Security & Data Protection
+
+| ID | Test Case | Steps | Expected | Status |
+|----|-----------|-------|----------|--------|
+| SEC-01 | XSS in bio field | Edit profile, enter `<script>alert('xss')</script>` as bio > save > reload | Script tag not executed, rendered as plain text or stripped | |
+| SEC-02 | XSS in playgroup name | Create playgroup with name `<img src=x onerror=alert(1)>` > view on Browse | Tag not rendered as HTML, shown as plain text or stripped | |
+| SEC-03 | XSS in chat message | Send message with `<script>document.cookie</script>` > view in chat | Script not executed, shown as text | |
+| SEC-04 | XSS in review comment | Submit review with HTML/script in comment field | Not rendered as HTML | |
+| SEC-05 | SQL injection in search | Type `'; DROP TABLE users; --` in Browse search bar | No error, returns empty results or ignores injection | |
+| SEC-06 | Phone/email not exposed | View another user's profile (host card, member list) | Phone and email never visible to other users | |
+| SEC-07 | Address hidden before join | View playgroup detail as non-member | Full street address not shown (only zip/city) | |
+| SEC-08 | Screening answers private | View a playgroup's pending requests as non-host | Screening answers not visible to non-hosts | |
+| SEC-09 | Auth token required | Open browser console > call Supabase API without auth | Returns 401 or RLS blocks data | |
+| SEC-10 | Expired token rejected | Use an expired JWT to make API call | Returns 401, not stale data | |
+| SEC-11 | RLS: can't edit other's profile | Via console, attempt `supabase.from('profiles').update({bio:'hacked'}).eq('id', other_user_id)` | Update fails (RLS policy blocks) | |
+| SEC-12 | RLS: can't delete other's playgroup | Via console, attempt to delete another user's playgroup | Delete fails (RLS policy blocks) | |
+| SEC-13 | RLS: can't read other's children | Via console, attempt to select from children table with another user's ID | Returns empty or error | |
+| SEC-14 | Photo upload: reject non-image | Upload a .pdf or .exe as profile photo | Upload rejected, error message shown | |
+| SEC-15 | Photo upload: reject oversized | Upload image > 5MB | Upload rejected with size error | |
+| SEC-16 | Rate limit: join requests (free) | As free user, send 3 join requests > attempt 4th | Blocked with upgrade prompt, not silently accepted | |
+| SEC-17 | Deleted account tokens invalid | Delete account > attempt to use old auth token | All API calls return 401 | |
+| SEC-18 | Block prevents messaging | Block a user > check group chat | Blocked user's messages hidden, cannot send to blocker | |
+
+## 12. Vouching & Trust
+
+| ID | Test Case | Steps | Expected | Status |
+|----|-----------|-------|----------|--------|
+| VCH-01 | Trust score starts at zero | Create new account > view profile | Trust score shows 0 | |
+| VCH-02 | Trust score after review | Receive a positive review > check profile | Trust score increases from 0 | |
+| VCH-03 | Trust score visible on host card | View playgroup detail > check host card | Trust score displayed (e.g. "Trust score 4.2") | |
+| VCH-04 | Trust score visible on request card | As host, view pending join request | Requester's trust score visible on request card | |
+| VCH-05 | Trust score read-only | Via console, attempt to update own trust_score | Update blocked by RLS or ignored | |
+| VCH-06 | Verified badge display | View verified host's profile/card | Green verified badge with checkmark shown | |
+| VCH-07 | Verified badge absent for unverified | View unverified user's profile/card | No verified badge shown | |
+| VCH-08 | Review aggregate calculation | Submit multiple reviews for a host | Aggregate ratings (environment, organization, compatibility, reliability) calculated correctly | |
+| VCH-09 | Review only after session | As member with no past sessions, try to write review | "Write Review" button not available or disabled | |
+
 ---
 
 ## Test Summary
@@ -215,7 +252,9 @@ Run all tests against the live site (https://kiddaboo.com) in a mobile viewport 
 | Premium & Payments | 10 |
 | Host Flow | 15 |
 | Cross-Cutting | 13 |
-| **Total** | **135** |
+| Security & Data Protection | 18 |
+| Vouching & Trust | 9 |
+| **Total** | **162** |
 
 ---
 
@@ -226,3 +265,5 @@ Run all tests against the live site (https://kiddaboo.com) in a mobile viewport 
 - For Stripe tests (PAY-05, PAY-06), use Stripe test mode card `4242 4242 4242 4242`
 - For realtime tests (MSG-07, XCT-10), use two browser sessions
 - Geocoding tests (HST-08, HST-09) verify the Nominatim US-restriction fix
+- Security tests (SEC-11 through SEC-13) require browser console access to test RLS policies directly
+- Trust/vouching tests depend on having review data in the database
