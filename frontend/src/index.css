@@ -40,3 +40,28 @@
 .confetti-dot {
   animation: float-up 2s ease-out forwards;
 }
+
+/* Page transition animations */
+@keyframes page-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes page-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.page-transition {
+  animation: page-fade-up 0.3s ease-out both;
+}
+
+.page-fade {
+  animation: page-fade-in 0.25s ease-out both;
+}

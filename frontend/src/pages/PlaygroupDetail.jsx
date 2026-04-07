@@ -208,7 +208,7 @@ export default function PlaygroupDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-cream pb-24">
+    <div className="min-h-screen bg-cream pb-24 page-transition">
       {/* Top bar */}
       <div className="sticky top-0 z-10 bg-cream/80 backdrop-blur-md px-6 py-3 flex items-center gap-3">
         <button
