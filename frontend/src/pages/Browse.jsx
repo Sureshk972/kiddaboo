@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { haversineDistance } from "../lib/distance";
 import { useUserLocation } from "../hooks/useUserLocation";
+import { useAuth } from "../context/AuthContext";
 import FilterSheet from "../components/browse/FilterSheet";
 import PlaygroupCard from "../components/browse/PlaygroupCard";
 import MapView from "../components/browse/MapView";
@@ -57,6 +58,7 @@ function transformPlaygroup(pg, index) {
 
 export default function Browse() {
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [sortBy, setSortBy] = useState("rating");
@@ -194,9 +196,16 @@ export default function Browse() {
         <div className="max-w-6xl mx-auto px-5 pt-4 pb-3">
           {/* Title row with view toggle */}
           <div className="mb-3 flex items-center justify-between">
-            <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
-              Kiddaboo
-            </h1>
+            <div className="flex items-baseline gap-2">
+              <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
+                Kiddaboo
+              </h1>
+              {profile?.first_name && (
+                <span className="text-sm font-medium text-taupe">
+                  Hi, {profile.first_name}
+                </span>
+              )}
+            </div>
 
             {/* List / Map toggle */}
             <div className="flex items-center bg-white border border-cream-dark rounded-xl overflow-hidden">
