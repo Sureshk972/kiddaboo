@@ -200,7 +200,7 @@ export default function EditProfile() {
               />
             </svg>
           </button>
-          <h1 className="text-xl font-heading font-bold text-charcoal">
+          <h1 className="text-xl font-bold tracking-tight" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
             Edit Profile
           </h1>
         </div>
@@ -289,7 +289,7 @@ export default function EditProfile() {
 
         {/* Children section */}
         <div>
-          <h2 className="text-lg font-heading font-bold text-charcoal mb-1">
+          <h2 className="text-lg font-bold tracking-tight mb-1" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
             Your little ones
           </h2>
           <p className="text-sm text-taupe mb-4">

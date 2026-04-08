@@ -55,7 +55,7 @@ export default function AddChildren() {
     <OnboardingLayout currentStep={3}>
       <div className="flex flex-col gap-6 pt-4">
         <div>
-          <h1 className="text-2xl font-heading font-bold text-charcoal mb-2">
+          <h1 className="text-2xl font-bold tracking-tight mb-2" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
             Your little ones
           </h1>
           <p className="text-taupe leading-relaxed">
