@@ -243,11 +243,22 @@ export default function HostDashboard() {
     <div className="bg-cream">
       {/* Header */}
       <div className="sticky top-0 z-20 bg-cream/95 backdrop-blur-sm border-b border-cream-dark">
-        <div className="max-w-md mx-auto px-5 py-4">
-          <p className="text-xs text-taupe">Your playgroup</p>
-          <h1 className="text-lg font-heading font-bold text-charcoal">
-            {pg.name}
-          </h1>
+        <div className="max-w-md mx-auto px-5 py-3 flex items-center gap-3">
+          <button
+            onClick={() => navigate("/my-groups")}
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-white border border-cream-dark text-taupe hover:text-charcoal transition-colors cursor-pointer flex-shrink-0"
+            aria-label="Go back"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          <div>
+            <p className="text-xs text-taupe">Your playgroup</p>
+            <h1 className="text-lg font-heading font-bold text-charcoal">
+              {pg.name}
+            </h1>
+          </div>
         </div>
       </div>
 

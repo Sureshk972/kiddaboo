@@ -30,6 +30,7 @@ import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Premium from "./pages/Premium";
 import NotFound from "./pages/NotFound";
+import RequireAuth from "./components/auth/RequireAuth";
 
 export default function App() {
   return (
@@ -38,41 +39,43 @@ export default function App() {
       <OnboardingProvider>
         <HostProvider>
           <Routes>
-            {/* Onboarding — no tab bar */}
+            {/* Public routes — no auth required */}
             <Route path="/" element={<Welcome />} />
             <Route path="/verify" element={<PhoneVerification />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/profile" element={<CreateProfile />} />
-            <Route path="/children" element={<AddChildren />} />
-            <Route path="/success" element={<BrowseSuccess />} />
-
-            {/* Host onboarding — no tab bar */}
-            <Route path="/host/create" element={<CreatePlaygroup />} />
-            <Route path="/host/screening" element={<ScreeningQuestions />} />
-            <Route path="/host/environment" element={<EnvironmentSetup />} />
-            <Route path="/host/photos" element={<HostPhotos />} />
-            <Route path="/host/success" element={<HostSuccess />} />
-
-            {/* Detail pages — no tab bar (has back button) */}
-            <Route path="/playgroup/:id" element={<PlaygroupDetail />} />
-            <Route path="/messages/:playgroupId" element={<GroupChat />} />
-            <Route path="/edit-profile" element={<EditProfile />} />
-            <Route path="/notifications" element={<NotificationSettings />} />
-            <Route path="/host/edit/:id" element={<EditPlaygroup />} />
-            <Route path="/host/premium" element={<HostPremium />} />
-            <Route path="/premium" element={<Premium />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
 
-            {/* App pages — with tab bar */}
-            <Route path="/browse" element={<AppLayout><Browse /></AppLayout>} />
-            <Route path="/my-groups" element={<AppLayout><MyGroups /></AppLayout>} />
-            <Route path="/messages" element={<AppLayout><Messages /></AppLayout>} />
-            <Route path="/my-profile" element={<AppLayout><MyProfile /></AppLayout>} />
-            <Route path="/host/dashboard" element={<AppLayout><HostDashboard /></AppLayout>} />
+            {/* Onboarding — requires auth, no tab bar */}
+            <Route path="/profile" element={<RequireAuth><CreateProfile /></RequireAuth>} />
+            <Route path="/children" element={<RequireAuth><AddChildren /></RequireAuth>} />
+            <Route path="/success" element={<RequireAuth><BrowseSuccess /></RequireAuth>} />
 
-            {/* Admin — no tab bar */}
-            <Route path="/admin" element={<Admin />} />
+            {/* Host onboarding — requires auth, no tab bar */}
+            <Route path="/host/create" element={<RequireAuth><CreatePlaygroup /></RequireAuth>} />
+            <Route path="/host/screening" element={<RequireAuth><ScreeningQuestions /></RequireAuth>} />
+            <Route path="/host/environment" element={<RequireAuth><EnvironmentSetup /></RequireAuth>} />
+            <Route path="/host/photos" element={<RequireAuth><HostPhotos /></RequireAuth>} />
+            <Route path="/host/success" element={<RequireAuth><HostSuccess /></RequireAuth>} />
+
+            {/* Detail pages — requires auth, no tab bar */}
+            <Route path="/playgroup/:id" element={<RequireAuth><PlaygroupDetail /></RequireAuth>} />
+            <Route path="/messages/:playgroupId" element={<RequireAuth><GroupChat /></RequireAuth>} />
+            <Route path="/edit-profile" element={<RequireAuth><EditProfile /></RequireAuth>} />
+            <Route path="/notifications" element={<RequireAuth><NotificationSettings /></RequireAuth>} />
+            <Route path="/host/edit/:id" element={<RequireAuth><EditPlaygroup /></RequireAuth>} />
+            <Route path="/host/premium" element={<RequireAuth><HostPremium /></RequireAuth>} />
+            <Route path="/premium" element={<RequireAuth><Premium /></RequireAuth>} />
+
+            {/* App pages — requires auth, with tab bar */}
+            <Route path="/browse" element={<RequireAuth><AppLayout><Browse /></AppLayout></RequireAuth>} />
+            <Route path="/my-groups" element={<RequireAuth><AppLayout><MyGroups /></AppLayout></RequireAuth>} />
+            <Route path="/messages" element={<RequireAuth><AppLayout><Messages /></AppLayout></RequireAuth>} />
+            <Route path="/my-profile" element={<RequireAuth><AppLayout><MyProfile /></AppLayout></RequireAuth>} />
+            <Route path="/host/dashboard" element={<RequireAuth><AppLayout><HostDashboard /></AppLayout></RequireAuth>} />
+
+            {/* Admin — requires auth, no tab bar */}
+            <Route path="/admin" element={<RequireAuth><Admin /></RequireAuth>} />
 
             {/* 404 catch-all */}
             <Route path="*" element={<NotFound />} />
