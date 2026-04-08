@@ -4,7 +4,7 @@ const ACCESS_LABELS = {
   invite: "Invite Only",
 };
 
-export default function PlaygroupCard({ group, onClick, featured = false }) {
+export default function PlaygroupCard({ group, onClick, featured = false, premium = false }) {
   const spotsLeft = group.maxFamilies - group.familyCount;
 
   if (featured) {
@@ -29,8 +29,8 @@ export default function PlaygroupCard({ group, onClick, featured = false }) {
               />
             )}
             <div className="absolute top-4 left-4 flex gap-2">
-              <span className="px-3 py-1 bg-white/80 backdrop-blur-md rounded-full text-[10px] font-bold tracking-widest uppercase text-charcoal">
-                Featured
+              <span className="px-3 py-1 bg-amber-400/90 backdrop-blur-md rounded-full text-[10px] font-bold tracking-widest uppercase text-white">
+                Premium
               </span>
               <span className={`px-3 py-1 backdrop-blur-md rounded-full text-[10px] font-bold tracking-widest uppercase ${
                 group.accessType === "open"
@@ -138,7 +138,11 @@ export default function PlaygroupCard({ group, onClick, featured = false }) {
   return (
     <div
       onClick={onClick}
-      className="group bg-white rounded-2xl border border-cream-dark overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-sage-light cursor-pointer"
+      className={`group bg-white rounded-2xl border overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer ${
+        premium
+          ? "border-amber-300 hover:border-amber-400 ring-1 ring-amber-100"
+          : "border-cream-dark hover:border-sage-light"
+      }`}
     >
       {/* Photo */}
       <div className="relative h-44 overflow-hidden">
@@ -154,7 +158,12 @@ export default function PlaygroupCard({ group, onClick, featured = false }) {
             style={{ backgroundColor: group.photoColor + "40" }}
           />
         )}
-        <div className="absolute top-3 left-3">
+        <div className="absolute top-3 left-3 flex gap-1.5">
+          {premium && (
+            <span className="px-3 py-1 bg-amber-400/90 backdrop-blur-md rounded-full text-[10px] font-bold tracking-widest uppercase text-white">
+              Premium
+            </span>
+          )}
           <span className={`px-3 py-1 backdrop-blur-md rounded-full text-[10px] font-bold tracking-widest uppercase ${
             group.accessType === "open"
               ? "bg-sage/90 text-white"

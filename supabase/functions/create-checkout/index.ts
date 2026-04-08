@@ -22,9 +22,11 @@ const corsHeaders = {
 };
 
 // Price lookup — we create products/prices on first use and cache the IDs
-const PRICES: Record<string, { amount: number; interval: string; name: string }> = {
-  monthly: { amount: 799, interval: "month", name: "Kiddaboo Premium Monthly" },
-  annual: { amount: 7999, interval: "year", name: "Kiddaboo Premium Annual" },
+const PRICES: Record<string, { amount: number; interval: string; name: string; type: string }> = {
+  monthly:      { amount: 799,  interval: "month", name: "Kiddaboo Premium Monthly",      type: "joiner" },
+  annual:       { amount: 7999, interval: "year",  name: "Kiddaboo Premium Annual",       type: "joiner" },
+  host_monthly: { amount: 499,  interval: "month", name: "Kiddaboo Host Premium Monthly", type: "host_premium" },
+  host_annual:  { amount: 4999, interval: "year",  name: "Kiddaboo Host Premium Annual",  type: "host_premium" },
 };
 
 async function getOrCreatePrice(plan: string): Promise<string> {
@@ -87,9 +89,28 @@ serve(async (req) => {
     const { plan } = await req.json();
     if (!plan || !PRICES[plan]) {
       return new Response(
-        JSON.stringify({ error: "Invalid plan. Use 'monthly' or 'annual'" }),
+        JSON.stringify({ error: "Invalid plan. Use 'monthly', 'annual', 'host_monthly', or 'host_annual'" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    const planConfig = PRICES[plan];
+
+    // For host plans, verify user is actually a host
+    if (planConfig.type === "host_premium") {
+      const { data: hostCheck } = await supabase
+        .from("memberships")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("role", "creator")
+        .limit(1);
+
+      if (!hostCheck || hostCheck.length === 0) {
+        return new Response(
+          JSON.stringify({ error: "You must be a host to subscribe to Host Premium" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     // Check if user already has a Stripe customer ID
@@ -97,6 +118,7 @@ serve(async (req) => {
       .from("subscriptions")
       .select("stripe_customer_id")
       .eq("user_id", user.id)
+      .limit(1)
       .single();
 
     let customerId = existingSub?.stripe_customer_id;
@@ -113,22 +135,28 @@ serve(async (req) => {
     // Get or create the price
     const priceId = await getOrCreatePrice(plan);
 
+    // Determine success/cancel URLs based on subscription type
+    const successPath = planConfig.type === "host_premium" ? "/host/premium" : "/premium";
+    const cancelPath = successPath;
+
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: "subscription",
       payment_method_types: ["card"],
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${SITE_URL}/premium?success=true`,
-      cancel_url: `${SITE_URL}/premium?cancelled=true`,
+      success_url: `${SITE_URL}${successPath}?success=true`,
+      cancel_url: `${SITE_URL}${cancelPath}?cancelled=true`,
       metadata: {
         supabase_user_id: user.id,
         plan,
+        subscription_type: planConfig.type,
       },
       subscription_data: {
         metadata: {
           supabase_user_id: user.id,
           plan,
+          subscription_type: planConfig.type,
         },
       },
     });

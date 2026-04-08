@@ -21,6 +21,7 @@ import HostPhotos from "./pages/host/HostPhotos";
 import HostSuccess from "./pages/host/HostSuccess";
 import HostDashboard from "./pages/host/HostDashboard";
 import EditPlaygroup from "./pages/host/EditPlaygroup";
+import HostPremium from "./pages/host/HostPremium";
 import Admin from "./pages/Admin";
 import NotificationSettings from "./pages/NotificationSettings";
 import GroupChat from "./pages/GroupChat";
@@ -58,6 +59,7 @@ export default function App() {
             <Route path="/edit-profile" element={<EditProfile />} />
             <Route path="/notifications" element={<NotificationSettings />} />
             <Route path="/host/edit/:id" element={<EditPlaygroup />} />
+            <Route path="/host/premium" element={<HostPremium />} />
             <Route path="/premium" element={<Premium />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />

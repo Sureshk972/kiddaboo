@@ -100,18 +100,36 @@ export default function Browse() {
 
   useEffect(() => {
     const fetchPlaygroups = async () => {
-      const { data, error } = await supabase
-        .from("playgroups")
-        .select(`
-          *,
-          profiles:creator_id ( first_name, last_name, is_verified ),
-          memberships ( role )
-        `)
-        .eq("is_active", true)
-        .order("created_at", { ascending: false });
+      // Fetch playgroups and premium host IDs in parallel
+      const [pgResult, premiumResult] = await Promise.all([
+        supabase
+          .from("playgroups")
+          .select(`
+            *,
+            profiles:creator_id ( first_name, last_name, is_verified ),
+            memberships ( role )
+          `)
+          .eq("is_active", true)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("subscriptions")
+          .select("user_id")
+          .eq("type", "host_premium")
+          .eq("status", "active")
+          .gt("current_period_end", new Date().toISOString()),
+      ]);
 
-      if (!error && data) {
-        setRealPlaygroups(data.map((pg, i) => transformPlaygroup(pg, i)));
+      const premiumHostIds = new Set(
+        (premiumResult.data || []).map((s) => s.user_id)
+      );
+
+      if (!pgResult.error && pgResult.data) {
+        setRealPlaygroups(
+          pgResult.data.map((pg, i) => ({
+            ...transformPlaygroup(pg, i),
+            isHostPremium: premiumHostIds.has(pg.creator_id),
+          }))
+        );
       }
       setLoadingReal(false);
     };
@@ -192,6 +210,13 @@ export default function Browse() {
           b.maxFamilies - b.familyCount - (a.maxFamilies - a.familyCount)
       );
     }
+
+    // Float premium hosts to the top (stable sort preserves order within groups)
+    list.sort((a, b) => {
+      if (a.isHostPremium && !b.isHostPremium) return -1;
+      if (!a.isHostPremium && b.isHostPremium) return 1;
+      return 0;
+    });
 
     return list;
   }, [debouncedSearch, filters, sortBy, allPlaygroups, userLocation]);
@@ -415,7 +440,8 @@ export default function Browse() {
                 <PlaygroupCard
                   key={group.id}
                   group={group}
-                  featured={i === 0 && results.length > 1}
+                  featured={i === 0 && results.length > 1 && group.isHostPremium}
+                  premium={group.isHostPremium}
                   onClick={() => navigate(`/playgroup/${group.id}`)}
                 />
               ))}

@@ -133,6 +133,19 @@ export default function PlaygroupDetail() {
     fetchGroup();
   }, [id, user]);
 
+  // Track playgroup view for host analytics (deduplicated hourly)
+  useEffect(() => {
+    if (!id || !user) return;
+    const key = `pv_${id}`;
+    const last = localStorage.getItem(key);
+    if (last && Date.now() - parseInt(last) < 3600000) return;
+    localStorage.setItem(key, Date.now().toString());
+    supabase
+      .from("playgroup_views")
+      .insert({ playgroup_id: id, viewer_id: user.id })
+      .then(() => {});
+  }, [id, user?.id]);
+
   const group = realGroup;
 
   if (loading) {

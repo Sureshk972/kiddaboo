@@ -6,7 +6,8 @@ const FREE_JOIN_LIMIT = 1;
 
 export function useSubscription() {
   const { user } = useAuth();
-  const [subscription, setSubscription] = useState(null);
+  const [joinerSub, setJoinerSub] = useState(null);
+  const [hostSub, setHostSub] = useState(null);
   const [usage, setUsage] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -15,22 +16,28 @@ export function useSubscription() {
       setLoading(false);
       return;
     }
-    fetchSubscription();
+    fetchSubscriptions();
     fetchUsage();
   }, [user]);
 
-  async function fetchSubscription() {
+  async function fetchSubscriptions() {
     const { data } = await supabase
       .from("subscriptions")
       .select("*")
-      .eq("user_id", user.id)
-      .single();
+      .eq("user_id", user.id);
 
-    if (data && data.status === "active" && new Date(data.current_period_end) > new Date()) {
-      setSubscription(data);
-    } else {
-      setSubscription(null);
-    }
+    const now = new Date();
+    const subs = data || [];
+
+    const activeJoiner = subs.find(
+      (s) => s.type === "joiner" && s.status === "active" && new Date(s.current_period_end) > now
+    );
+    const activeHost = subs.find(
+      (s) => s.type === "host_premium" && s.status === "active" && new Date(s.current_period_end) > now
+    );
+
+    setJoinerSub(activeJoiner || null);
+    setHostSub(activeHost || null);
     setLoading(false);
   }
 
@@ -69,20 +76,34 @@ export function useSubscription() {
     return { data, error };
   }
 
-  const isPremium = !!subscription;
+  // Joiner premium (backward compatible)
+  const isPremium = !!joinerSub;
+  const isJoinerPremium = isPremium;
+
+  // Host premium
+  const isHostPremium = !!hostSub;
+
   const joinRequestsUsed = usage?.request_count || 0;
   const joinRequestsRemaining = isPremium ? Infinity : Math.max(0, FREE_JOIN_LIMIT - joinRequestsUsed);
   const canSendJoinRequest = isPremium || joinRequestsRemaining > 0;
 
   return {
-    subscription,
+    // Joiner
+    subscription: joinerSub,
     isPremium,
-    loading,
+    isJoinerPremium,
     joinRequestsUsed,
     joinRequestsRemaining,
     joinRequestLimit: FREE_JOIN_LIMIT,
     canSendJoinRequest,
     incrementUsage,
-    refresh: fetchSubscription,
+
+    // Host
+    hostSubscription: hostSub,
+    isHostPremium,
+
+    // General
+    loading,
+    refresh: fetchSubscriptions,
   };
 }

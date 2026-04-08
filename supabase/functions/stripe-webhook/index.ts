@@ -45,6 +45,7 @@ serve(async (req) => {
         const session = event.data.object as Stripe.Checkout.Session;
         const userId = session.metadata?.supabase_user_id;
         const plan = session.metadata?.plan;
+        const subscriptionType = session.metadata?.subscription_type || "joiner";
 
         if (!userId || !plan) break;
 
@@ -53,22 +54,29 @@ serve(async (req) => {
           session.subscription as string
         );
 
+        // Determine price from plan
+        const priceCentsMap: Record<string, number> = {
+          monthly: 799, annual: 7999,
+          host_monthly: 499, host_annual: 4999,
+        };
+
         await supabase.from("subscriptions").upsert(
           {
             user_id: userId,
+            type: subscriptionType,
             plan,
             status: "active",
-            price_cents: plan === "monthly" ? 799 : 7999,
+            price_cents: priceCentsMap[plan] || 799,
             started_at: new Date(subscription.current_period_start * 1000).toISOString(),
             current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
             stripe_customer_id: session.customer as string,
             stripe_subscription_id: subscription.id,
             updated_at: new Date().toISOString(),
           },
-          { onConflict: "user_id" }
+          { onConflict: "user_id,type" }
         );
 
-        console.log(`Subscription activated for user ${userId}, plan: ${plan}`);
+        console.log(`Subscription activated for user ${userId}, plan: ${plan}, type: ${subscriptionType}`);
         break;
       }
 
@@ -80,6 +88,7 @@ serve(async (req) => {
 
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         const userId = subscription.metadata?.supabase_user_id;
+        const subscriptionType = subscription.metadata?.subscription_type || "joiner";
 
         if (!userId) break;
 
@@ -90,9 +99,10 @@ serve(async (req) => {
             current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
             updated_at: new Date().toISOString(),
           })
-          .eq("user_id", userId);
+          .eq("user_id", userId)
+          .eq("type", subscriptionType);
 
-        console.log(`Subscription renewed for user ${userId}`);
+        console.log(`Subscription renewed for user ${userId}, type: ${subscriptionType}`);
         break;
       }
 
@@ -104,6 +114,7 @@ serve(async (req) => {
 
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         const userId = subscription.metadata?.supabase_user_id;
+        const subscriptionType = subscription.metadata?.subscription_type || "joiner";
 
         if (!userId) break;
 
@@ -113,15 +124,17 @@ serve(async (req) => {
             status: "past_due",
             updated_at: new Date().toISOString(),
           })
-          .eq("user_id", userId);
+          .eq("user_id", userId)
+          .eq("type", subscriptionType);
 
-        console.log(`Payment failed for user ${userId}`);
+        console.log(`Payment failed for user ${userId}, type: ${subscriptionType}`);
         break;
       }
 
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
         const userId = subscription.metadata?.supabase_user_id;
+        const subscriptionType = subscription.metadata?.subscription_type || "joiner";
 
         if (!userId) break;
 
@@ -132,15 +145,17 @@ serve(async (req) => {
             cancelled_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           })
-          .eq("user_id", userId);
+          .eq("user_id", userId)
+          .eq("type", subscriptionType);
 
-        console.log(`Subscription cancelled for user ${userId}`);
+        console.log(`Subscription cancelled for user ${userId}, type: ${subscriptionType}`);
         break;
       }
 
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription;
         const userId = subscription.metadata?.supabase_user_id;
+        const subscriptionType = subscription.metadata?.subscription_type || "joiner";
 
         if (!userId) break;
 
@@ -156,9 +171,10 @@ serve(async (req) => {
               : null,
             updated_at: new Date().toISOString(),
           })
-          .eq("user_id", userId);
+          .eq("user_id", userId)
+          .eq("type", subscriptionType);
 
-        console.log(`Subscription updated for user ${userId}, status: ${status}`);
+        console.log(`Subscription updated for user ${userId}, type: ${subscriptionType}, status: ${status}`);
         break;
       }
     }

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
+import { useSubscription } from "../../hooks/useSubscription";
 import RequestCard from "../../components/host/RequestCard";
 import ScheduleSessionSheet from "../../components/host/ScheduleSessionSheet";
 import useSessions from "../../hooks/useSessions";
@@ -140,6 +141,32 @@ export default function HostDashboard() {
   const [expandedRequest, setExpandedRequest] = useState(null);
   const [actionedIds, setActionedIds] = useState({});
   const [showScheduleSheet, setShowScheduleSheet] = useState(false);
+  const { isHostPremium } = useSubscription();
+  const [viewStats, setViewStats] = useState({ thisWeek: 0, recentViewers: [] });
+
+  // Fetch view analytics for premium hosts
+  useEffect(() => {
+    if (!isHostPremium || !realPlaygroup) return;
+    const fetchViews = async () => {
+      const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+      const { data, count } = await supabase
+        .from("playgroup_views")
+        .select("viewed_at, profiles:viewer_id(first_name, last_name)", { count: "exact" })
+        .eq("playgroup_id", realPlaygroup.id)
+        .gte("viewed_at", weekAgo)
+        .order("viewed_at", { ascending: false })
+        .limit(10);
+
+      setViewStats({
+        thisWeek: count || 0,
+        recentViewers: (data || []).map((v) => ({
+          name: `${v.profiles?.first_name || ""} ${v.profiles?.last_name || ""}`.trim() || "Someone",
+          viewedAt: v.viewed_at,
+        })),
+      });
+    };
+    fetchViews();
+  }, [isHostPremium, realPlaygroup]);
 
   // Session scheduling
   const {
@@ -255,6 +282,56 @@ export default function HostDashboard() {
             </p>
           </div>
         </div>
+
+        {/* Host Premium analytics / upsell */}
+        {isHostPremium ? (
+          <div className="bg-white rounded-2xl border border-amber-200 p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base font-heading font-bold text-charcoal flex items-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="#D97706" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="12" cy="12" r="3" stroke="#D97706" strokeWidth="1.5" />
+                </svg>
+                Views This Week
+              </h3>
+              <span className="text-2xl font-heading font-bold text-amber-600">{viewStats.thisWeek}</span>
+            </div>
+            {viewStats.recentViewers.length > 0 ? (
+              <div className="space-y-2">
+                <p className="text-xs text-taupe font-medium">Recent viewers</p>
+                {viewStats.recentViewers.slice(0, 5).map((v, i) => (
+                  <div key={i} className="flex items-center justify-between text-sm">
+                    <span className="text-charcoal">{v.name}</span>
+                    <span className="text-xs text-taupe/60">{timeAgo(v.viewedAt)}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-taupe">No views yet this week. Share your playgroup to attract families!</p>
+            )}
+          </div>
+        ) : (
+          <div
+            className="relative bg-white rounded-2xl border border-cream-dark p-5 overflow-hidden cursor-pointer"
+            onClick={() => navigate("/host/premium")}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-amber-50/80 to-transparent pointer-events-none" />
+            <div className="relative flex items-center gap-4">
+              <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-charcoal">Go Host Premium</p>
+                <p className="text-xs text-taupe leading-relaxed">
+                  Get a Premium badge, priority placement, and see who's viewing your group.
+                </p>
+              </div>
+              <span className="text-amber-600 font-bold text-sm whitespace-nowrap">$4.99/mo</span>
+            </div>
+          </div>
+        )}
 
         {/* Next session card */}
         {nextSession ? (
