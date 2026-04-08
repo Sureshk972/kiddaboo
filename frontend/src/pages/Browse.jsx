@@ -58,7 +58,7 @@ function transformPlaygroup(pg, index) {
 
 export default function Browse() {
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const [isHost, setIsHost] = useState(false);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -247,7 +247,8 @@ export default function Browse() {
               )}
             </div>
 
-            {/* List / Map toggle */}
+            {/* List / Map toggle + Sign out */}
+            <div className="flex items-center gap-2">
             <div className="flex items-center bg-white border border-cream-dark rounded-xl overflow-hidden">
               <button
                 onClick={() => setViewMode("list")}
@@ -277,6 +278,19 @@ export default function Browse() {
                   <circle cx="12" cy="10" r="3" stroke="currentColor" strokeWidth="1.5"/>
                 </svg>
               </button>
+            </div>
+            <button
+              onClick={async () => { await signOut(); navigate("/"); }}
+              className="p-2 bg-white border border-cream-dark rounded-xl text-taupe hover:text-terracotta transition-colors cursor-pointer"
+              aria-label="Sign out"
+              title="Sign out"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <polyline points="16 17 21 12 16 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
             </div>
           </div>
 
