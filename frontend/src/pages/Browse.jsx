@@ -58,7 +58,8 @@ function transformPlaygroup(pg, index) {
 
 export default function Browse() {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
+  const [isHost, setIsHost] = useState(false);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [sortBy, setSortBy] = useState("rating");
@@ -72,6 +73,20 @@ export default function Browse() {
   });
 
   const { userLocation, loading: locationLoading, error: locationError, requestLocation } = useUserLocation();
+
+  // Check if user is a host
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("memberships")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("role", "creator")
+      .limit(1)
+      .then(({ data }) => {
+        if (data?.length > 0) setIsHost(true);
+      });
+  }, [user]);
 
   // Debounce search input
   useEffect(() => {
@@ -202,7 +217,7 @@ export default function Browse() {
               </h1>
               {profile?.first_name && (
                 <span className="text-sm font-medium text-taupe">
-                  Hi, {profile.first_name}
+                  Hi, {profile.first_name}{isHost ? " (Host)" : ""}
                 </span>
               )}
             </div>
