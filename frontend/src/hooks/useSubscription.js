@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../context/AuthContext";
 
-const FREE_JOIN_LIMIT = 3;
+const FREE_JOIN_LIMIT = 1;
 
 export function useSubscription() {
   const { user } = useAuth();
