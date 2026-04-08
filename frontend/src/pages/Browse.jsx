@@ -191,7 +191,7 @@ export default function Browse() {
     <div className="bg-cream">
       {/* Sticky header */}
       <div className="sticky top-0 z-20 bg-cream/95 backdrop-blur-sm border-b border-cream-dark">
-        <div className="max-w-md mx-auto px-5 pt-4 pb-3">
+        <div className="max-w-6xl mx-auto px-5 pt-4 pb-3">
           {/* Title row with view toggle */}
           <div className="mb-3 flex items-center justify-between">
             <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
@@ -335,25 +335,27 @@ export default function Browse() {
       </div>
 
       {/* Results */}
-      <div className="max-w-md mx-auto px-5 py-4">
+      <div className="max-w-6xl mx-auto px-5 py-4">
         {/* Loading skeleton */}
         {loadingReal && (
-          <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="bg-white rounded-2xl border border-cream-dark overflow-hidden animate-pulse">
-                <div className="h-28 bg-cream-dark/60" />
-                <div className="p-4">
-                  <div className="flex items-start justify-between gap-2 mb-3">
-                    <div className="h-4 bg-cream-dark rounded-full w-3/5" />
-                    <div className="h-3 bg-cream-dark rounded-full w-12" />
+              <div key={i} className={`bg-white rounded-2xl border border-cream-dark overflow-hidden animate-pulse ${i === 0 ? "md:col-span-2" : ""}`}>
+                <div className={`bg-cream-dark/60 ${i === 0 ? "h-56" : "h-44"}`} />
+                <div className="p-5">
+                  <div className="flex gap-2 mb-3">
+                    <div className="h-4 bg-cream-dark/60 rounded-full w-16" />
+                    <div className="h-4 bg-cream-dark/60 rounded-full w-12" />
                   </div>
-                  <div className="h-3 bg-cream-dark/60 rounded-full w-2/5 mb-3" />
+                  <div className="h-5 bg-cream-dark rounded-full w-3/5 mb-2" />
+                  <div className="h-3 bg-cream-dark/60 rounded-full w-2/5 mb-4" />
+                  <div className="h-10 bg-sage-light/20 rounded-xl mb-4" />
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-full bg-cream-dark" />
                       <div className="h-3 bg-cream-dark/60 rounded-full w-20" />
                     </div>
-                    <div className="h-3 bg-cream-dark/60 rounded-full w-24" />
+                    <div className="h-3 bg-cream-dark/60 rounded-full w-8" />
                   </div>
                 </div>
               </div>
@@ -361,11 +363,15 @@ export default function Browse() {
           </div>
         )}
 
-        {/* Result count (list view only) */}
+        {/* Result count & sort (list view only) */}
         {!loadingReal && viewMode === "list" && (
-          <p className="text-xs text-taupe mb-3">
-            {results.length} playgroup{results.length !== 1 ? "s" : ""} found
-          </p>
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <p className="text-xs text-taupe">
+                {results.length} playgroup{results.length !== 1 ? "s" : ""} found
+              </p>
+            </div>
+          </div>
         )}
 
         {/* Map view */}
@@ -377,42 +383,50 @@ export default function Browse() {
           />
         )}
 
-        {/* List view — Playgroup cards */}
+        {/* List view — Bento grid */}
         {!loadingReal && viewMode === "list" && results.length > 0 ? (
-          <div className="flex flex-col gap-3">
-            {results.map((group) => (
-              <PlaygroupCard
-                key={group.id}
-                group={group}
-                onClick={() => navigate(`/playgroup/${group.id}`)}
-              />
-            ))}
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {results.map((group, i) => (
+                <PlaygroupCard
+                  key={group.id}
+                  group={group}
+                  featured={i === 0 && results.length > 1}
+                  onClick={() => navigate(`/playgroup/${group.id}`)}
+                />
+              ))}
+            </div>
 
-            {/* Prompt when few results */}
-            {results.length <= 3 && !search && activeFilterCount === 0 && (
-              <div className="mt-4 bg-white rounded-2xl border border-dashed border-sage-light/60 p-6 text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-full bg-sage-light flex items-center justify-center">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                      <path d="M12 5V19M5 12H19" stroke="#7A8F6D" strokeWidth="2" strokeLinecap="round" />
+            {/* Host CTA */}
+            {!search && activeFilterCount === 0 && (
+              <div className="mt-12 relative overflow-hidden rounded-2xl bg-sage-light/15 p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 group">
+                <div className="relative z-10 md:w-3/5">
+                  <h2 className="text-2xl md:text-3xl font-heading font-bold text-sage-dark mb-3 leading-tight">
+                    Share Your Space,<br />Grow Your Community.
+                  </h2>
+                  <p className="text-taupe text-sm mb-6 leading-relaxed max-w-md">
+                    Join our circle of hosts and create meaningful play experiences in your neighborhood. We provide the tools, you provide the magic.
+                  </p>
+                  <button
+                    onClick={() => navigate("/host/create")}
+                    className="bg-sage hover:bg-sage-dark text-white px-8 py-3 rounded-full font-bold text-sm transition-all cursor-pointer border-none hover:shadow-lg active:scale-95"
+                  >
+                    Become a Host
+                  </button>
+                </div>
+                <div className="hidden md:flex relative md:w-2/5 justify-center">
+                  <div className="w-40 h-40 rounded-2xl bg-sage-light/40 flex items-center justify-center">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" className="text-sage-dark/50">
+                      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" strokeWidth="1.5" />
+                      <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.5" />
+                      <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" strokeWidth="1.5" />
                     </svg>
                   </div>
-                  <h4 className="font-heading font-bold text-charcoal text-sm">
-                    Know a great playgroup spot?
-                  </h4>
                 </div>
-                <p className="text-xs text-taupe mb-3 leading-relaxed">
-                  Help your community grow by hosting a playgroup for local families.
-                </p>
-                <button
-                  onClick={() => navigate("/host/create")}
-                  className="text-xs text-sage font-medium hover:text-sage-dark cursor-pointer bg-transparent border-none underline underline-offset-4"
-                >
-                  Start hosting
-                </button>
+                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-sage/5 rounded-full blur-3xl" />
               </div>
             )}
-          </div>
+          </>
         ) : !loadingReal && viewMode === "list" ? (
           /* Empty state */
           <div className="text-center py-16 min-h-[60vh] flex flex-col items-center justify-center">

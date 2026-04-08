@@ -1,69 +1,176 @@
-const ACCESS_ICONS = {
+const ACCESS_LABELS = {
   open: "Open",
   request: "Request",
   invite: "Invite Only",
 };
 
-export default function PlaygroupCard({ group, onClick }) {
+export default function PlaygroupCard({ group, onClick, featured = false }) {
+  const spotsLeft = group.maxFamilies - group.familyCount;
+
+  if (featured) {
+    return (
+      <div
+        onClick={onClick}
+        className="group relative overflow-hidden rounded-2xl bg-white border border-cream-dark transition-all duration-500 hover:shadow-xl cursor-pointer col-span-1 md:col-span-2"
+      >
+        <div className="grid md:grid-cols-2 h-full">
+          {/* Photo side */}
+          <div className="relative h-56 md:h-full min-h-[240px] overflow-hidden">
+            {group.photos?.length > 0 ? (
+              <img
+                src={group.photos[0]}
+                alt={group.name}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+            ) : (
+              <div
+                className="w-full h-full"
+                style={{ backgroundColor: group.photoColor + "40" }}
+              />
+            )}
+            <div className="absolute top-4 left-4 flex gap-2">
+              <span className="px-3 py-1 bg-white/80 backdrop-blur-md rounded-full text-[10px] font-bold tracking-widest uppercase text-charcoal">
+                Featured
+              </span>
+              <span className={`px-3 py-1 backdrop-blur-md rounded-full text-[10px] font-bold tracking-widest uppercase ${
+                group.accessType === "open"
+                  ? "bg-sage/90 text-white"
+                  : "bg-white/80 text-terracotta"
+              }`}>
+                {ACCESS_LABELS[group.accessType]}
+              </span>
+            </div>
+          </div>
+
+          {/* Content side */}
+          <div className="p-6 md:p-8 flex flex-col justify-between">
+            <div>
+              <div className="flex flex-wrap gap-1.5 mb-4">
+                {group.tags.slice(0, 3).map((tag) => (
+                  <span
+                    key={tag}
+                    className="bg-sage-light/40 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-sage-dark"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              <h3 className="text-xl md:text-2xl font-heading font-bold text-charcoal mb-2">
+                {group.name}
+              </h3>
+              <div className="flex items-center gap-2 mb-4">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#7A8F6D">
+                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                </svg>
+                <span className="font-bold text-sm text-charcoal">{group.rating}</span>
+                <span className="text-taupe text-sm">({group.reviewCount} reviews)</span>
+              </div>
+              <p className="text-taupe text-sm mb-4 flex items-center gap-1.5">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M7 1.5C4.5 1.5 2.5 3.5 2.5 6C2.5 9.5 7 12.5 7 12.5C7 12.5 11.5 9.5 11.5 6C11.5 3.5 9.5 1.5 7 1.5Z" stroke="currentColor" strokeWidth="1" />
+                  <circle cx="7" cy="6" r="1.5" stroke="currentColor" strokeWidth="1" />
+                </svg>
+                {group.location}
+                {group.distance != null && (
+                  <span className="text-taupe/60">
+                    &middot; {group.distance < 0.1 ? "<0.1" : group.distance.toFixed(1)} mi
+                  </span>
+                )}
+              </p>
+              <div className="flex gap-6 text-xs font-semibold text-taupe uppercase tracking-wider">
+                <span className="flex items-center gap-1.5">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M2 21v-2a4 4 0 014-4h6a4 4 0 014 4v2" stroke="currentColor" strokeWidth="1.5" />
+                    <circle cx="9" cy="13" r="2" stroke="currentColor" strokeWidth="1" opacity="0.4" />
+                  </svg>
+                  Ages {group.ageRange}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" strokeWidth="1.5" />
+                    <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" strokeWidth="1.5" />
+                  </svg>
+                  {spotsLeft > 0 ? `${spotsLeft} spots left` : "Full"}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-6 pt-5 border-t border-cream-dark flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-sage-light flex items-center justify-center">
+                  <span className="text-[10px] font-bold text-sage-dark">{group.hostInitials}</span>
+                </div>
+                <span className="text-sm font-medium text-charcoal">{group.hostName}</span>
+                {group.verified && (
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                    <circle cx="8" cy="8" r="7" fill="#A3B18A" />
+                    <path d="M5 8L7 10L11 6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </div>
+              <span className="bg-sage hover:bg-sage-dark text-white px-5 py-2 rounded-full text-sm font-bold transition-colors">
+                Details
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Standard card
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-2xl border border-cream-dark overflow-hidden hover:border-sage-light transition-all duration-150 cursor-pointer hover:shadow-sm"
+      className="group bg-white rounded-2xl border border-cream-dark overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-sage-light cursor-pointer"
     >
-      {/* Photo strip */}
-      <div
-        className="h-28 flex items-end p-3 relative overflow-hidden"
-        style={{ backgroundColor: group.photoColor + "40" }}
-      >
-        {group.photos?.length > 0 && (
+      {/* Photo */}
+      <div className="relative h-44 overflow-hidden">
+        {group.photos?.length > 0 ? (
           <img
             src={group.photos[0]}
             alt={group.name}
-            className="absolute inset-0 w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          />
+        ) : (
+          <div
+            className="w-full h-full"
+            style={{ backgroundColor: group.photoColor + "40" }}
           />
         )}
-        {/* Gradient overlay for tag readability */}
-        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
-        <div className="flex items-center gap-1.5 relative z-10">
-          {group.tags.slice(0, 3).map((tag) => (
+        <div className="absolute top-3 left-3">
+          <span className={`px-3 py-1 backdrop-blur-md rounded-full text-[10px] font-bold tracking-widest uppercase ${
+            group.accessType === "open"
+              ? "bg-sage/90 text-white"
+              : "bg-white/90 text-terracotta"
+          }`}>
+            {ACCESS_LABELS[group.accessType]}
+          </span>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="p-5">
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {group.tags.slice(0, 2).map((tag) => (
             <span
               key={tag}
-              className="text-[10px] bg-white/80 backdrop-blur-sm text-sage-dark px-2 py-0.5 rounded-full font-medium"
+              className="bg-sage-light/30 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest text-sage-dark"
             >
               {tag}
             </span>
           ))}
         </div>
-      </div>
 
-      {/* Card body */}
-      <div className="p-4">
-        {/* Title row */}
-        <div className="flex items-start justify-between gap-2 mb-1.5">
-          <h3 className="font-heading font-bold text-charcoal text-base leading-tight">
-            {group.name}
-          </h3>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="#7A8F6D">
-              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-            </svg>
-            <span className="text-sm font-medium text-charcoal">
-              {group.rating}
-            </span>
-            <span className="text-xs text-taupe">
-              ({group.reviewCount})
-            </span>
-          </div>
-        </div>
+        <h3 className="font-heading font-bold text-charcoal text-base mb-1 leading-tight">
+          {group.name}
+        </h3>
 
-        {/* Location */}
-        <p className="text-xs text-taupe mb-3 flex items-center gap-1">
+        <p className="text-xs text-taupe mb-4 flex items-center gap-1">
           <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-            <path
-              d="M7 1.5C4.5 1.5 2.5 3.5 2.5 6C2.5 9.5 7 12.5 7 12.5C7 12.5 11.5 9.5 11.5 6C11.5 3.5 9.5 1.5 7 1.5Z"
-              stroke="currentColor"
-              strokeWidth="1"
-            />
+            <path d="M7 1.5C4.5 1.5 2.5 3.5 2.5 6C2.5 9.5 7 12.5 7 12.5C7 12.5 11.5 9.5 11.5 6C11.5 3.5 9.5 1.5 7 1.5Z" stroke="currentColor" strokeWidth="1" />
             <circle cx="7" cy="6" r="1.5" stroke="currentColor" strokeWidth="1" />
           </svg>
           {group.location}
@@ -74,18 +181,21 @@ export default function PlaygroupCard({ group, onClick }) {
           )}
         </p>
 
-        {/* Info row */}
+        {/* Stats bar */}
+        <div className="flex justify-between items-center text-xs font-bold bg-sage-light/20 p-3 rounded-xl mb-4">
+          <span className="text-sage-dark">Ages {group.ageRange}</span>
+          <span className="text-sage-dark">
+            {spotsLeft > 0 ? `${spotsLeft} Spots Available` : "Full"}
+          </span>
+        </div>
+
+        {/* Footer */}
         <div className="flex items-center justify-between">
-          {/* Host info */}
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-full bg-sage-light flex items-center justify-center">
-              <span className="text-[9px] font-bold text-sage-dark">
-                {group.hostInitials}
-              </span>
+              <span className="text-[9px] font-bold text-sage-dark">{group.hostInitials}</span>
             </div>
-            <span className="text-xs text-taupe-dark">
-              {group.hostName}
-            </span>
+            <span className="text-xs font-medium text-taupe-dark">{group.hostName}</span>
             {group.verified && (
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                 <circle cx="8" cy="8" r="7" fill="#A3B18A" />
@@ -93,40 +203,12 @@ export default function PlaygroupCard({ group, onClick }) {
               </svg>
             )}
           </div>
-
-          {/* Meta */}
-          <div className="flex items-center gap-2 text-[11px] text-taupe">
-            <span>Ages {group.ageRange}</span>
-            <span className="w-0.5 h-0.5 rounded-full bg-taupe/40" />
-            <span>
-              {group.maxFamilies - group.familyCount > 0
-                ? `${group.maxFamilies - group.familyCount} spots`
-                : "Full"}
-            </span>
-          </div>
-        </div>
-
-        {/* Next session */}
-        <div className="mt-3 pt-3 border-t border-cream-dark flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-xs text-taupe">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-              <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M3 10H21" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M8 2V6M16 2V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          <div className="flex items-center gap-1">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="#7A8F6D">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
             </svg>
-            Next: {group.nextSession}
+            <span className="text-xs font-bold text-charcoal">{group.rating}</span>
           </div>
-          <span
-            className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-              group.accessType === "open"
-                ? "bg-sage-light/50 text-sage-dark"
-                : group.accessType === "request"
-                ? "bg-terracotta-light/50 text-taupe-dark"
-                : "bg-cream-dark text-taupe"
-            }`}
-          >
-            {ACCESS_ICONS[group.accessType]}
-          </span>
         </div>
       </div>
     </div>
