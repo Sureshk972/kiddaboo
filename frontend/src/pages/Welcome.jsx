@@ -102,6 +102,21 @@ export default function Welcome() {
           Privacy Policy
         </button>
       </div>
+
+      {/* Social */}
+      <a
+        href="https://www.instagram.com/kiddaboo1/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-4 flex items-center gap-1.5 text-xs text-taupe/60 hover:text-sage transition-colors"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" strokeWidth="1.5" />
+          <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.5" />
+          <circle cx="18" cy="6" r="1.5" fill="currentColor" />
+        </svg>
+        Follow us on Instagram
+      </a>
     </div>
   );
 }
