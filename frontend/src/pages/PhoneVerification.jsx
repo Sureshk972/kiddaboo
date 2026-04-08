@@ -98,8 +98,8 @@ export default function PhoneVerification() {
         <div className="flex flex-col gap-6 pt-8 items-center text-center">
           <div className="w-16 h-16 bg-sage-light rounded-full flex items-center justify-center">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-              <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" />
-              <path d="M22 6L12 13L2 6" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="#5C6B52" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M22 6L12 13L2 6" stroke="#5C6B52" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
           <div>
@@ -133,8 +133,8 @@ export default function PhoneVerification() {
         <div className="flex flex-col gap-6 pt-8 items-center text-center">
           <div className="w-16 h-16 bg-sage-light rounded-full flex items-center justify-center">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-              <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" />
-              <path d="M22 6L12 13L2 6" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="#5C6B52" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M22 6L12 13L2 6" stroke="#5C6B52" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
           <div>

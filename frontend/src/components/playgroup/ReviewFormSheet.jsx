@@ -98,7 +98,7 @@ export default function ReviewFormSheet({
             <div className="py-12 text-center">
               <div className="w-16 h-16 bg-sage-light rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                  <path d="M20 6L9 17L4 12" stroke="#7A8F6D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M20 6L9 17L4 12" stroke="#5C6B52" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
               <h3 className="font-heading font-bold text-charcoal text-lg mb-2">

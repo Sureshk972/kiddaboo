@@ -13,7 +13,7 @@ function createPinIcon() {
     className: "",
     iconSize: [24, 30],
     iconAnchor: [12, 30],
-    html: `<svg width="24" height="30" viewBox="0 0 28 36" fill="none"><path d="M14 0C6.27 0 0 6.27 0 14c0 10.5 14 22 14 22s14-11.5 14-22C28 6.27 21.73 0 14 0z" fill="#7A8F6D"/><circle cx="14" cy="13" r="5.5" fill="white"/></svg>`,
+    html: `<svg width="24" height="30" viewBox="0 0 28 36" fill="none"><path d="M14 0C6.27 0 0 6.27 0 14c0 10.5 14 22 14 22s14-11.5 14-22C28 6.27 21.73 0 14 0z" fill="#5C6B52"/><circle cx="14" cy="13" r="5.5" fill="white"/></svg>`,
   });
 }
 
@@ -88,7 +88,7 @@ export default function BrowseSuccess() {
     fetchPlaygroups();
   }, []);
 
-  const confettiColors = ["#A3B18A", "#C08B6E", "#DAE4D0", "#E8C4B0", "#7A8F6D"];
+  const confettiColors = ["#7A8F6D", "#C08B6E", "#DAE4D0", "#E8C4B0", "#5C6B52"];
 
   return (
     <OnboardingLayout currentStep={4} showBack={false}>
@@ -114,7 +114,7 @@ export default function BrowseSuccess() {
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
               <path
                 d="M20 6L9 17L4 12"
-                stroke="#7A8F6D"
+                stroke="#5C6B52"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"

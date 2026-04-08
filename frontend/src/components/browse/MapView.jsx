@@ -12,7 +12,7 @@ function createPinIcon() {
     iconAnchor: [14, 36],
     popupAnchor: [0, -36],
     html: `<svg width="28" height="36" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M14 0C6.27 0 0 6.27 0 14c0 10.5 14 22 14 22s14-11.5 14-22C28 6.27 21.73 0 14 0z" fill="#7A8F6D"/>
+      <path d="M14 0C6.27 0 0 6.27 0 14c0 10.5 14 22 14 22s14-11.5 14-22C28 6.27 21.73 0 14 0z" fill="#5C6B52"/>
       <circle cx="14" cy="13" r="5.5" fill="white"/>
     </svg>`,
   });

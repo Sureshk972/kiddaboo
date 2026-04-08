@@ -153,8 +153,8 @@ export default function NotificationSettings() {
           <div className="flex items-start gap-4">
             <div className="w-11 h-11 bg-sage-light rounded-xl flex items-center justify-center flex-shrink-0">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="#5C6B52" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="#5C6B52" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
 

@@ -4,10 +4,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        cream:      { DEFAULT: '#FAF7F2', dark: '#F0EBE3' },
-        sage:       { light: '#DAE4D0', DEFAULT: '#A3B18A', dark: '#7A8F6D' },
-        taupe:      { DEFAULT: '#8B7E74', dark: '#6B5E54' },
-        terracotta: { light: '#E8C4B0', DEFAULT: '#C08B6E' },
+        cream:      { DEFAULT: '#FAF7F2', dark: '#E6E1D8' },
+        sage:       { light: '#DAE4D0', DEFAULT: '#5C6B52', dark: '#3D4A33' },
+        taupe:      { DEFAULT: '#6B5E54', dark: '#4A3F37' },
+        terracotta: { light: '#E8C4B0', DEFAULT: '#B07A5B' },
         charcoal:   '#2F2F2F',
       },
       fontFamily: {

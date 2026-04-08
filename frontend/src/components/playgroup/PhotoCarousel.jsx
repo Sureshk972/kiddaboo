@@ -8,10 +8,10 @@ function PlaceholderHero() {
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="leaves" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
-              <circle cx="15" cy="15" r="8" fill="#7A8F6D" />
-              <circle cx="45" cy="45" r="6" fill="#7A8F6D" />
-              <circle cx="45" cy="10" r="4" fill="#7A8F6D" />
-              <circle cx="10" cy="48" r="5" fill="#7A8F6D" />
+              <circle cx="15" cy="15" r="8" fill="#5C6B52" />
+              <circle cx="45" cy="45" r="6" fill="#5C6B52" />
+              <circle cx="45" cy="10" r="4" fill="#5C6B52" />
+              <circle cx="10" cy="48" r="5" fill="#5C6B52" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#leaves)" />

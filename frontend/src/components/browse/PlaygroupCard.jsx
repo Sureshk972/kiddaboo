@@ -59,7 +59,7 @@ export default function PlaygroupCard({ group, onClick, featured = false }) {
                 {group.name}
               </h3>
               <div className="flex items-center gap-2 mb-4">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="#7A8F6D">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#5C6B52">
                   <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
                 </svg>
                 <span className="font-bold text-sm text-charcoal">{group.rating}</span>
@@ -105,7 +105,7 @@ export default function PlaygroupCard({ group, onClick, featured = false }) {
                 <span className="text-sm font-medium text-charcoal">{group.hostName}</span>
                 {group.verified && (
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                    <circle cx="8" cy="8" r="7" fill="#A3B18A" />
+                    <circle cx="8" cy="8" r="7" fill="#7A8F6D" />
                     <path d="M5 8L7 10L11 6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 )}
@@ -198,13 +198,13 @@ export default function PlaygroupCard({ group, onClick, featured = false }) {
             <span className="text-xs font-medium text-taupe-dark">{group.hostName}</span>
             {group.verified && (
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                <circle cx="8" cy="8" r="7" fill="#A3B18A" />
+                <circle cx="8" cy="8" r="7" fill="#7A8F6D" />
                 <path d="M5 8L7 10L11 6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             )}
           </div>
           <div className="flex items-center gap-1">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="#7A8F6D">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="#5C6B52">
               <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
             </svg>
             <span className="text-xs font-bold text-charcoal">{group.rating}</span>

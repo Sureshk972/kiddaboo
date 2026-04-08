@@ -79,9 +79,9 @@ export default function SessionCard({
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 bg-sage-light rounded-lg flex items-center justify-center flex-shrink-0">
             <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
-              <rect x="3" y="4" width="14" height="13" rx="2" stroke="#7A8F6D" strokeWidth="1.5" />
-              <path d="M3 8H17" stroke="#7A8F6D" strokeWidth="1.5" />
-              <path d="M7 2V5M13 2V5" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" />
+              <rect x="3" y="4" width="14" height="13" rx="2" stroke="#5C6B52" strokeWidth="1.5" />
+              <path d="M3 8H17" stroke="#5C6B52" strokeWidth="1.5" />
+              <path d="M7 2V5M13 2V5" stroke="#5C6B52" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </div>
           <div className="flex-1">
@@ -104,9 +104,9 @@ export default function SessionCard({
       <div className="flex items-center gap-3">
         <div className="w-12 h-12 bg-sage-light rounded-xl flex items-center justify-center flex-shrink-0">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <rect x="3" y="4" width="14" height="13" rx="2" stroke="#7A8F6D" strokeWidth="1.5" />
-            <path d="M3 8H17" stroke="#7A8F6D" strokeWidth="1.5" />
-            <path d="M7 2V5M13 2V5" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" />
+            <rect x="3" y="4" width="14" height="13" rx="2" stroke="#5C6B52" strokeWidth="1.5" />
+            <path d="M3 8H17" stroke="#5C6B52" strokeWidth="1.5" />
+            <path d="M7 2V5M13 2V5" stroke="#5C6B52" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
         </div>
         <div>

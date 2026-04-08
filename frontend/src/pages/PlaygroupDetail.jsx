@@ -242,9 +242,9 @@ export default function PlaygroupDetail() {
             aria-label="Report"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="5" r="1.5" fill="#8B7E74"/>
-              <circle cx="12" cy="12" r="1.5" fill="#8B7E74"/>
-              <circle cx="12" cy="19" r="1.5" fill="#8B7E74"/>
+              <circle cx="12" cy="5" r="1.5" fill="#6B5E54"/>
+              <circle cx="12" cy="12" r="1.5" fill="#6B5E54"/>
+              <circle cx="12" cy="19" r="1.5" fill="#6B5E54"/>
             </svg>
           </button>
         )}
@@ -360,9 +360,9 @@ export default function PlaygroupDetail() {
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-sage-light rounded-xl flex items-center justify-center flex-shrink-0">
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <rect x="3" y="4" width="14" height="13" rx="2" stroke="#7A8F6D" strokeWidth="1.5" />
-                    <path d="M3 8H17" stroke="#7A8F6D" strokeWidth="1.5" />
-                    <path d="M7 2V5M13 2V5" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" />
+                    <rect x="3" y="4" width="14" height="13" rx="2" stroke="#5C6B52" strokeWidth="1.5" />
+                    <path d="M3 8H17" stroke="#5C6B52" strokeWidth="1.5" />
+                    <path d="M7 2V5M13 2V5" stroke="#5C6B52" strokeWidth="1.5" strokeLinecap="round" />
                   </svg>
                 </div>
                 <div>
@@ -553,7 +553,7 @@ export default function PlaygroupDetail() {
           <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
             <div className="bg-cream rounded-2xl p-6 max-w-sm w-full shadow-xl text-center">
               <div className="w-14 h-14 bg-sage-light rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7A8F6D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5C6B52" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                 </svg>
               </div>

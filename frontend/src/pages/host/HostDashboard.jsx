@@ -243,7 +243,7 @@ export default function HostDashboard() {
           </div>
           <div className="bg-white rounded-2xl p-4 border border-cream-dark text-center">
             <div className="flex items-center justify-center gap-1">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="#7A8F6D">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#5C6B52">
                 <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
               </svg>
               <p className="text-2xl font-heading font-bold text-charcoal">
@@ -307,10 +307,10 @@ export default function HostDashboard() {
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-sage-light rounded-xl flex items-center justify-center flex-shrink-0">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <rect x="3" y="4" width="18" height="18" rx="2" stroke="#7A8F6D" strokeWidth="1.5" />
-                  <path d="M3 10H21" stroke="#7A8F6D" strokeWidth="1.5" />
-                  <path d="M8 2V6M16 2V6" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" />
-                  <path d="M12 14V18M10 16H14" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" />
+                  <rect x="3" y="4" width="18" height="18" rx="2" stroke="#5C6B52" strokeWidth="1.5" />
+                  <path d="M3 10H21" stroke="#5C6B52" strokeWidth="1.5" />
+                  <path d="M8 2V6M16 2V6" stroke="#5C6B52" strokeWidth="1.5" strokeLinecap="round" />
+                  <path d="M12 14V18M10 16H14" stroke="#5C6B52" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
               </div>
               <div>
@@ -339,9 +339,9 @@ export default function HostDashboard() {
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 bg-sage-light rounded-lg flex items-center justify-center flex-shrink-0">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                          <rect x="3" y="4" width="18" height="18" rx="2" stroke="#7A8F6D" strokeWidth="1.5" />
-                          <path d="M3 10H21" stroke="#7A8F6D" strokeWidth="1.5" />
-                          <path d="M8 2V6M16 2V6" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" />
+                          <rect x="3" y="4" width="18" height="18" rx="2" stroke="#5C6B52" strokeWidth="1.5" />
+                          <path d="M3 10H21" stroke="#5C6B52" strokeWidth="1.5" />
+                          <path d="M8 2V6M16 2V6" stroke="#5C6B52" strokeWidth="1.5" strokeLinecap="round" />
                         </svg>
                       </div>
                       <div>

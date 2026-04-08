@@ -4,8 +4,8 @@ import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 
 const CARD_COLORS = [
-  "#A3B18A", "#E8C4B0", "#F0EBE3", "#C08B6E",
-  "#DAE4D0", "#7A8F6D", "#D4A574", "#B8C9A3",
+  "#7A8F6D", "#E8C4B0", "#F0EBE3", "#C08B6E",
+  "#DAE4D0", "#5C6B52", "#D4A574", "#B8C9A3",
 ];
 
 
@@ -374,7 +374,7 @@ export default function MyGroups() {
                 <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
                   <defs>
                     <pattern id="groups-dots" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-                      <circle cx="20" cy="20" r="6" fill="#7A8F6D" />
+                      <circle cx="20" cy="20" r="6" fill="#5C6B52" />
                       <circle cx="5" cy="5" r="3" fill="#C08B6E" />
                     </pattern>
                   </defs>
@@ -387,8 +387,8 @@ export default function MyGroups() {
                 <div className="flex items-center justify-center mb-4 -space-x-3">
                   <div className="w-12 h-12 rounded-full bg-sage-light flex items-center justify-center border-2 border-white">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                      <circle cx="12" cy="8" r="4" stroke="#7A8F6D" strokeWidth="1.5" />
-                      <path d="M20 21C20 16.58 16.42 13 12 13C7.58 13 4 16.58 4 21" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" />
+                      <circle cx="12" cy="8" r="4" stroke="#5C6B52" strokeWidth="1.5" />
+                      <path d="M20 21C20 16.58 16.42 13 12 13C7.58 13 4 16.58 4 21" stroke="#5C6B52" strokeWidth="1.5" strokeLinecap="round" />
                     </svg>
                   </div>
                   <div className="w-14 h-14 rounded-full bg-terracotta-light flex items-center justify-center border-2 border-white z-10">
@@ -401,8 +401,8 @@ export default function MyGroups() {
                   </div>
                   <div className="w-12 h-12 rounded-full bg-cream-dark flex items-center justify-center border-2 border-white">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                      <circle cx="12" cy="8" r="4" stroke="#8B7E74" strokeWidth="1.5" />
-                      <path d="M20 21C20 16.58 16.42 13 12 13C7.58 13 4 16.58 4 21" stroke="#8B7E74" strokeWidth="1.5" strokeLinecap="round" />
+                      <circle cx="12" cy="8" r="4" stroke="#6B5E54" strokeWidth="1.5" />
+                      <path d="M20 21C20 16.58 16.42 13 12 13C7.58 13 4 16.58 4 21" stroke="#6B5E54" strokeWidth="1.5" strokeLinecap="round" />
                     </svg>
                   </div>
                 </div>

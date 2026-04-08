@@ -131,7 +131,7 @@ export default function Premium() {
           <div className="space-y-6">
             <div className="bg-white rounded-2xl border border-sage p-6 text-center">
               <div className="w-14 h-14 bg-sage-light rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7A8F6D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5C6B52" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                 </svg>
               </div>
@@ -153,7 +153,7 @@ export default function Premium() {
               <div className="space-y-2.5">
                 {FEATURES.filter((f) => !f.both && f.premium !== "—").map((f, i) => (
                   <div key={i} className="flex items-center gap-2 text-sm text-charcoal">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7A8F6D" strokeWidth="2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5C6B52" strokeWidth="2">
                       <path d="M20 6L9 17l-5-5" />
                     </svg>
                     {f.premium}
@@ -167,7 +167,7 @@ export default function Premium() {
             {/* Hero */}
             <div className="text-center py-4">
               <div className="w-16 h-16 bg-sage-light rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#7A8F6D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#5C6B52" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                 </svg>
               </div>
@@ -237,14 +237,14 @@ export default function Premium() {
                         <path d="M18 6L6 18M6 6l12 12" />
                       </svg>
                     ) : (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A3B18A" strokeWidth="2">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7A8F6D" strokeWidth="2">
                         <path d="M20 6L9 17l-5-5" />
                       </svg>
                     )}
                     <span>{feature.free === "—" ? "" : feature.free}</span>
                   </div>
                   <div className="px-4 py-3 text-xs text-charcoal font-medium flex items-center gap-1.5 bg-sage-light/10">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7A8F6D" strokeWidth="2">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5C6B52" strokeWidth="2">
                       <path d="M20 6L9 17l-5-5" />
                     </svg>
                     <span>{feature.premium}</span>

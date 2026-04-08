@@ -7,10 +7,10 @@ export default function NotFound() {
     <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-6 page-transition">
       <div className="w-20 h-20 bg-sage-light rounded-full flex items-center justify-center mb-6">
         <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="10" stroke="#7A8F6D" strokeWidth="1.5" />
-          <path d="M8 15s1.5 2 4 2 4-2 4-2" stroke="#7A8F6D" strokeWidth="1.5" strokeLinecap="round" />
-          <circle cx="9" cy="9" r="1" fill="#7A8F6D" />
-          <circle cx="15" cy="9" r="1" fill="#7A8F6D" />
+          <circle cx="12" cy="12" r="10" stroke="#5C6B52" strokeWidth="1.5" />
+          <path d="M8 15s1.5 2 4 2 4-2 4-2" stroke="#5C6B52" strokeWidth="1.5" strokeLinecap="round" />
+          <circle cx="9" cy="9" r="1" fill="#5C6B52" />
+          <circle cx="15" cy="9" r="1" fill="#5C6B52" />
         </svg>
       </div>
       <h1 className="text-2xl font-heading font-bold text-charcoal mb-2">

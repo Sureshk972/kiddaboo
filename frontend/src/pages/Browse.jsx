@@ -17,8 +17,8 @@ const SORT_OPTIONS = [
 
 // Color palette for playgroup cards without photos
 const CARD_COLORS = [
-  "#A3B18A", "#E8C4B0", "#F0EBE3", "#C08B6E",
-  "#DAE4D0", "#7A8F6D", "#D4A574", "#B8C9A3",
+  "#7A8F6D", "#E8C4B0", "#F0EBE3", "#C08B6E",
+  "#DAE4D0", "#5C6B52", "#D4A574", "#B8C9A3",
 ];
 
 // Transform a Supabase playgroup row into the shape Browse expects

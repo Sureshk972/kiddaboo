@@ -35,12 +35,12 @@ export default function Welcome() {
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
             <path
               d="M16 28V16M16 16C16 16 12 12 8 10C12 10 16 12 16 16ZM16 16C16 16 20 12 24 10C20 10 16 12 16 16Z"
-              stroke="#7A8F6D"
+              stroke="#5C6B52"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            <circle cx="16" cy="8" r="3" fill="#A3B18A" opacity="0.5" />
+            <circle cx="16" cy="8" r="3" fill="#7A8F6D" opacity="0.5" />
           </svg>
         </div>
 

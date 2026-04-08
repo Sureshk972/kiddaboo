@@ -3,7 +3,7 @@ const CheckIcon = () => (
     <circle cx="8" cy="8" r="7" fill="#DAE4D0" />
     <path
       d="M5 8L7 10L11 6"
-      stroke="#7A8F6D"
+      stroke="#5C6B52"
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -16,7 +16,7 @@ const CrossIcon = () => (
     <circle cx="8" cy="8" r="7" fill="#F0EBE3" />
     <path
       d="M5.5 5.5L10.5 10.5M10.5 5.5L5.5 10.5"
-      stroke="#8B7E74"
+      stroke="#6B5E54"
       strokeWidth="1.5"
       strokeLinecap="round"
     />

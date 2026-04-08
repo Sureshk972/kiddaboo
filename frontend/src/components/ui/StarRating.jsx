@@ -21,7 +21,7 @@ export default function StarRating({
             width={size}
             height={size}
             viewBox="0 0 14 14"
-            fill={star <= value ? "#A3B18A" : "#F0EBE3"}
+            fill={star <= value ? "#7A8F6D" : "#F0EBE3"}
           >
             <path d="M7 1L8.8 4.7L13 5.3L10 8.2L10.7 12.3L7 10.4L3.3 12.3L4 8.2L1 5.3L5.2 4.7L7 1Z" />
           </svg>
