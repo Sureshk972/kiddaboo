@@ -41,7 +41,7 @@ export default function CreatePlaygroup() {
   const canContinue = data.name.trim() && data.vibeTags.length > 0;
 
   return (
-    <OnboardingLayout currentStep={1} totalSteps={5} onBack={() => navigate("/profile")}>
+    <OnboardingLayout currentStep={1} totalSteps={5} onBack={() => navigate("/browse")}>
       <div className="flex flex-col gap-6 pt-4">
         <div>
           <h1 className="text-2xl font-heading font-bold text-charcoal mb-2">
