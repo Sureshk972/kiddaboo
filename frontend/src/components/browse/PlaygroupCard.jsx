@@ -97,22 +97,36 @@ export default function PlaygroupCard({ group, onClick, featured = false }) {
               </div>
             </div>
 
-            <div className="mt-6 pt-5 border-t border-cream-dark flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-sage-light flex items-center justify-center">
-                  <span className="text-[10px] font-bold text-sage-dark">{group.hostInitials}</span>
+            <div className="mt-6 pt-5 border-t border-cream-dark">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-sage-light flex items-center justify-center">
+                    <span className="text-[10px] font-bold text-sage-dark">{group.hostInitials}</span>
+                  </div>
+                  <span className="text-sm font-medium text-charcoal">{group.hostName}</span>
+                  {group.verified && (
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                      <circle cx="8" cy="8" r="7" fill="#7A8F6D" />
+                      <path d="M5 8L7 10L11 6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
                 </div>
-                <span className="text-sm font-medium text-charcoal">{group.hostName}</span>
-                {group.verified && (
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                    <circle cx="8" cy="8" r="7" fill="#7A8F6D" />
-                    <path d="M5 8L7 10L11 6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <div className="flex items-center gap-1">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="#5C6B52">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
                   </svg>
-                )}
+                  <span className="text-sm font-bold text-charcoal">{group.rating}</span>
+                </div>
               </div>
-              <span className="bg-sage hover:bg-sage-dark text-white px-5 py-2 rounded-full text-sm font-bold transition-colors">
-                Details
-              </span>
+              <div className={`w-full text-center py-3 rounded-xl text-sm font-bold transition-colors ${
+                spotsLeft > 0
+                  ? "bg-sage text-white group-hover:bg-sage-dark"
+                  : "bg-cream-dark text-taupe"
+              }`}>
+                {spotsLeft > 0
+                  ? group.accessType === "open" ? "Join Group" : "Request to Join"
+                  : "Waitlist"}
+              </div>
             </div>
           </div>
         </div>
@@ -190,7 +204,7 @@ export default function PlaygroupCard({ group, onClick, featured = false }) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-full bg-sage-light flex items-center justify-center">
               <span className="text-[9px] font-bold text-sage-dark">{group.hostInitials}</span>
@@ -209,6 +223,17 @@ export default function PlaygroupCard({ group, onClick, featured = false }) {
             </svg>
             <span className="text-xs font-bold text-charcoal">{group.rating}</span>
           </div>
+        </div>
+
+        {/* CTA Button */}
+        <div className={`w-full text-center py-2.5 rounded-xl text-sm font-bold transition-colors ${
+          spotsLeft > 0
+            ? "bg-sage text-white group-hover:bg-sage-dark"
+            : "bg-cream-dark text-taupe"
+        }`}>
+          {spotsLeft > 0
+            ? group.accessType === "open" ? "Join Group" : "Request to Join"
+            : "Waitlist"}
         </div>
       </div>
     </div>
