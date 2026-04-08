@@ -1,7 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180">
-  <!-- Full bleed background (iOS clips to rounded rect) -->
-  <rect width="180" height="180" fill="#DAE4D0"/>
-  <!-- Sprout -->
-  <path d="M90 140V90M90 90C90 90 68 68 45 56C68 56 90 68 90 90ZM90 90C90 90 112 68 135 56C112 56 90 68 90 90Z" stroke="#5C7250" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="90" cy="48" r="13" fill="#7A8F6D" opacity="0.7"/>
+  <rect width="180" height="180" fill="#5C6B52"/>
+  <!-- Adult figure -->
+  <circle cx="66" cy="48" r="15" fill="#FAF7F2"/>
+  <path d="M66 67C52 67 43 78 43 92V114" stroke="#FAF7F2" stroke-width="10" stroke-linecap="round"/>
+  <path d="M66 67C80 67 89 78 89 92V114" stroke="#FAF7F2" stroke-width="10" stroke-linecap="round"/>
+  <path d="M66 84V114" stroke="#FAF7F2" stroke-width="10" stroke-linecap="round"/>
+  <!-- Child figure -->
+  <circle cx="118" cy="63" r="12" fill="#DAE4D0"/>
+  <path d="M118 78C107 78 100 87 100 98V118" stroke="#DAE4D0" stroke-width="9" stroke-linecap="round"/>
+  <path d="M118 78C129 78 136 87 136 98V118" stroke="#DAE4D0" stroke-width="9" stroke-linecap="round"/>
+  <path d="M118 93V118" stroke="#DAE4D0" stroke-width="9" stroke-linecap="round"/>
+  <!-- Holding hands arc -->
+  <path d="M89 108C94 98 100 98 100 108" stroke="#E8C4B0" stroke-width="6.5" stroke-linecap="round"/>
+  <!-- Playful ground elements -->
+  <circle cx="39" cy="136" r="4.5" fill="#DAE4D0" opacity="0.4"/>
+  <circle cx="90" cy="140" r="6" fill="#DAE4D0" opacity="0.3"/>
+  <circle cx="140" cy="136" r="4" fill="#DAE4D0" opacity="0.4"/>
 </svg>
