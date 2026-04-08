@@ -28,6 +28,7 @@ export default function CreateProfile() {
 
   const handleContinue = async () => {
     const newErrors = {};
+    if (!photoFile && !data.photoUrl) newErrors.photo = "Profile photo is required";
     if (!data.firstName.trim()) newErrors.firstName = "First name is required";
     setErrors(newErrors);
 
@@ -88,7 +89,9 @@ export default function CreateProfile() {
               onChange={handlePhotoChange}
               className="hidden"
             />
-            <div className="w-24 h-24 rounded-full border-2 border-dashed border-taupe/30 bg-cream-dark flex items-center justify-center overflow-hidden group-hover:border-sage transition-colors">
+            <div className={`w-24 h-24 rounded-full border-2 border-dashed bg-cream-dark flex items-center justify-center overflow-hidden group-hover:border-sage transition-colors ${
+              errors.photo ? "border-red-400" : "border-taupe/30"
+            }`}>
               {data.photoUrl ? (
                 <img
                   src={data.photoUrl}
@@ -102,7 +105,9 @@ export default function CreateProfile() {
                 </svg>
               )}
             </div>
-            <p className="text-xs text-taupe/60 text-center mt-2">Add photo</p>
+            <p className={`text-xs text-center mt-2 ${errors.photo ? "text-red-500 font-medium" : "text-taupe/60"}`}>
+              {errors.photo || "Add photo (required)"}
+            </p>
           </label>
         </div>
 
