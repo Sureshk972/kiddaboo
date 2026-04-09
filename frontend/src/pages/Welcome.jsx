@@ -85,6 +85,12 @@ export default function Welcome() {
         >
           Already have an account? <span className="underline underline-offset-4">Sign in</span>
         </button>
+        <button
+          onClick={() => navigate("/verify")}
+          className="text-sm text-sage hover:text-sage-dark transition-colors cursor-pointer bg-transparent border-none"
+        >
+          New here? <span className="underline underline-offset-4">Create an account</span>
+        </button>
       </div>
 
       {/* Legal links */}
