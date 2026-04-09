@@ -1,3 +1,94 @@
+import { useEffect, useRef } from "react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import "leaflet.heat";
+
+function LocationHeatmap({ playgroups }) {
+  const mapRef = useRef(null);
+  const mapInstance = useRef(null);
+
+  const points = playgroups
+    .filter((pg) => pg.latitude && pg.longitude)
+    .map((pg) => [pg.latitude, pg.longitude, 1]);
+
+  useEffect(() => {
+    if (!mapRef.current || points.length === 0) return;
+
+    if (mapInstance.current) {
+      mapInstance.current.remove();
+      mapInstance.current = null;
+    }
+
+    const map = L.map(mapRef.current, {
+      scrollWheelZoom: false,
+      zoomControl: true,
+      attributionControl: false,
+    });
+
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+      maxZoom: 18,
+    }).addTo(map);
+
+    const heat = L.heatLayer(points, {
+      radius: 30,
+      blur: 20,
+      maxZoom: 14,
+      gradient: {
+        0.2: "#FAF7F2",
+        0.4: "#D4C5A9",
+        0.6: "#B07A5B",
+        0.8: "#D97706",
+        1.0: "#DC2626",
+      },
+    }).addTo(map);
+
+    // Also add small dot markers
+    points.forEach(([lat, lng]) => {
+      L.circleMarker([lat, lng], {
+        radius: 5,
+        color: "#5C6B52",
+        fillColor: "#5C6B52",
+        fillOpacity: 0.7,
+        weight: 1,
+      }).addTo(map);
+    });
+
+    if (points.length > 1) {
+      map.fitBounds(points.map(([lat, lng]) => [lat, lng]), { padding: [30, 30], maxZoom: 12 });
+    } else {
+      map.setView([points[0][0], points[0][1]], 10);
+    }
+
+    mapInstance.current = map;
+
+    return () => {
+      if (mapInstance.current) {
+        mapInstance.current.remove();
+        mapInstance.current = null;
+      }
+    };
+  }, [points.length]);
+
+  if (points.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl border border-cream-dark p-5">
+        <h3 className="font-heading text-base font-semibold text-charcoal mb-3">Location Heatmap</h3>
+        <p className="text-taupe text-sm">No playgroups with location data</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-2xl border border-cream-dark p-5">
+      <h3 className="font-heading text-base font-semibold text-charcoal mb-3">
+        Location Heatmap
+      </h3>
+      <p className="text-xs text-taupe mb-3">{points.length} playgroups with location data</p>
+      <div ref={mapRef} className="w-full rounded-xl overflow-hidden" style={{ height: 350 }} />
+    </div>
+  );
+}
+
 function BarChart({ title, data, color }) {
   if (!data || data.length === 0) {
     return (
@@ -91,6 +182,9 @@ export default function AnalyticsTab({ adminStats, playgroups }) {
           </div>
         )}
       </div>
+
+      {/* Location Heatmap */}
+      <LocationHeatmap playgroups={playgroups} />
 
       {/* Geographic Distribution */}
       <div className="bg-white rounded-2xl border border-cream-dark p-5">
