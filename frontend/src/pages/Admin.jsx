@@ -41,7 +41,6 @@ export default function Admin() {
   const [subscriptions, setSubscriptions] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
   const [adminStats, setAdminStats] = useState(null);
-  const [activeTab, setActiveTab] = useState("overview");
   const [togglingId, setTogglingId] = useState(null);
   const [confirmAction, setConfirmAction] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
@@ -433,23 +432,11 @@ export default function Admin() {
     );
   }
 
-  const tabs = [
-    { key: "overview", label: "Overview" },
-    { key: "users", label: "Users" },
-    { key: "playgroups", label: "Playgroups" },
-    { key: "reports", label: `Reports${stats.openReports ? ` (${stats.openReports})` : ""}` },
-    { key: "reviews", label: "Reviews" },
-    { key: "requests", label: "Requests" },
-    { key: "subscriptions", label: "Subs" },
-    { key: "analytics", label: "Analytics" },
-    { key: "audit", label: "Audit" },
-  ];
-
   return (
     <div className="min-h-screen bg-cream pb-24">
       {/* Sticky Header */}
       <div className="sticky top-0 z-30 bg-cream/95 backdrop-blur-sm border-b border-cream-dark">
-        <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
+        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
           <button
             onClick={() => navigate("/browse")}
             className="w-9 h-9 rounded-xl bg-white border border-cream-dark flex items-center justify-center text-charcoal cursor-pointer"
@@ -496,26 +483,9 @@ export default function Admin() {
             </button>
           </div>
         </div>
-
-        {/* Tab Navigation */}
-        <div className="max-w-lg mx-auto px-4 pb-2 flex gap-1 overflow-x-auto no-scrollbar">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors cursor-pointer border-none ${
-                activeTab === tab.key
-                  ? "bg-charcoal text-white"
-                  : "bg-white border border-cream-dark text-taupe hover:text-charcoal"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
       </div>
 
-      <div className="max-w-lg mx-auto px-4 pt-4">
+      <div className="max-w-2xl mx-auto px-4 pt-4">
         {/* Loading State */}
         {loading && (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
@@ -524,80 +494,93 @@ export default function Admin() {
           </div>
         )}
 
-        {!loading && activeTab === "overview" && (
-          <OverviewTab
-            stats={stats}
-            profiles={profiles}
-            playgroups={playgroups}
-            childrenCounts={childrenCounts}
-            recentRequests={recentRequests}
-            reports={reports}
-            setActiveTab={setActiveTab}
-          />
-        )}
+        {!loading && (
+          <div className="space-y-10">
+            {/* Overview */}
+            <section>
+              <OverviewTab
+                stats={stats}
+                profiles={profiles}
+                playgroups={playgroups}
+                childrenCounts={childrenCounts}
+                recentRequests={recentRequests}
+                reports={reports}
+                setActiveTab={() => {}}
+              />
+            </section>
 
-        {!loading && activeTab === "users" && (
-          <UsersTab
-            profiles={profiles}
-            reports={reports}
-            childrenCounts={childrenCounts}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            getUserRole={getUserRole}
-            setConfirmAction={setConfirmAction}
-            suspendUser={suspendUser}
-            unsuspendUser={unsuspendUser}
-            deleteUser={deleteUser}
-          />
-        )}
+            {/* Users */}
+            <section>
+              <UsersTab
+                profiles={profiles}
+                reports={reports}
+                childrenCounts={childrenCounts}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                getUserRole={getUserRole}
+                setConfirmAction={setConfirmAction}
+                suspendUser={suspendUser}
+                unsuspendUser={unsuspendUser}
+                deleteUser={deleteUser}
+              />
+            </section>
 
-        {!loading && activeTab === "playgroups" && (
-          <PlaygroupsTab
-            playgroups={playgroups}
-            togglingId={togglingId}
-            togglePlaygroupActive={togglePlaygroupActive}
-            flagPlaygroup={flagPlaygroup}
-            unflagPlaygroup={unflagPlaygroup}
-            bulkDeactivatePlaygroups={bulkDeactivatePlaygroups}
-            bulkFlagPlaygroups={bulkFlagPlaygroups}
-            setConfirmAction={setConfirmAction}
-          />
-        )}
+            {/* Playgroups */}
+            <section>
+              <PlaygroupsTab
+                playgroups={playgroups}
+                togglingId={togglingId}
+                togglePlaygroupActive={togglePlaygroupActive}
+                flagPlaygroup={flagPlaygroup}
+                unflagPlaygroup={unflagPlaygroup}
+                bulkDeactivatePlaygroups={bulkDeactivatePlaygroups}
+                bulkFlagPlaygroups={bulkFlagPlaygroups}
+                setConfirmAction={setConfirmAction}
+              />
+            </section>
 
-        {!loading && activeTab === "reports" && (
-          <ReportsTab
-            reports={reports}
-            stats={stats}
-            reportFilter={reportFilter}
-            setReportFilter={setReportFilter}
-            setConfirmAction={setConfirmAction}
-            updateReportStatus={updateReportStatus}
-            suspendUser={suspendUser}
-          />
-        )}
+            {/* Reports */}
+            <section>
+              <ReportsTab
+                reports={reports}
+                stats={stats}
+                reportFilter={reportFilter}
+                setReportFilter={setReportFilter}
+                setConfirmAction={setConfirmAction}
+                updateReportStatus={updateReportStatus}
+                suspendUser={suspendUser}
+              />
+            </section>
 
-        {!loading && activeTab === "reviews" && (
-          <ReviewsTab
-            reviews={reviews}
-            setConfirmAction={setConfirmAction}
-            deleteReview={deleteReview}
-          />
-        )}
+            {/* Reviews */}
+            <section>
+              <ReviewsTab
+                reviews={reviews}
+                setConfirmAction={setConfirmAction}
+                deleteReview={deleteReview}
+              />
+            </section>
 
-        {!loading && activeTab === "requests" && (
-          <RequestsTab recentRequests={recentRequests} />
-        )}
+            {/* Requests */}
+            <section>
+              <RequestsTab recentRequests={recentRequests} />
+            </section>
 
-        {!loading && activeTab === "subscriptions" && (
-          <SubscriptionsTab subscriptions={subscriptions} />
-        )}
+            {/* Subscriptions */}
+            <section>
+              <SubscriptionsTab subscriptions={subscriptions} />
+            </section>
 
-        {!loading && activeTab === "analytics" && (
-          <AnalyticsTab adminStats={adminStats} playgroups={playgroups} />
-        )}
+            {/* Analytics */}
+            <section>
+              <AnalyticsTab adminStats={adminStats} playgroups={playgroups} />
+            </section>
 
-        {!loading && activeTab === "audit" && (
-          <AuditLogTab auditLogs={auditLogs} />
+            {/* Audit Log */}
+            <section>
+              <AuditLogTab auditLogs={auditLogs} />
+            </section>
+          </div>
         )}
       </div>
 
