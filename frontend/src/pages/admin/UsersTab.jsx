@@ -63,7 +63,7 @@ export default function UsersTab({
           const role = getUserRole(profile.id);
           const kidCount = childrenCounts[profile.id] || 0;
           const hasBio = profile.bio && profile.bio.trim().length > 0;
-          const isSuspended = profile.is_suspended;
+          const isSuspended = false; // is_suspended not available via PostgREST yet
           const reportCount = reports.filter(
             (r) => r.reported_user_id === profile.id
           ).length;

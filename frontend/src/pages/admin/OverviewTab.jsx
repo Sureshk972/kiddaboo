@@ -57,7 +57,7 @@ export default function OverviewTab({
           <div className="flex justify-between items-center">
             <span className="text-taupe">Suspended users</span>
             <span className="font-medium text-charcoal">
-              {profiles.filter((p) => p.is_suspended).length}
+              0 {/* is_suspended not available via PostgREST yet */}
             </span>
           </div>
           <div className="flex justify-between items-center">

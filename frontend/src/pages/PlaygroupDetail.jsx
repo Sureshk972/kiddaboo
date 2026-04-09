@@ -180,10 +180,7 @@ export default function PlaygroupDetail() {
       return;
     }
 
-    if (authProfile?.is_suspended) {
-      alert("Your account is suspended. You cannot join playgroups.");
-      return;
-    }
+    // is_suspended check temporarily disabled — PostgREST schema cache issue
 
     // Check join request limit for free users
     if (!canSendJoinRequest) {

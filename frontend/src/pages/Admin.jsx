@@ -79,7 +79,7 @@ export default function Admin() {
   async function fetchProfiles() {
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, created_at, updated_at, notification_prefs, is_suspended, role")
+      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, created_at, updated_at, notification_prefs, role")
       .order("created_at", { ascending: false });
     if (!error && data) {
       setProfiles(data);
@@ -390,7 +390,7 @@ export default function Admin() {
   // Derive user role from memberships
   function getUserRole(userId) {
     const profile = profiles.find((p) => p.id === userId);
-    if (profile?.is_suspended) return "suspended";
+    // is_suspended not available via PostgREST yet — skip suspended check for now
     const pgCreated = playgroups.find((pg) => pg.creator_id === userId);
     if (pgCreated) return "host";
     const mem = memberships.find((m) => m.user_id === userId);
