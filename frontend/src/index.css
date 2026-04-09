@@ -68,3 +68,7 @@
 .page-fade {
   animation: page-fade-in 0.25s ease-out both;
 }
+
+/* Hide scrollbar but keep scroll */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
+import { timeAgo } from "./admin/timeAgo";
 
 import ConfirmModal from "./admin/ConfirmModal";
-import OverviewTab from "./admin/OverviewTab";
 import UsersTab from "./admin/UsersTab";
 import PlaygroupsTab from "./admin/PlaygroupsTab";
 import ReportsTab from "./admin/ReportsTab";
@@ -423,165 +423,364 @@ export default function Admin() {
     return mem?.role || "none";
   }
 
+  const [activeSection, setActiveSection] = useState("dashboard");
+
   // Loading state during auth check
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="w-10 h-10 rounded-full border-3 border-sage border-t-transparent animate-spin" />
+      <div className="min-h-screen bg-[#eeffdf] flex items-center justify-center" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <div className="w-10 h-10 rounded-full border-3 border-[#44533b] border-t-transparent animate-spin" />
       </div>
     );
   }
 
+  const sidebarItems = [
+    { key: "dashboard", label: "Dashboard", icon: "dashboard" },
+    { key: "users", label: "Users", icon: "group" },
+    { key: "playgroups", label: "Playgroups", icon: "child_care" },
+    { key: "reports", label: "Reports", icon: "flag", badge: stats.openReports },
+    { key: "reviews", label: "Reviews", icon: "rate_review" },
+    { key: "requests", label: "Requests", icon: "pending_actions" },
+    { key: "subscriptions", label: "Subscriptions", icon: "payments" },
+    { key: "analytics", label: "Analytics", icon: "analytics" },
+    { key: "audit", label: "Audit Log", icon: "history" },
+  ];
+
+  const activePlaygroups = playgroups.filter((pg) => pg.is_active).length;
+
   return (
-    <div className="min-h-screen bg-cream pb-24">
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-30 bg-cream/95 backdrop-blur-sm border-b border-cream-dark">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
+    <div className="min-h-screen bg-[#eeffdf]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+      {/* Sidebar — desktop only */}
+      <aside className="fixed left-0 top-0 h-full hidden md:flex flex-col p-6 w-72 bg-[#e8f9d9] z-50">
+        <div className="mb-10">
+          <span className="text-2xl font-black text-[#44533b] tracking-tighter" style={{ fontFamily: "'Manrope', sans-serif" }}>Kiddaboo</span>
+        </div>
+        <nav className="flex-1 space-y-1">
+          {sidebarItems.map((item) => (
+            <button
+              key={item.key}
+              onClick={() => setActiveSection(item.key)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors cursor-pointer text-left ${
+                activeSection === item.key
+                  ? "text-[#44533b] font-bold bg-white"
+                  : "text-[#5c6b52] hover:bg-white/50"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
+              <span className="font-semibold tracking-tight text-sm" style={{ fontFamily: "'Manrope', sans-serif" }}>{item.label}</span>
+              {item.badge > 0 && (
+                <span className="ml-auto bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded-full">{item.badge}</span>
+              )}
+            </button>
+          ))}
+        </nav>
+        <div className="mt-auto pt-6">
           <button
             onClick={() => navigate("/browse")}
-            className="w-9 h-9 rounded-xl bg-white border border-cream-dark flex items-center justify-center text-charcoal cursor-pointer"
+            className="w-full flex items-center gap-3 px-4 py-3 text-[#5c6b52] hover:bg-white/50 rounded-lg transition-colors cursor-pointer"
           >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
+            <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+            <span className="font-semibold tracking-tight text-sm" style={{ fontFamily: "'Manrope', sans-serif" }}>Back to App</span>
           </button>
-          <h1 className="font-heading text-xl font-semibold text-charcoal">
-            Admin Dashboard
-          </h1>
-          <div className="ml-auto">
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <div className="md:ml-72 min-h-screen">
+        {/* Sticky Header */}
+        <header className="sticky top-0 z-40 flex justify-between items-center px-6 md:px-8 h-16 md:h-20 bg-[#eeffdf]/80 backdrop-blur-xl shadow-sm">
+          <div className="flex items-center gap-4">
+            <button className="md:hidden text-[#44533b] cursor-pointer" onClick={() => navigate("/browse")}>
+              <span className="material-symbols-outlined">arrow_back</span>
+            </button>
+            <h1 className="text-lg font-bold text-[#44533b]" style={{ fontFamily: "'Manrope', sans-serif" }}>
+              {sidebarItems.find((s) => s.key === activeSection)?.label || "Dashboard"}
+            </h1>
+          </div>
+          <div className="flex items-center gap-4">
             <button
               onClick={fetchAllData}
               disabled={loading}
-              className="w-9 h-9 rounded-xl bg-white border border-cream-dark flex items-center justify-center text-taupe hover:text-charcoal transition-colors disabled:opacity-50 cursor-pointer"
+              className="text-[#5c6b52] hover:opacity-80 transition-opacity cursor-pointer disabled:opacity-40"
               title="Refresh data"
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className={loading ? "animate-spin" : ""}
-              >
-                <path d="M21 2v6h-6" />
-                <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
-                <path d="M3 22v-6h6" />
-                <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
-              </svg>
+              <span className={`material-symbols-outlined ${loading ? "animate-spin" : ""}`}>refresh</span>
             </button>
+            {profile?.photo_url ? (
+              <img src={profile.photo_url} alt="Admin" className="h-10 w-10 rounded-full object-cover ring-2 ring-[#44533b]/10" />
+            ) : (
+              <div className="h-10 w-10 rounded-full bg-[#d7e8c9] flex items-center justify-center ring-2 ring-[#44533b]/10">
+                <span className="text-sm font-bold text-[#44533b]">
+                  {(profile?.first_name?.[0] || "A").toUpperCase()}
+                </span>
+              </div>
+            )}
           </div>
+        </header>
+
+        {/* Mobile section pills */}
+        <div className="md:hidden px-4 pt-3 pb-1 flex gap-1.5 overflow-x-auto no-scrollbar">
+          {sidebarItems.map((item) => (
+            <button
+              key={item.key}
+              onClick={() => setActiveSection(item.key)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border-none ${
+                activeSection === item.key
+                  ? "bg-[#44533b] text-white"
+                  : "bg-white text-[#5c6b52]"
+              }`}
+            >
+              {item.label}
+              {item.badge > 0 && ` (${item.badge})`}
+            </button>
+          ))}
         </div>
-      </div>
 
-      <div className="max-w-2xl mx-auto px-4 pt-4">
-        {/* Loading State */}
-        {loading && (
-          <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <div className="w-10 h-10 rounded-full border-3 border-sage border-t-transparent animate-spin" />
-            <p className="text-taupe text-sm">Loading admin data...</p>
-          </div>
-        )}
+        <main className="p-6 md:p-10 space-y-10 max-w-7xl mx-auto">
+          {/* Loading */}
+          {loading && (
+            <div className="flex flex-col items-center justify-center py-20 gap-3">
+              <div className="w-10 h-10 rounded-full border-3 border-[#44533b] border-t-transparent animate-spin" />
+              <p className="text-[#5c6b52] text-sm">Loading admin data...</p>
+            </div>
+          )}
 
-        {!loading && (
-          <div className="space-y-10">
-            {/* Overview */}
-            <section>
-              <OverviewTab
-                stats={stats}
-                profiles={profiles}
-                playgroups={playgroups}
-                childrenCounts={childrenCounts}
-                recentRequests={recentRequests}
-                reports={reports}
-                setActiveTab={() => {}}
-              />
-            </section>
+          {!loading && activeSection === "dashboard" && (
+            <>
+              {/* Welcome */}
+              <section className="space-y-2">
+                <h2 className="text-3xl md:text-5xl font-extrabold tracking-tighter text-[#44533b]" style={{ fontFamily: "'Manrope', sans-serif" }}>
+                  Welcome back{profile?.first_name ? `, ${profile.first_name}` : ""}
+                </h2>
+                <p className="text-[#5c6b52] text-lg">Here is what's happening with Kiddaboo today.</p>
+              </section>
 
-            {/* Users */}
-            <section>
-              <UsersTab
-                profiles={profiles}
-                reports={reports}
-                childrenCounts={childrenCounts}
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                getUserRole={getUserRole}
-                setConfirmAction={setConfirmAction}
-                suspendUser={suspendUser}
-                unsuspendUser={unsuspendUser}
-                deleteUser={deleteUser}
-              />
-            </section>
+              {/* Stat Cards */}
+              <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white p-6 md:p-8 rounded-xl relative overflow-hidden group">
+                  <div className="flex justify-between items-start">
+                    <span className="material-symbols-outlined text-[#44533b] text-3xl">groups</span>
+                  </div>
+                  <div className="mt-6 md:mt-8">
+                    <h3 className="text-[#5c6b52] text-xs font-bold uppercase tracking-widest" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Total Users</h3>
+                    <p className="text-4xl md:text-5xl font-black text-[#44533b] mt-2" style={{ fontFamily: "'Manrope', sans-serif" }}>{stats.totalUsers ?? "—"}</p>
+                  </div>
+                  <div className="absolute bottom-0 right-0 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <span className="material-symbols-outlined" style={{ fontSize: "120px", transform: "translate(25%, 25%)" }}>groups</span>
+                  </div>
+                </div>
 
-            {/* Playgroups */}
-            <section>
-              <PlaygroupsTab
-                playgroups={playgroups}
-                togglingId={togglingId}
-                togglePlaygroupActive={togglePlaygroupActive}
-                flagPlaygroup={flagPlaygroup}
-                unflagPlaygroup={unflagPlaygroup}
-                bulkDeactivatePlaygroups={bulkDeactivatePlaygroups}
-                bulkFlagPlaygroups={bulkFlagPlaygroups}
-                setConfirmAction={setConfirmAction}
-              />
-            </section>
+                <div className="bg-white p-6 md:p-8 rounded-xl relative overflow-hidden group">
+                  <div className="flex justify-between items-start">
+                    <span className="material-symbols-outlined text-[#44533b] text-3xl">child_care</span>
+                    <div className="text-[#5c6b52] font-bold text-xs">Active Now</div>
+                  </div>
+                  <div className="mt-6 md:mt-8">
+                    <h3 className="text-[#5c6b52] text-xs font-bold uppercase tracking-widest">Active Playgroups</h3>
+                    <p className="text-4xl md:text-5xl font-black text-[#44533b] mt-2" style={{ fontFamily: "'Manrope', sans-serif" }}>{activePlaygroups}</p>
+                  </div>
+                  <div className="absolute bottom-0 right-0 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <span className="material-symbols-outlined" style={{ fontSize: "120px", transform: "translate(25%, 25%)" }}>child_care</span>
+                  </div>
+                </div>
 
-            {/* Reports */}
-            <section>
-              <ReportsTab
-                reports={reports}
-                stats={stats}
-                reportFilter={reportFilter}
-                setReportFilter={setReportFilter}
-                setConfirmAction={setConfirmAction}
-                updateReportStatus={updateReportStatus}
-                suspendUser={suspendUser}
-              />
-            </section>
+                <div className="bg-white p-6 md:p-8 rounded-xl relative overflow-hidden group">
+                  <div className="flex justify-between items-start">
+                    <span className="material-symbols-outlined text-[#87503a] text-3xl">flag</span>
+                    {stats.openReports > 0 && (
+                      <div className="px-3 py-1 bg-red-50 text-red-700 rounded-full text-xs font-bold">Action Needed</div>
+                    )}
+                  </div>
+                  <div className="mt-6 md:mt-8">
+                    <h3 className="text-[#5c6b52] text-xs font-bold uppercase tracking-widest">Open Reports</h3>
+                    <p className="text-4xl md:text-5xl font-black text-[#44533b] mt-2" style={{ fontFamily: "'Manrope', sans-serif" }}>
+                      {String(stats.openReports ?? 0).padStart(2, "0")}
+                    </p>
+                  </div>
+                  <div className="absolute bottom-0 right-0 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <span className="material-symbols-outlined" style={{ fontSize: "120px", transform: "translate(25%, 25%)" }}>flag</span>
+                  </div>
+                </div>
+              </section>
 
-            {/* Reviews */}
-            <section>
-              <ReviewsTab
-                reviews={reviews}
-                setConfirmAction={setConfirmAction}
-                deleteReview={deleteReview}
-              />
-            </section>
+              {/* Activity & Quick Actions Grid */}
+              <section className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Recent Activity */}
+                <div className="lg:col-span-8 space-y-6">
+                  <div className="flex justify-between items-end">
+                    <h3 className="text-2xl font-bold tracking-tight text-[#44533b]" style={{ fontFamily: "'Manrope', sans-serif" }}>Recent Activity</h3>
+                    <button onClick={() => setActiveSection("audit")} className="text-[#44533b] font-bold text-sm hover:underline underline-offset-4 cursor-pointer bg-transparent border-none">
+                      View All Logs
+                    </button>
+                  </div>
+                  <div className="bg-[#e8f9d9] rounded-2xl overflow-hidden">
+                    <div className="divide-y divide-[#d7e8c9]/50">
+                      {auditLogs.slice(0, 5).map((log) => (
+                        <div key={log.id} className="p-5 md:p-6 flex items-center gap-4 hover:bg-white/50 transition-colors">
+                          <div className={`h-11 w-11 rounded-full flex items-center justify-center shrink-0 ${
+                            log.action?.includes("delete") || log.action?.includes("suspend")
+                              ? "bg-red-50 text-red-600"
+                              : log.action?.includes("flag")
+                              ? "bg-amber-50 text-amber-600"
+                              : "bg-[#d7e8c9] text-[#44533b]"
+                          }`}>
+                            <span className="material-symbols-outlined text-[20px]">
+                              {log.action?.includes("delete") ? "delete" :
+                               log.action?.includes("suspend") ? "block" :
+                               log.action?.includes("flag") ? "flag" :
+                               log.action?.includes("playgroup") ? "child_care" :
+                               log.action?.includes("report") ? "flag" :
+                               log.action?.includes("review") ? "rate_review" : "history"}
+                            </span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[#121f0c] font-semibold text-sm truncate">
+                              {log.profiles?.first_name || "Admin"}: <span className="text-[#44533b]">{log.action?.replace(/_/g, " ")}</span>
+                            </p>
+                            <p className="text-[#5c6b52] text-xs mt-0.5">
+                              {log.target_type} {log.target_id ? `• ${log.target_id.slice(0, 8)}...` : ""}
+                            </p>
+                          </div>
+                          <span className="text-xs text-[#5c6b52] font-medium shrink-0">{timeAgo(log.created_at)}</span>
+                        </div>
+                      ))}
+                      {auditLogs.length === 0 && (
+                        <div className="p-8 text-center text-[#5c6b52] text-sm">No recent activity</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
 
-            {/* Requests */}
-            <section>
-              <RequestsTab recentRequests={recentRequests} />
-            </section>
+                {/* Quick Actions */}
+                <div className="lg:col-span-4 space-y-6">
+                  <h3 className="text-2xl font-bold tracking-tight text-[#44533b]" style={{ fontFamily: "'Manrope', sans-serif" }}>Quick Actions</h3>
+                  <div className="grid grid-cols-1 gap-4">
+                    <button
+                      onClick={() => setActiveSection("users")}
+                      className="flex items-center gap-4 p-5 bg-[#44533b] text-white rounded-xl hover:bg-[#5c6b52] transition-all text-left shadow-lg shadow-[#44533b]/10 group cursor-pointer border-none"
+                    >
+                      <span className="material-symbols-outlined p-2 bg-white/10 rounded-lg group-hover:scale-110 transition-transform">manage_accounts</span>
+                      <div>
+                        <span className="block font-bold">Manage Users</span>
+                        <span className="text-xs opacity-70">Audit accounts & permissions</span>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => setActiveSection("playgroups")}
+                      className="flex items-center gap-4 p-5 bg-white text-[#44533b] rounded-xl hover:bg-[#44533b] hover:text-white transition-all text-left border border-[#d7e8c9] group cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined p-2 bg-[#44533b]/5 rounded-lg group-hover:bg-white/10 transition-colors">child_care</span>
+                      <div>
+                        <span className="block font-bold">Manage Playgroups</span>
+                        <span className="text-xs text-[#5c6b52] group-hover:text-white/70">Flag, deactivate, moderate</span>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => setActiveSection("reports")}
+                      className="flex items-center gap-4 p-5 bg-white text-[#44533b] rounded-xl hover:bg-[#44533b] hover:text-white transition-all text-left border border-[#d7e8c9] group cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined p-2 bg-[#44533b]/5 rounded-lg group-hover:bg-white/10 transition-colors">flag</span>
+                      <div>
+                        <span className="block font-bold">Review Reports</span>
+                        <span className="text-xs text-[#5c6b52] group-hover:text-white/70">{stats.openReports || 0} pending reports</span>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => setActiveSection("analytics")}
+                      className="flex items-center gap-4 p-5 bg-white text-[#44533b] rounded-xl hover:bg-[#44533b] hover:text-white transition-all text-left border border-[#d7e8c9] group cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined p-2 bg-[#44533b]/5 rounded-lg group-hover:bg-white/10 transition-colors">analytics</span>
+                      <div>
+                        <span className="block font-bold">View Analytics</span>
+                        <span className="text-xs text-[#5c6b52] group-hover:text-white/70">Growth, heatmap & metrics</span>
+                      </div>
+                    </button>
+                  </div>
 
-            {/* Subscriptions */}
-            <section>
-              <SubscriptionsTab subscriptions={subscriptions} />
-            </section>
+                  {/* Platform Health */}
+                  <div className="p-6 bg-[#feb69a] text-[#350f02] rounded-2xl relative overflow-hidden">
+                    <h4 className="font-bold mb-2">Platform Health</h4>
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-3 h-3 bg-green-700 rounded-full animate-pulse"></div>
+                      <span className="text-sm font-medium">All systems operational</span>
+                    </div>
+                    <div className="h-2 bg-[#350f02]/10 rounded-full overflow-hidden">
+                      <div className="h-full bg-[#350f02] rounded-full" style={{ width: "98%" }}></div>
+                    </div>
+                    <p className="text-[10px] mt-2 opacity-60 uppercase tracking-wider">
+                      {profiles.length} users • {playgroups.length} playgroups • {subscriptions.length} subs
+                    </p>
+                  </div>
+                </div>
+              </section>
+            </>
+          )}
 
-            {/* Analytics */}
-            <section>
-              <AnalyticsTab adminStats={adminStats} playgroups={playgroups} />
-            </section>
+          {/* Section views */}
+          {!loading && activeSection === "users" && (
+            <UsersTab
+              profiles={profiles}
+              reports={reports}
+              childrenCounts={childrenCounts}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              getUserRole={getUserRole}
+              setConfirmAction={setConfirmAction}
+              suspendUser={suspendUser}
+              unsuspendUser={unsuspendUser}
+              deleteUser={deleteUser}
+            />
+          )}
 
-            {/* Audit Log */}
-            <section>
-              <AuditLogTab auditLogs={auditLogs} />
-            </section>
-          </div>
-        )}
+          {!loading && activeSection === "playgroups" && (
+            <PlaygroupsTab
+              playgroups={playgroups}
+              togglingId={togglingId}
+              togglePlaygroupActive={togglePlaygroupActive}
+              flagPlaygroup={flagPlaygroup}
+              unflagPlaygroup={unflagPlaygroup}
+              bulkDeactivatePlaygroups={bulkDeactivatePlaygroups}
+              bulkFlagPlaygroups={bulkFlagPlaygroups}
+              setConfirmAction={setConfirmAction}
+            />
+          )}
+
+          {!loading && activeSection === "reports" && (
+            <ReportsTab
+              reports={reports}
+              stats={stats}
+              reportFilter={reportFilter}
+              setReportFilter={setReportFilter}
+              setConfirmAction={setConfirmAction}
+              updateReportStatus={updateReportStatus}
+              suspendUser={suspendUser}
+            />
+          )}
+
+          {!loading && activeSection === "reviews" && (
+            <ReviewsTab
+              reviews={reviews}
+              setConfirmAction={setConfirmAction}
+              deleteReview={deleteReview}
+            />
+          )}
+
+          {!loading && activeSection === "requests" && (
+            <RequestsTab recentRequests={recentRequests} />
+          )}
+
+          {!loading && activeSection === "subscriptions" && (
+            <SubscriptionsTab subscriptions={subscriptions} />
+          )}
+
+          {!loading && activeSection === "analytics" && (
+            <AnalyticsTab adminStats={adminStats} playgroups={playgroups} />
+          )}
+
+          {!loading && activeSection === "audit" && (
+            <AuditLogTab auditLogs={auditLogs} />
+          )}
+        </main>
       </div>
 
       {/* Confirm Modal */}
