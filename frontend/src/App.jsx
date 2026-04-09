@@ -31,6 +31,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Premium from "./pages/Premium";
 import NotFound from "./pages/NotFound";
 import RequireAuth from "./components/auth/RequireAuth";
+import RequireAdmin from "./components/auth/RequireAdmin";
 
 export default function App() {
   return (
@@ -74,8 +75,8 @@ export default function App() {
             <Route path="/my-profile" element={<RequireAuth><AppLayout><MyProfile /></AppLayout></RequireAuth>} />
             <Route path="/host/dashboard" element={<RequireAuth><AppLayout><HostDashboard /></AppLayout></RequireAuth>} />
 
-            {/* Admin — requires auth, no tab bar */}
-            <Route path="/admin" element={<RequireAuth><Admin /></RequireAuth>} />
+            {/* Admin — requires auth + admin role, no tab bar */}
+            <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
 
             {/* 404 catch-all */}
             <Route path="*" element={<NotFound />} />

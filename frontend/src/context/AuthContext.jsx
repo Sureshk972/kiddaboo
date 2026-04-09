@@ -39,7 +39,7 @@ export function AuthProvider({ children }) {
   const fetchProfile = async (userId) => {
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, created_at, updated_at, notification_prefs")
+      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, created_at, updated_at, notification_prefs, role")
       .eq("id", userId)
       .single();
 
@@ -82,7 +82,7 @@ export function AuthProvider({ children }) {
       .from("profiles")
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq("id", user.id)
-      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, created_at, updated_at, notification_prefs")
+      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, created_at, updated_at, notification_prefs, role")
       .single();
 
     if (data) {
@@ -91,12 +91,15 @@ export function AuthProvider({ children }) {
     return { data, error };
   };
 
+  const isAdmin = profile?.role === "admin";
+
   return (
     <AuthContext.Provider
       value={{
         user,
         profile,
         loading,
+        isAdmin,
         signUp,
         signIn,
         signOut,
