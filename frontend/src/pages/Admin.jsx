@@ -17,7 +17,7 @@ import AuditLogTab from "./admin/AuditLogTab";
 // Admin access is now enforced via database role column + RequireAdmin wrapper in App.jsx
 
 export default function Admin() {
-  const { user, loading: authLoading, isAdmin } = useAuth();
+  const { user, profile, loading: authLoading, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
