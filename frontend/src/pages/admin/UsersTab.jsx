@@ -77,20 +77,28 @@ export default function UsersTab({
             >
               <div className="flex items-start gap-3">
                 {/* Avatar */}
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-                    isSuspended ? "bg-red-100" : "bg-sage-light"
-                  }`}
-                >
-                  <span
-                    className={`text-sm font-medium ${
-                      isSuspended ? "text-red-600" : "text-sage-dark"
+                {profile.photo_url ? (
+                  <img
+                    src={profile.photo_url}
+                    alt={profile.first_name || "User"}
+                    className="w-10 h-10 rounded-full object-cover shrink-0"
+                  />
+                ) : (
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                      isSuspended ? "bg-red-100" : "bg-sage-light"
                     }`}
                   >
-                    {(profile.first_name?.[0] || "?").toUpperCase()}
-                    {(profile.last_name?.[0] || "").toUpperCase()}
-                  </span>
-                </div>
+                    <span
+                      className={`text-sm font-medium ${
+                        isSuspended ? "text-red-600" : "text-sage-dark"
+                      }`}
+                    >
+                      {(profile.first_name?.[0] || "?").toUpperCase()}
+                      {(profile.last_name?.[0] || "").toUpperCase()}
+                    </span>
+                  </div>
+                )}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <p className="font-medium text-charcoal text-sm truncate">
