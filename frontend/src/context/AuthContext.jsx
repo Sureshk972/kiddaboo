@@ -88,6 +88,9 @@ export function AuthProvider({ children }) {
       .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, is_suspended, created_at, updated_at, notification_prefs, role")
       .single();
 
+    if (error) {
+      console.error("updateProfile failed:", error);
+    }
     if (data) {
       setProfile(data);
     }

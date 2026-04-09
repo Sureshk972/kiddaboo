@@ -60,6 +60,7 @@ export default function CreateProfile() {
       setSaving(false);
 
       if (error) {
+        console.error("CreateProfile save error:", error);
         setErrors({ save: "Could not save profile. Please try again." });
         return;
       }
