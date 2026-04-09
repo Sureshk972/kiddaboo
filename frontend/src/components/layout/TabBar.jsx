@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const TABS = [
   {
@@ -105,6 +106,7 @@ const TABS = [
 export default function TabBar({ badges = {} }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { signOut } = useAuth();
 
   return (
     <nav aria-label="Main navigation" className="sticky bottom-0 z-30 bg-cream/95 backdrop-blur-sm border-t border-cream-dark pb-[env(safe-area-inset-bottom)]">
@@ -147,6 +149,18 @@ export default function TabBar({ badges = {} }) {
             </button>
           );
         })}
+        <button
+          onClick={async () => { await signOut(); navigate("/"); }}
+          aria-label="Sign out"
+          className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-colors duration-150 cursor-pointer bg-transparent border-none min-w-[60px] text-taupe/50 hover:text-taupe"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <polyline points="16 17 21 12 16 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span className="text-[10px] font-medium text-taupe/50">Sign out</span>
+        </button>
       </div>
     </nav>
   );
