@@ -12,11 +12,14 @@ export default function useBlocks(userId) {
     }
 
     const fetchBlocks = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("blocks")
         .select("blocked_user_id")
         .eq("blocker_id", userId);
 
+      if (error) {
+        console.error("Failed to fetch blocks:", error);
+      }
       if (data) {
         setBlockedIds(new Set(data.map((b) => b.blocked_user_id)));
       }

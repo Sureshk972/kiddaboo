@@ -21,11 +21,14 @@ export function useSubscription() {
   }, [user]);
 
   async function fetchSubscriptions() {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("subscriptions")
       .select("*")
       .eq("user_id", user.id);
 
+    if (error) {
+      console.error("Failed to fetch subscriptions:", error);
+    }
     const now = new Date();
     const subs = data || [];
 
@@ -43,13 +46,16 @@ export function useSubscription() {
 
   async function fetchUsage() {
     const month = new Date().toISOString().slice(0, 7); // '2026-04'
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("join_request_usage")
       .select("*")
       .eq("user_id", user.id)
       .eq("month", month)
       .single();
 
+    if (error) {
+      console.error("Failed to fetch usage:", error);
+    }
     setUsage(data || { request_count: 0 });
   }
 

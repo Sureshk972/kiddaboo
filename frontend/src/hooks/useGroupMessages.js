@@ -115,7 +115,7 @@ export default function useGroupMessages(playgroupId, userId) {
   const loadMore = useCallback(async () => {
     if (!oldestRef.current || !hasMore) return;
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("messages")
       .select(
         "id, content, created_at, sender_id, profiles:sender_id ( first_name, last_name, photo_url )"
@@ -124,6 +124,11 @@ export default function useGroupMessages(playgroupId, userId) {
       .lt("created_at", oldestRef.current)
       .order("created_at", { ascending: false })
       .limit(PAGE_SIZE);
+
+    if (error) {
+      console.error("Failed to load more messages:", error);
+      return;
+    }
 
     if (data && data.length > 0) {
       const reversed = data.reverse();

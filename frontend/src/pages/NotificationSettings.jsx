@@ -104,6 +104,7 @@ export default function NotificationSettings() {
 
   // Save preference toggle
   const togglePref = async (key) => {
+    if (!user) return;
     const updated = { ...prefs, [key]: !prefs[key] };
     setPrefs(updated);
     setSaving(true);

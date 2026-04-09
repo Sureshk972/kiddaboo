@@ -32,49 +32,53 @@ export default function useConversations(userId) {
     }
 
     // For each playgroup, get the latest message
-    const convos = await Promise.all(
-      memberships
-        .filter((m) => m.playgroups)
-        .map(async (m) => {
-          const pg = m.playgroups;
+    try {
+      const convos = await Promise.all(
+        memberships
+          .filter((m) => m.playgroups)
+          .map(async (m) => {
+            const pg = m.playgroups;
 
-          const { data: lastMsg } = await supabase
-            .from("messages")
-            .select("content, created_at, profiles:sender_id ( first_name )")
-            .eq("playgroup_id", pg.id)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .single();
+            const { data: lastMsg } = await supabase
+              .from("messages")
+              .select("content, created_at, profiles:sender_id ( first_name )")
+              .eq("playgroup_id", pg.id)
+              .order("created_at", { ascending: false })
+              .limit(1)
+              .single();
 
-          // Count members
-          const { count } = await supabase
-            .from("memberships")
-            .select("id", { count: "exact", head: true })
-            .eq("playgroup_id", pg.id)
-            .in("role", ["creator", "member"]);
+            // Count members
+            const { count } = await supabase
+              .from("memberships")
+              .select("id", { count: "exact", head: true })
+              .eq("playgroup_id", pg.id)
+              .in("role", ["creator", "member"]);
 
-          return {
-            playgroupId: pg.id,
-            name: pg.name,
-            photo: pg.photos?.[0] || null,
-            role: m.role,
-            memberCount: count || 0,
-            lastMessage: lastMsg?.content || null,
-            lastSender: lastMsg?.profiles?.first_name || null,
-            lastMessageAt: lastMsg?.created_at || null,
-          };
-        })
-    );
+            return {
+              playgroupId: pg.id,
+              name: pg.name,
+              photo: pg.photos?.[0] || null,
+              role: m.role,
+              memberCount: count || 0,
+              lastMessage: lastMsg?.content || null,
+              lastSender: lastMsg?.profiles?.first_name || null,
+              lastMessageAt: lastMsg?.created_at || null,
+            };
+          })
+      );
 
-    // Sort by last message time (most recent first), no-message groups at bottom
-    convos.sort((a, b) => {
-      if (!a.lastMessageAt && !b.lastMessageAt) return 0;
-      if (!a.lastMessageAt) return 1;
-      if (!b.lastMessageAt) return -1;
-      return new Date(b.lastMessageAt) - new Date(a.lastMessageAt);
-    });
+      // Sort by last message time (most recent first), no-message groups at bottom
+      convos.sort((a, b) => {
+        if (!a.lastMessageAt && !b.lastMessageAt) return 0;
+        if (!a.lastMessageAt) return 1;
+        if (!b.lastMessageAt) return -1;
+        return new Date(b.lastMessageAt) - new Date(a.lastMessageAt);
+      });
 
-    setConversations(convos);
+      setConversations(convos);
+    } catch (err) {
+      console.error("Failed to fetch conversations:", err);
+    }
     setLoading(false);
   };
 

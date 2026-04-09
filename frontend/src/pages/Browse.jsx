@@ -123,6 +123,9 @@ export default function Browse() {
         (premiumResult.data || []).map((s) => s.user_id)
       );
 
+      if (pgResult.error) {
+        console.error("Failed to fetch playgroups:", pgResult.error);
+      }
       if (!pgResult.error && pgResult.data) {
         setRealPlaygroups(
           pgResult.data.map((pg, i) => ({

@@ -78,7 +78,7 @@ function transformRealPlaygroup(pg) {
 export default function PlaygroupDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile: authProfile } = useAuth();
   const [showJoinSheet, setShowJoinSheet] = useState(false);
   const [showReviewSheet, setShowReviewSheet] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
@@ -177,6 +177,11 @@ export default function PlaygroupDetail() {
   const handleJoinClick = async () => {
     if (!user) {
       navigate("/verify");
+      return;
+    }
+
+    if (authProfile?.is_suspended) {
+      alert("Your account is suspended. You cannot join playgroups.");
       return;
     }
 

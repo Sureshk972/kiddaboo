@@ -214,19 +214,28 @@ export default function HostDashboard() {
       .from("memberships")
       .update({ role: "member", joined_at: new Date().toISOString() })
       .eq("id", id);
-    if (error) setActionedIds((prev) => { const next = { ...prev }; delete next[id]; return next; });
+    if (error) {
+      console.error("Failed to approve membership:", error);
+      setActionedIds((prev) => { const next = { ...prev }; delete next[id]; return next; });
+    }
   };
 
   const handleDecline = async (id) => {
     setActionedIds((prev) => ({ ...prev, [id]: "declined" }));
     const { error } = await supabase.from("memberships").update({ role: "declined" }).eq("id", id);
-    if (error) setActionedIds((prev) => { const next = { ...prev }; delete next[id]; return next; });
+    if (error) {
+      console.error("Failed to decline membership:", error);
+      setActionedIds((prev) => { const next = { ...prev }; delete next[id]; return next; });
+    }
   };
 
   const handleWaitlist = async (id) => {
     setActionedIds((prev) => ({ ...prev, [id]: "waitlisted" }));
     const { error } = await supabase.from("memberships").update({ role: "waitlisted" }).eq("id", id);
-    if (error) setActionedIds((prev) => { const next = { ...prev }; delete next[id]; return next; });
+    if (error) {
+      console.error("Failed to waitlist membership:", error);
+      setActionedIds((prev) => { const next = { ...prev }; delete next[id]; return next; });
+    }
   };
 
   const activeRequests = requests.filter((r) => !actionedIds[r.id]);

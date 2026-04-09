@@ -79,7 +79,7 @@ export default function Admin() {
   async function fetchProfiles() {
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, created_at, updated_at, notification_prefs, is_suspended")
+      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, created_at, updated_at, notification_prefs, is_suspended, role")
       .order("created_at", { ascending: false });
     if (!error && data) {
       setProfiles(data);
@@ -349,10 +349,10 @@ export default function Admin() {
         .eq("id", id);
     }
     logAdminAction("bulk_deactivate_playgroups", "playgroup", ids[0], { count: ids.length, ids });
+    const deactivatedActive = playgroups.filter((pg) => ids.includes(pg.id) && pg.is_active).length;
     setPlaygroups((prev) =>
       prev.map((pg) => (ids.includes(pg.id) ? { ...pg, is_active: false } : pg))
     );
-    const deactivatedActive = playgroups.filter((pg) => ids.includes(pg.id) && pg.is_active).length;
     setStats((prev) => ({
       ...prev,
       totalPlaygroups: prev.totalPlaygroups - deactivatedActive,

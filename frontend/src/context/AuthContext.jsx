@@ -39,10 +39,13 @@ export function AuthProvider({ children }) {
   const fetchProfile = async (userId) => {
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, created_at, updated_at, notification_prefs, role")
+      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, is_suspended, created_at, updated_at, notification_prefs, role")
       .eq("id", userId)
       .single();
 
+    if (error) {
+      console.error("Failed to fetch profile:", error);
+    }
     if (data) {
       setProfile(data);
     }
@@ -82,7 +85,7 @@ export function AuthProvider({ children }) {
       .from("profiles")
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq("id", user.id)
-      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, created_at, updated_at, notification_prefs, role")
+      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, is_suspended, created_at, updated_at, notification_prefs, role")
       .single();
 
     if (data) {
