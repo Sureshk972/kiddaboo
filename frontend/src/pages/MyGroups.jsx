@@ -144,9 +144,9 @@ export default function MyGroups() {
   }
 
   return (
-    <div className="bg-cream">
+    <div className="bg-cream flex flex-col h-[calc(100dvh-60px)]">
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-cream/95 backdrop-blur-sm border-b border-cream-dark">
+      <div className="shrink-0 bg-cream/95 backdrop-blur-sm border-b border-cream-dark z-20">
         <div className="max-w-md mx-auto px-5 py-4">
           <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
             My Groups
@@ -154,7 +154,7 @@ export default function MyGroups() {
         </div>
       </div>
 
-      <div className="max-w-md mx-auto px-5 py-5 flex flex-col gap-6">
+      <div className="max-w-md mx-auto px-5 py-5 flex flex-col gap-6 flex-1 overflow-y-auto w-full">
         {/* Host a playgroup CTA — show when user has no hosted group */}
         {!displayHosting && (
           <div>
