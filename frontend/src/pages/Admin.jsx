@@ -295,6 +295,33 @@ export default function Admin() {
     setConfirmAction(null);
   }
 
+  async function deleteUser(userId) {
+    setActionLoading(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-delete-user`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({ userId }),
+      }
+    );
+    const result = await res.json();
+    if (!res.ok) {
+      console.error("Delete user failed:", result.error);
+      alert(`Failed to delete user: ${result.error}`);
+    } else {
+      logAdminAction("delete_user", "profile", userId);
+    }
+    await fetchAllData();
+    setActionLoading(false);
+    setConfirmAction(null);
+  }
+
   async function flagPlaygroup(playgroupId, reason) {
     const { error } = await supabase
       .from("playgroups")
@@ -520,6 +547,7 @@ export default function Admin() {
             setConfirmAction={setConfirmAction}
             suspendUser={suspendUser}
             unsuspendUser={unsuspendUser}
+            deleteUser={deleteUser}
           />
         )}
 

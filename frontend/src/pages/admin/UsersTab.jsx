@@ -10,6 +10,7 @@ export default function UsersTab({
   setConfirmAction,
   suspendUser,
   unsuspendUser,
+  deleteUser,
 }) {
   const filteredProfiles = searchQuery
     ? profiles.filter((p) => {
@@ -124,35 +125,51 @@ export default function UsersTab({
                     </span>
                   </div>
                 </div>
-                <button
-                  onClick={() => {
-                    if (isSuspended) {
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    onClick={() => {
+                      if (isSuspended) {
+                        setConfirmAction({
+                          type: "unsuspend",
+                          title: "Unsuspend User",
+                          message: `Restore access for ${profile.first_name || "this user"}? They will be able to use the app again.`,
+                          confirmLabel: "Unsuspend",
+                          confirmColor: "bg-sage hover:bg-sage-dark",
+                          onConfirm: () => unsuspendUser(profile.id),
+                        });
+                      } else {
+                        setConfirmAction({
+                          type: "suspend",
+                          title: "Suspend User",
+                          message: `Suspend ${profile.first_name || "this user"}? This will remove all their memberships and deactivate their playgroups.`,
+                          confirmLabel: "Suspend",
+                          onConfirm: () => suspendUser(profile.id),
+                        });
+                      }
+                    }}
+                    className={`px-3 py-1.5 rounded-lg border text-xs transition-colors cursor-pointer ${
+                      isSuspended
+                        ? "border-sage bg-sage-light text-sage-dark hover:bg-sage hover:text-white"
+                        : "border-cream-dark text-taupe hover:text-red-600 hover:border-red-200"
+                    }`}
+                  >
+                    {isSuspended ? "Unsuspend" : "Suspend"}
+                  </button>
+                  <button
+                    onClick={() => {
                       setConfirmAction({
-                        type: "unsuspend",
-                        title: "Unsuspend User",
-                        message: `Restore access for ${profile.first_name || "this user"}? They will be able to use the app again.`,
-                        confirmLabel: "Unsuspend",
-                        confirmColor: "bg-sage hover:bg-sage-dark",
-                        onConfirm: () => unsuspendUser(profile.id),
+                        type: "delete",
+                        title: "Delete User",
+                        message: `Permanently delete ${profile.first_name || "this user"} and all their data? This cannot be undone.`,
+                        confirmLabel: "Delete",
+                        onConfirm: () => deleteUser(profile.id),
                       });
-                    } else {
-                      setConfirmAction({
-                        type: "suspend",
-                        title: "Suspend User",
-                        message: `Suspend ${profile.first_name || "this user"}? This will remove all their memberships and deactivate their playgroups.`,
-                        confirmLabel: "Suspend",
-                        onConfirm: () => suspendUser(profile.id),
-                      });
-                    }
-                  }}
-                  className={`shrink-0 px-3 py-1.5 rounded-lg border text-xs transition-colors cursor-pointer ${
-                    isSuspended
-                      ? "border-sage bg-sage-light text-sage-dark hover:bg-sage hover:text-white"
-                      : "border-cream-dark text-taupe hover:text-red-600 hover:border-red-200"
-                  }`}
-                >
-                  {isSuspended ? "Unsuspend" : "Suspend"}
-                </button>
+                    }}
+                    className="px-3 py-1.5 rounded-lg border border-red-200 text-xs text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors cursor-pointer"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             </div>
           );
