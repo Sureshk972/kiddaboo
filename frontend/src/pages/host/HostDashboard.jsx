@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
@@ -6,7 +6,9 @@ import { useSubscription } from "../../hooks/useSubscription";
 import RequestCard from "../../components/host/RequestCard";
 import ScheduleSessionSheet from "../../components/host/ScheduleSessionSheet";
 import useSessions from "../../hooks/useSessions";
+import useReviews from "../../hooks/useReviews";
 import RsvpCount from "../../components/host/RsvpCount";
+import ReviewCard from "../../components/playgroup/ReviewCard";
 import { friendlyDate, formatSessionTime, formatDuration } from "../../lib/dateUtils";
 
 // Helper: time ago string
@@ -176,6 +178,20 @@ export default function HostDashboard() {
     deleteSession,
   } = useSessions(realPlaygroup?.id);
 
+  // Reviews
+  const { reviews, ratings } = useReviews(realPlaygroup?.id);
+
+  // Section refs for stat-card scroll-to-section CTAs
+  const membersRef = useRef(null);
+  const requestsRef = useRef(null);
+  const reviewsRef = useRef(null);
+
+  const scrollToSection = (ref) => {
+    if (ref.current) {
+      ref.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   const pg = realPlaygroup
     ? {
         ...realPlaygroup,
@@ -305,35 +321,59 @@ export default function HostDashboard() {
       {header}
 
       <div className="max-w-md mx-auto px-5 py-5 flex flex-col gap-5">
-        {/* Stats row */}
+        {/* Stats row (each card is a CTA to its section below) */}
         <div className="grid grid-cols-3 gap-3">
-          <div className="bg-white rounded-2xl p-4 border border-cream-dark text-center">
+          <button
+            type="button"
+            onClick={() => scrollToSection(membersRef)}
+            aria-label="View members"
+            className="bg-white rounded-2xl p-4 border border-cream-dark text-center cursor-pointer transition-all hover:border-sage-light hover:shadow-sm active:scale-[0.98]"
+          >
             <p className="text-2xl font-heading font-bold text-charcoal">
               {pg.memberCount}
             </p>
             <p className="text-[11px] text-taupe mt-0.5">
               of {pg.maxFamilies} families
             </p>
-          </div>
-          <div className="bg-white rounded-2xl p-4 border border-cream-dark text-center">
+            <p className="text-[10px] text-sage font-medium mt-1">View →</p>
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollToSection(requestsRef)}
+            aria-label="Review pending requests"
+            className={`rounded-2xl p-4 border text-center cursor-pointer transition-all active:scale-[0.98] ${
+              activeRequests.length > 0
+                ? "bg-terracotta-light/40 border-terracotta-light hover:border-terracotta hover:shadow-sm"
+                : "bg-white border-cream-dark hover:border-sage-light hover:shadow-sm"
+            }`}
+          >
             <p className="text-2xl font-heading font-bold text-charcoal">
               {activeRequests.length}
             </p>
             <p className="text-[11px] text-taupe mt-0.5">pending requests</p>
-          </div>
-          <div className="bg-white rounded-2xl p-4 border border-cream-dark text-center">
+            <p className={`text-[10px] font-medium mt-1 ${activeRequests.length > 0 ? "text-terracotta" : "text-sage"}`}>
+              {activeRequests.length > 0 ? "Review →" : "View →"}
+            </p>
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollToSection(reviewsRef)}
+            aria-label="Read reviews"
+            className="bg-white rounded-2xl p-4 border border-cream-dark text-center cursor-pointer transition-all hover:border-sage-light hover:shadow-sm active:scale-[0.98]"
+          >
             <div className="flex items-center justify-center gap-1">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="#5C6B52">
                 <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
               </svg>
               <p className="text-2xl font-heading font-bold text-charcoal">
-                {pg.trustScore}
+                {ratings.count > 0 ? ratings.overall.toFixed(1) : "—"}
               </p>
             </div>
             <p className="text-[11px] text-taupe mt-0.5">
-              {pg.reviewCount} reviews
+              {ratings.count} {ratings.count === 1 ? "review" : "reviews"}
             </p>
-          </div>
+            <p className="text-[10px] text-sage font-medium mt-1">Read →</p>
+          </button>
         </div>
 
         {/* Host Premium analytics / upsell */}
@@ -501,7 +541,7 @@ export default function HostDashboard() {
         )}
 
         {/* Pending requests */}
-        <div>
+        <div ref={requestsRef} className="scroll-mt-24">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-base font-heading font-bold text-charcoal">
               Join Requests
@@ -540,7 +580,7 @@ export default function HostDashboard() {
         </div>
 
         {/* Members */}
-        <div>
+        <div ref={membersRef} className="scroll-mt-24">
           <h3 className="text-base font-heading font-bold text-charcoal mb-3">
             Members
           </h3>
@@ -587,6 +627,38 @@ export default function HostDashboard() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Reviews */}
+        <div ref={reviewsRef} className="scroll-mt-24">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base font-heading font-bold text-charcoal">
+              Reviews
+              {ratings.count > 0 && (
+                <span className="ml-2 text-xs bg-sage-light text-sage-dark px-2 py-0.5 rounded-full font-body font-normal">
+                  {ratings.overall.toFixed(1)} ★ · {ratings.count}
+                </span>
+              )}
+            </h3>
+          </div>
+          {reviews.length > 0 ? (
+            <div className="flex flex-col gap-3">
+              {reviews.slice(0, 5).map((review) => (
+                <ReviewCard key={review.id} review={review} />
+              ))}
+              {reviews.length > 5 && (
+                <p className="text-xs text-taupe text-center pt-1">
+                  Showing 5 of {reviews.length} reviews
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl p-6 border border-cream-dark text-center">
+              <p className="text-sm text-taupe">
+                No reviews yet. Your members will be able to leave a review after attending a session.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Recent activity */}
