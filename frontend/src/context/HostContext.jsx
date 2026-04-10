@@ -95,6 +95,28 @@ export function HostProvider({ children }) {
 
   // Save playgroup to Supabase
   const savePlaygroup = async (userId) => {
+    // Enforce one playgroup per host: bail out if this user already owns one
+    const { data: existing, error: existingErr } = await supabase
+      .from("playgroups")
+      .select("id")
+      .eq("creator_id", userId)
+      .eq("is_active", true)
+      .limit(1);
+
+    if (existingErr) {
+      return { data: null, error: existingErr };
+    }
+    if (existing && existing.length > 0) {
+      return {
+        data: null,
+        error: {
+          message:
+            "You already have an active playgroup. Each host can manage one playgroup at a time.",
+          code: "ALREADY_HOSTING",
+        },
+      };
+    }
+
     // Filter out empty screening questions
     const questions = data.screeningQuestions.filter((q) => q.trim() !== "");
 

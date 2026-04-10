@@ -1,9 +1,11 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import OnboardingLayout from "../../components/layout/OnboardingLayout";
 import Input from "../../components/ui/Input";
 import TagSelector from "../../components/ui/TagSelector";
 import Button from "../../components/ui/Button";
 import { useHost } from "../../context/HostContext";
+import { useAuth } from "../../context/AuthContext";
 import { VIBE_TAGS, AGE_RANGES } from "../../data/mockData";
 
 const ACCESS_OPTIONS = [
@@ -37,6 +39,14 @@ const FREQUENCY_OPTIONS = [
 export default function CreatePlaygroup() {
   const navigate = useNavigate();
   const { data, updateField } = useHost();
+  const { isHost, loading: authLoading } = useAuth();
+
+  // One-playgroup-per-host: if already a host, bounce to dashboard
+  useEffect(() => {
+    if (!authLoading && isHost) {
+      navigate("/host/dashboard", { replace: true });
+    }
+  }, [authLoading, isHost, navigate]);
 
   const canContinue = data.name.trim() && data.vibeTags.length > 0;
 
