@@ -128,7 +128,6 @@ export default function HostDashboard() {
               joinedAt: m.joined_at
                 ? new Date(m.joined_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })
                 : new Date(m.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" }),
-              lastActive: timeAgo(m.created_at),
             };
           });
 
@@ -668,11 +667,6 @@ export default function HostDashboard() {
                     Joined {member.joinedAt}
                   </p>
                 </div>
-
-                {/* Last active */}
-                <span className="text-[10px] text-taupe/60 flex-shrink-0">
-                  {member.lastActive}
-                </span>
               </div>
             ))}
           </div>
