@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
@@ -413,6 +413,40 @@ export default function Admin() {
     setConfirmAction(null);
   }
 
+  // Cohort breakdown: how users actually engage with the platform.
+  //   Host   — created at least one playgroup (memberships.role = 'creator')
+  //   Parent — actively joined at least one playgroup (memberships.role = 'member')
+  //   Both   — the intersection (hosts their own group AND joined someone else's)
+  //   Inactive — signed up but neither hosting nor actively joined
+  // pending/waitlisted/declined memberships are intent, not engagement — they
+  // don't count as "parent".
+  const userCohorts = useMemo(() => {
+    const hostIds = new Set(playgroups.map((pg) => pg.creator_id).filter(Boolean));
+    const parentIds = new Set(
+      memberships.filter((m) => m.role === "member").map((m) => m.user_id)
+    );
+    let hostsOnly = 0;
+    let parentsOnly = 0;
+    let both = 0;
+    let inactive = 0;
+    for (const p of profiles) {
+      const isHost = hostIds.has(p.id);
+      const isParent = parentIds.has(p.id);
+      if (isHost && isParent) both++;
+      else if (isHost) hostsOnly++;
+      else if (isParent) parentsOnly++;
+      else inactive++;
+    }
+    return {
+      hostsOnly,
+      parentsOnly,
+      both,
+      inactive,
+      totalHosts: hostsOnly + both,
+      totalParents: parentsOnly + both,
+    };
+  }, [profiles, playgroups, memberships]);
+
   // Derive user role from memberships
   function getUserRole(userId) {
     const profile = profiles.find((p) => p.id === userId);
@@ -564,6 +598,27 @@ export default function Admin() {
                   <div className="mt-6 md:mt-8">
                     <h3 className="text-[#5c6b52] text-xs font-bold uppercase tracking-widest" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Total Users</h3>
                     <p className="text-4xl md:text-5xl font-black text-[#44533b] mt-2" style={{ fontFamily: "'Manrope', sans-serif" }}>{stats.totalUsers ?? "—"}</p>
+                  </div>
+                  {/* Cohort breakdown — how users actually engage */}
+                  <div className="mt-4 md:mt-5 pt-4 border-t border-[#d7e8c9] relative z-10">
+                    <div className="grid grid-cols-4 gap-2">
+                      <div>
+                        <p className="text-xl md:text-2xl font-black text-[#44533b]" style={{ fontFamily: "'Manrope', sans-serif" }}>{userCohorts.hostsOnly}</p>
+                        <p className="text-[9px] md:text-[10px] text-[#5c6b52] font-bold uppercase tracking-wider mt-0.5">Hosts</p>
+                      </div>
+                      <div>
+                        <p className="text-xl md:text-2xl font-black text-[#44533b]" style={{ fontFamily: "'Manrope', sans-serif" }}>{userCohorts.parentsOnly}</p>
+                        <p className="text-[9px] md:text-[10px] text-[#5c6b52] font-bold uppercase tracking-wider mt-0.5">Parents</p>
+                      </div>
+                      <div>
+                        <p className="text-xl md:text-2xl font-black text-[#44533b]" style={{ fontFamily: "'Manrope', sans-serif" }}>{userCohorts.both}</p>
+                        <p className="text-[9px] md:text-[10px] text-[#5c6b52] font-bold uppercase tracking-wider mt-0.5">Both</p>
+                      </div>
+                      <div>
+                        <p className="text-xl md:text-2xl font-black text-[#44533b]/60" style={{ fontFamily: "'Manrope', sans-serif" }}>{userCohorts.inactive}</p>
+                        <p className="text-[9px] md:text-[10px] text-[#5c6b52] font-bold uppercase tracking-wider mt-0.5">Inactive</p>
+                      </div>
+                    </div>
                   </div>
                   <div className="absolute bottom-0 right-0 opacity-5 group-hover:opacity-10 transition-opacity">
                     <span className="material-symbols-outlined" style={{ fontSize: "120px", transform: "translate(25%, 25%)" }}>groups</span>
