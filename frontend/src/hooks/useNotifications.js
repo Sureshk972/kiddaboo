@@ -52,27 +52,45 @@ export default function useNotifications(userId) {
 
     if (myGroups && myGroups.length > 0) {
       const lastReadMap = getLastReadMap();
-      let totalUnread = 0;
+      const pgIds = myGroups.map((g) => g.playgroup_id);
 
-      await Promise.all(
-        myGroups.map(async (m) => {
-          const lastRead = lastReadMap[m.playgroup_id];
-          let query = supabase
-            .from("messages")
-            .select("id", { count: "exact", head: true })
-            .eq("playgroup_id", m.playgroup_id)
-            .neq("sender_id", userId); // don't count own messages
+      // Single range query instead of N parallel HEAD count=exact requests.
+      // The old approach fired one `HEAD /messages?count=exact` per playgroup,
+      // which intermittently 503'd on cold load and scaled linearly with group
+      // count. We instead pull recent non-own messages for ALL my groups in
+      // one shot and bucket client-side against each group's last-read marker.
+      //
+      // Floor the lookback at 30 days. Anything older than that is not worth
+      // surfacing as an unread badge, and it bounds the query for brand-new
+      // users who have no last-read markers at all.
+      const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+      const thirtyDaysAgo = new Date(Date.now() - THIRTY_DAYS_MS).toISOString();
 
-          if (lastRead) {
-            query = query.gt("created_at", lastRead);
-          }
+      // Earliest cutoff across all groups. Groups with no last-read marker
+      // fall back to 30 days ago.
+      const cutoffs = pgIds.map((id) => lastReadMap[id] || thirtyDaysAgo);
+      const globalCutoff = cutoffs.reduce((a, b) => (a < b ? a : b));
 
-          const { count } = await query;
-          totalUnread += count || 0;
-        })
-      );
+      const { data: recent, error: recentErr } = await supabase
+        .from("messages")
+        .select("playgroup_id, created_at")
+        .in("playgroup_id", pgIds)
+        .neq("sender_id", userId)
+        .gt("created_at", globalCutoff)
+        .order("created_at", { ascending: false })
+        .limit(500);
 
-      setUnreadMessages(totalUnread);
+      if (recentErr) {
+        console.error("useNotifications: failed to fetch recent messages", recentErr);
+        setUnreadMessages(0);
+      } else {
+        let totalUnread = 0;
+        for (const msg of recent || []) {
+          const lr = lastReadMap[msg.playgroup_id] || thirtyDaysAgo;
+          if (msg.created_at > lr) totalUnread++;
+        }
+        setUnreadMessages(totalUnread);
+      }
     } else {
       setUnreadMessages(0);
     }
