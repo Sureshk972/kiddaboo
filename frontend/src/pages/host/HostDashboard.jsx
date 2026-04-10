@@ -366,7 +366,7 @@ export default function HostDashboard() {
               {pg.memberCount}
             </p>
             <p className="text-[11px] text-taupe mt-0.5">
-              of {pg.maxFamilies} families
+              of {pg.max_families} families
             </p>
             <p className="text-[10px] text-sage font-medium mt-1">View →</p>
           </button>
