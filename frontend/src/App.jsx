@@ -33,6 +33,7 @@ import Premium from "./pages/Premium";
 import NotFound from "./pages/NotFound";
 import RequireAuth from "./components/auth/RequireAuth";
 import RequireAdmin from "./components/auth/RequireAdmin";
+import OnboardingOnly from "./components/auth/OnboardingOnly";
 
 export default function App() {
   return (
@@ -48,9 +49,12 @@ export default function App() {
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
 
-            {/* Onboarding — requires auth, no tab bar */}
-            <Route path="/profile" element={<RequireAuth><CreateProfile /></RequireAuth>} />
-            <Route path="/children" element={<RequireAuth><AddChildren /></RequireAuth>} />
+            {/* Onboarding — requires auth, no tab bar. OnboardingOnly
+                redirects users with completed profiles to /my-profile
+                because these routes are destructive on submit (wipe
+                profile / delete all children). */}
+            <Route path="/profile" element={<OnboardingOnly><CreateProfile /></OnboardingOnly>} />
+            <Route path="/children" element={<OnboardingOnly><AddChildren /></OnboardingOnly>} />
             <Route path="/success" element={<RequireAuth><BrowseSuccess /></RequireAuth>} />
 
             {/* Host onboarding — requires auth, no tab bar */}
