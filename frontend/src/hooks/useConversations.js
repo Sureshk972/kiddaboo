@@ -39,13 +39,15 @@ export default function useConversations(userId) {
           .map(async (m) => {
             const pg = m.playgroups;
 
+            // maybeSingle() — a brand-new playgroup with no messages yet
+            // would 406 with .single() (expected exactly one row).
             const { data: lastMsg } = await supabase
               .from("messages")
               .select("content, created_at, profiles:sender_id ( first_name )")
               .eq("playgroup_id", pg.id)
               .order("created_at", { ascending: false })
               .limit(1)
-              .single();
+              .maybeSingle();
 
             // Count members
             const { count } = await supabase

@@ -46,12 +46,16 @@ export function useSubscription() {
 
   async function fetchUsage() {
     const month = new Date().toISOString().slice(0, 7); // '2026-04'
+    // Use maybeSingle() — a free user who hasn't made any join requests
+    // this month has no row in join_request_usage. .single() would return
+    // a 406 for that (expected "exactly one row"); .maybeSingle() returns
+    // null gracefully.
     const { data, error } = await supabase
       .from("join_request_usage")
       .select("*")
       .eq("user_id", user.id)
       .eq("month", month)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error("Failed to fetch usage:", error);

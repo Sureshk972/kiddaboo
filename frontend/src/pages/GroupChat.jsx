@@ -42,14 +42,15 @@ export default function GroupChat() {
 
       if (pg) setGroupName(pg.name);
 
-      // Check user is a member/creator
+      // Check user is a member/creator. maybeSingle() — non-member users
+      // legitimately return 0 rows here; .single() would 406.
       const { data: membership } = await supabase
         .from("memberships")
         .select("role")
         .eq("playgroup_id", playgroupId)
         .eq("user_id", user.id)
         .in("role", ["creator", "member"])
-        .single();
+        .maybeSingle();
 
       setAuthorized(!!membership);
 
