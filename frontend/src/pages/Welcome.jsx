@@ -5,18 +5,20 @@ import { useAuth } from "../context/AuthContext";
 
 export default function Welcome() {
   const navigate = useNavigate();
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, isHost } = useAuth();
 
-  // If already logged in, check profile completeness
+  // If already logged in, check profile completeness and route by role
   useEffect(() => {
     if (!loading && user) {
       if (!profile?.first_name) {
         navigate("/profile");
+      } else if (isHost) {
+        navigate("/host/dashboard");
       } else {
         navigate("/browse");
       }
     }
-  }, [user, profile, loading, navigate]);
+  }, [user, profile, loading, isHost, navigate]);
 
   if (loading) {
     return (

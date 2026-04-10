@@ -144,9 +144,9 @@ export default function MyGroups() {
   }
 
   return (
-    <div className="bg-cream flex flex-col h-[calc(100dvh-60px)]">
+    <div className="flex-1 flex flex-col">
       {/* Header */}
-      <div className="shrink-0 bg-cream/95 backdrop-blur-sm border-b border-cream-dark z-20">
+      <div className="sticky top-0 z-20 bg-cream/95 backdrop-blur-sm border-b border-cream-dark">
         <div className="max-w-md mx-auto px-5 py-4">
           <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
             My Groups
@@ -154,7 +154,7 @@ export default function MyGroups() {
         </div>
       </div>
 
-      <div className="max-w-md mx-auto px-5 py-5 flex flex-col gap-6 flex-1 overflow-y-auto w-full">
+      <div className="max-w-md mx-auto px-5 py-4 flex flex-col gap-4 w-full flex-1">
         {/* Host a playgroup CTA — show when user has no hosted group */}
         {!displayHosting && (
           <div>
@@ -163,19 +163,21 @@ export default function MyGroups() {
             </h3>
             <div
               onClick={() => navigate("/host/create")}
-              className="bg-white rounded-2xl border-2 border-dashed border-sage-light/60 p-6 text-center cursor-pointer hover:border-sage transition-all hover:shadow-sm"
+              className="bg-white rounded-2xl border-2 border-dashed border-sage-light/60 p-4 text-center cursor-pointer hover:border-sage transition-all hover:shadow-sm flex items-center gap-4"
             >
-              <div className="w-12 h-12 bg-sage-light rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-sage-dark">
+              <div className="w-10 h-10 bg-sage-light rounded-full flex items-center justify-center shrink-0">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-sage-dark">
                   <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                 </svg>
               </div>
-              <h3 className="font-heading font-bold text-charcoal mb-1">
-                Host a Playgroup
-              </h3>
-              <p className="text-xs text-taupe">
-                Create your own curated group for families
-              </p>
+              <div className="text-left">
+                <h3 className="font-heading font-bold text-charcoal text-sm">
+                  Host a Playgroup
+                </h3>
+                <p className="text-xs text-taupe">
+                  Create your own curated group for families
+                </p>
+              </div>
             </div>
           </div>
         )}
@@ -264,7 +266,7 @@ export default function MyGroups() {
         )}
 
         {/* Joined groups */}
-        <div>
+        <div className="flex-1 flex flex-col">
           <h3 className="text-sm font-medium text-taupe mb-2">
             Joined Groups
           </h3>
@@ -368,49 +370,36 @@ export default function MyGroups() {
               })}
             </div>
           ) : (
-            <div className="bg-white rounded-2xl border border-cream-dark p-8 text-center overflow-hidden relative">
-              {/* Decorative background */}
-              <div className="absolute inset-0 opacity-[0.04]">
-                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <pattern id="groups-dots" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-                      <circle cx="20" cy="20" r="6" fill="#5C6B52" />
-                      <circle cx="5" cy="5" r="3" fill="#C08B6E" />
-                    </pattern>
-                  </defs>
-                  <rect width="100%" height="100%" fill="url(#groups-dots)" />
-                </svg>
-              </div>
-
+            <div className="bg-white rounded-2xl border border-cream-dark p-5 text-center overflow-hidden relative flex-1 flex items-center justify-center">
               <div className="relative">
                 {/* Illustration: three overlapping family circles */}
-                <div className="flex items-center justify-center mb-4 -space-x-3">
-                  <div className="w-12 h-12 rounded-full bg-sage-light flex items-center justify-center border-2 border-white">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <div className="flex items-center justify-center mb-3 -space-x-3">
+                  <div className="w-10 h-10 rounded-full bg-sage-light flex items-center justify-center border-2 border-white">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                       <circle cx="12" cy="8" r="4" stroke="#5C6B52" strokeWidth="1.5" />
                       <path d="M20 21C20 16.58 16.42 13 12 13C7.58 13 4 16.58 4 21" stroke="#5C6B52" strokeWidth="1.5" strokeLinecap="round" />
                     </svg>
                   </div>
-                  <div className="w-14 h-14 rounded-full bg-terracotta-light flex items-center justify-center border-2 border-white z-10">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <div className="w-12 h-12 rounded-full bg-terracotta-light flex items-center justify-center border-2 border-white z-10">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                       <path d="M17 21V19C17 16.79 15.21 15 13 15H5C2.79 15 1 16.79 1 19V21" stroke="#C08B6E" strokeWidth="1.5" strokeLinecap="round" />
                       <circle cx="9" cy="7" r="4" stroke="#C08B6E" strokeWidth="1.5" />
                       <path d="M23 21V19C23 17.14 21.73 15.57 20 15.13" stroke="#C08B6E" strokeWidth="1.5" strokeLinecap="round" />
                       <path d="M16 3.13C17.73 3.57 19 5.14 19 7C19 8.86 17.73 10.43 16 10.87" stroke="#C08B6E" strokeWidth="1.5" strokeLinecap="round" />
                     </svg>
                   </div>
-                  <div className="w-12 h-12 rounded-full bg-cream-dark flex items-center justify-center border-2 border-white">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <div className="w-10 h-10 rounded-full bg-cream-dark flex items-center justify-center border-2 border-white">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                       <circle cx="12" cy="8" r="4" stroke="#6B5E54" strokeWidth="1.5" />
                       <path d="M20 21C20 16.58 16.42 13 12 13C7.58 13 4 16.58 4 21" stroke="#6B5E54" strokeWidth="1.5" strokeLinecap="round" />
                     </svg>
                   </div>
                 </div>
 
-                <h3 className="font-heading font-bold text-charcoal text-lg mb-2">
+                <h3 className="font-heading font-bold text-charcoal text-base mb-1">
                   Your playgroup family awaits
                 </h3>
-                <p className="text-sm text-taupe leading-relaxed mb-5 max-w-[240px] mx-auto">
+                <p className="text-sm text-taupe leading-relaxed mb-3 max-w-[240px] mx-auto">
                   Find families near you who share your parenting style and schedule.
                 </p>
                 <button

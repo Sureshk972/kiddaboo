@@ -6,8 +6,8 @@ import { useSubscription } from "../hooks/useSubscription";
 
 export default function MyProfile() {
   const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
-  const { isPremium, subscription } = useSubscription();
+  const { user, profile, signOut, isHost } = useAuth();
+  const { isPremium, isHostPremium, subscription } = useSubscription();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -80,7 +80,21 @@ export default function MyProfile() {
         {/* Settings list */}
         <div className="bg-white rounded-2xl border border-cream-dark overflow-hidden">
           {[
-            { icon: "\u2b50", label: isPremium ? "Premium Member" : "Upgrade to Premium", path: "/premium", highlight: true },
+            isHost
+              ? {
+                  icon: "\u2b50",
+                  label: isHostPremium ? "Host Premium Member" : "Upgrade to Host Premium",
+                  sublabel: isHostPremium ? null : "Priority placement, view analytics & more",
+                  path: "/host/premium",
+                  highlight: true,
+                }
+              : {
+                  icon: "\u2b50",
+                  label: isPremium ? "Premium Member" : "Upgrade to Premium",
+                  sublabel: isPremium ? null : "Unlimited join requests & more",
+                  path: "/premium",
+                  highlight: true,
+                },
             { icon: "\ud83d\udc64", label: "Edit Profile", path: "/edit-profile" },
             { icon: "\ud83d\udc76", label: "Manage Children", path: "/edit-profile" },
             { icon: "\ud83d\udd14", label: "Notifications", path: "/notifications" },
@@ -96,9 +110,14 @@ export default function MyProfile() {
               } ${item.comingSoon ? "opacity-50 cursor-default" : "cursor-pointer hover:bg-cream-dark/50"}`}
             >
               <span className="text-base">{item.icon}</span>
-              <span className={`text-sm font-medium flex-1 ${item.highlight ? "text-sage-dark" : "text-charcoal"}`}>
-                {item.label}
-              </span>
+              <div className="flex-1 flex flex-col">
+                <span className={`text-sm font-medium ${item.highlight ? "text-sage-dark" : "text-charcoal"}`}>
+                  {item.label}
+                </span>
+                {item.sublabel && (
+                  <span className="text-[11px] text-taupe mt-0.5">{item.sublabel}</span>
+                )}
+              </div>
               {item.comingSoon ? (
                 <span className="text-[10px] text-taupe/50">Soon</span>
               ) : (

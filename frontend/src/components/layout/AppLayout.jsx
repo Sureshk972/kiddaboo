@@ -25,8 +25,8 @@ export default function AppLayout({ children }) {
   };
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
-      <div ref={scrollRef} className="flex-1 overflow-y-auto pb-16">
+    <div className="h-dvh bg-cream flex flex-col">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto flex flex-col min-h-0">
         {shouldShowPrompt && (
           <div className="pt-3">
             <PushPermissionPrompt

@@ -178,7 +178,7 @@ export default function HostDashboard() {
 
   if (!realPlaygroup && !loading) {
     return (
-      <div className="bg-cream min-h-screen flex flex-col items-center justify-center px-6 text-center">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
         <h2 className="font-heading font-bold text-charcoal text-xl mb-2">
           No playgroup yet
         </h2>
@@ -242,7 +242,7 @@ export default function HostDashboard() {
 
   if (loading) {
     return (
-      <div className="bg-cream min-h-screen flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-sage border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -253,21 +253,31 @@ export default function HostDashboard() {
       {/* Header */}
       <div className="sticky top-0 z-20 bg-cream/95 backdrop-blur-sm border-b border-cream-dark">
         <div className="max-w-md mx-auto px-5 py-3 flex items-center gap-3">
-          <button
-            onClick={() => navigate("/my-groups")}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-white border border-cream-dark text-taupe hover:text-charcoal transition-colors cursor-pointer flex-shrink-0"
-            aria-label="Go back"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-          <div>
+          <div className="flex-1 min-w-0">
             <p className="text-xs text-taupe">Your playgroup</p>
-            <h1 className="text-lg font-heading font-bold text-charcoal">
+            <h1 className="text-lg font-heading font-bold text-charcoal truncate">
               {pg.name}
             </h1>
           </div>
+          {isHostPremium ? (
+            <span className="flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1 flex-shrink-0">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="#D97706">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+              </svg>
+              Premium
+            </span>
+          ) : (
+            <button
+              onClick={() => navigate("/host/premium")}
+              className="flex items-center gap-1 text-[11px] font-bold text-white bg-gradient-to-r from-amber-500 to-amber-600 rounded-full px-3 py-1.5 cursor-pointer border-none hover:from-amber-600 hover:to-amber-700 transition-all shadow-sm flex-shrink-0"
+              aria-label="Upgrade to Premium"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+              Go Premium
+            </button>
+          )}
         </div>
       </div>
 

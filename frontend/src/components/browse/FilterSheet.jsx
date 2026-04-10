@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { VIBE_TAGS, AGE_RANGES } from "../../data/mockData";
 
 const SETTINGS = ["Indoor", "Outdoor", "Indoor + Outdoor"];
@@ -60,7 +61,7 @@ export default function FilterSheet({ open, onClose, filters, onChange }) {
     onChange({ vibeTags: [], ageRange: [], setting: [], accessType: [] });
   };
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
@@ -140,6 +141,7 @@ export default function FilterSheet({ open, onClose, filters, onChange }) {
           </button>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }

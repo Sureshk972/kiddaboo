@@ -50,16 +50,26 @@ export default function PhoneVerification() {
         return;
       }
 
-      // Check if profile is complete, redirect accordingly
+      // Check if profile is complete and host status, redirect accordingly
       if (data?.user) {
-        const { data: prof } = await supabase
-          .from("profiles")
-          .select("first_name")
-          .eq("id", data.user.id)
-          .single();
+        const [{ data: prof }, { data: hostMemberships }] = await Promise.all([
+          supabase
+            .from("profiles")
+            .select("first_name")
+            .eq("id", data.user.id)
+            .single(),
+          supabase
+            .from("memberships")
+            .select("id")
+            .eq("user_id", data.user.id)
+            .eq("role", "creator")
+            .limit(1),
+        ]);
 
         if (!prof?.first_name) {
           navigate("/profile");
+        } else if (hostMemberships && hostMemberships.length > 0) {
+          navigate("/host/dashboard");
         } else {
           navigate("/browse");
         }

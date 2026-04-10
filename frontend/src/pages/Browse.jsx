@@ -6,13 +6,12 @@ import { useUserLocation } from "../hooks/useUserLocation";
 import { useAuth } from "../context/AuthContext";
 import FilterSheet from "../components/browse/FilterSheet";
 import PlaygroupCard from "../components/browse/PlaygroupCard";
-import MapView from "../components/browse/MapView";
 
 const SORT_OPTIONS = [
+  { value: "distance", label: "Nearest" },
   { value: "rating", label: "Top Rated" },
   { value: "reviews", label: "Most Reviewed" },
   { value: "spots", label: "Spots Open" },
-  { value: "distance", label: "Nearest" },
 ];
 
 // Color palette for playgroup cards without photos
@@ -58,12 +57,11 @@ function transformPlaygroup(pg, index) {
 
 export default function Browse() {
   const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
+  const { user, profile } = useAuth();
   const [isHost, setIsHost] = useState(false);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [sortBy, setSortBy] = useState("rating");
-  const [viewMode, setViewMode] = useState("list");
+  const [sortBy, setSortBy] = useState("distance");
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     vibeTags: [],
@@ -73,6 +71,11 @@ export default function Browse() {
   });
 
   const { userLocation, loading: locationLoading, error: locationError, requestLocation } = useUserLocation();
+
+  // Request location on mount for default distance sort
+  useEffect(() => {
+    requestLocation();
+  }, []);
 
   // Check if user is a host
   useEffect(() => {
@@ -197,7 +200,11 @@ export default function Browse() {
 
     // Sort
     if (sortBy === "distance" && userLocation) {
+      // Open groups first, then by distance
       list.sort((a, b) => {
+        const aOpen = a.accessType === "open" ? 0 : 1;
+        const bOpen = b.accessType === "open" ? 0 : 1;
+        if (aOpen !== bOpen) return aOpen - bOpen;
         if (a.distance == null && b.distance == null) return 0;
         if (a.distance == null) return 1;
         if (b.distance == null) return -1;
@@ -214,12 +221,14 @@ export default function Browse() {
       );
     }
 
-    // Float premium hosts to the top (stable sort preserves order within groups)
-    list.sort((a, b) => {
-      if (a.isHostPremium && !b.isHostPremium) return -1;
-      if (!a.isHostPremium && b.isHostPremium) return 1;
-      return 0;
-    });
+    // Float premium hosts to the top, except when sorting by distance
+    if (sortBy !== "distance") {
+      list.sort((a, b) => {
+        if (a.isHostPremium && !b.isHostPremium) return -1;
+        if (!a.isHostPremium && b.isHostPremium) return 1;
+        return 0;
+      });
+    }
 
     return list;
   }, [debouncedSearch, filters, sortBy, allPlaygroups, userLocation]);
@@ -237,64 +246,16 @@ export default function Browse() {
       {/* Sticky header */}
       <div className="sticky top-0 z-20 bg-cream/95 backdrop-blur-sm border-b border-cream-dark">
         <div className="max-w-6xl mx-auto px-5 pt-4 pb-3">
-          {/* Title row with view toggle */}
-          <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-baseline gap-2">
-              <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
-                Kiddaboo
-              </h1>
-              {profile?.first_name && (
-                <span className="text-sm font-medium text-taupe">
-                  Hi, {profile.first_name}{isHost ? " (Host)" : ""}
-                </span>
-              )}
-            </div>
-
-            {/* List / Map toggle + Sign out */}
-            <div className="flex items-center gap-2">
-            <div className="flex items-center bg-white border border-cream-dark rounded-xl overflow-hidden">
-              <button
-                onClick={() => setViewMode("list")}
-                className={`p-2 border-none cursor-pointer transition-colors ${
-                  viewMode === "list"
-                    ? "bg-sage-light text-sage-dark"
-                    : "bg-transparent text-taupe hover:text-sage-dark"
-                }`}
-                aria-label="List view"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <path d="M8 6H21M8 12H21M8 18H21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                  <path d="M3 6H3.01M3 12H3.01M3 18H3.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              </button>
-              <button
-                onClick={() => setViewMode("map")}
-                className={`p-2 border-none cursor-pointer transition-colors ${
-                  viewMode === "map"
-                    ? "bg-sage-light text-sage-dark"
-                    : "bg-transparent text-taupe hover:text-sage-dark"
-                }`}
-                aria-label="Map view"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  <circle cx="12" cy="10" r="3" stroke="currentColor" strokeWidth="1.5"/>
-                </svg>
-              </button>
-            </div>
-            <button
-              onClick={async () => { await signOut(); navigate("/"); }}
-              className="p-2 bg-white border border-cream-dark rounded-xl text-taupe hover:text-terracotta transition-colors cursor-pointer"
-              aria-label="Sign out"
-              title="Sign out"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <polyline points="16 17 21 12 16 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
-            </div>
+          {/* Title row */}
+          <div className="mb-3 flex items-baseline gap-2">
+            <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
+              Kiddaboo
+            </h1>
+            {profile?.first_name && (
+              <span className="text-sm font-medium text-taupe">
+                Hi, {profile.first_name}{isHost ? " (Host)" : ""}
+              </span>
+            )}
           </div>
 
           {/* Search bar */}
@@ -429,8 +390,8 @@ export default function Browse() {
           </div>
         )}
 
-        {/* Result count & sort (list view only) */}
-        {!loadingReal && viewMode === "list" && (
+        {/* Result count */}
+        {!loadingReal && (
           <div className="flex items-end justify-between mb-6">
             <div>
               <p className="text-xs text-taupe">
@@ -440,17 +401,8 @@ export default function Browse() {
           </div>
         )}
 
-        {/* Map view */}
-        {!loadingReal && viewMode === "map" && (
-          <MapView
-            playgroups={results}
-            onSelectPlaygroup={(id) => navigate(`/playgroup/${id}`)}
-            userLocation={userLocation}
-          />
-        )}
-
-        {/* List view — Bento grid */}
-        {!loadingReal && viewMode === "list" && results.length > 0 ? (
+        {/* Playgroup grid */}
+        {!loadingReal && results.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {results.map((group, i) => (
@@ -494,7 +446,7 @@ export default function Browse() {
               </div>
             )}
           </>
-        ) : !loadingReal && viewMode === "list" ? (
+        ) : !loadingReal ? (
           /* Empty state */
           <div className="text-center py-16 min-h-[60vh] flex flex-col items-center justify-center">
             <div className="w-16 h-16 bg-cream-dark rounded-full flex items-center justify-center mx-auto mb-4">
