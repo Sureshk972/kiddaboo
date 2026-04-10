@@ -252,32 +252,46 @@ export default function HostDashboard() {
     <div className="bg-cream">
       {/* Header */}
       <div className="sticky top-0 z-20 bg-cream/95 backdrop-blur-sm border-b border-cream-dark">
-        <div className="max-w-md mx-auto px-5 py-3 flex items-center gap-3">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-taupe">Your playgroup</p>
-            <h1 className="text-lg font-heading font-bold text-charcoal truncate">
-              {pg.name}
-            </h1>
+        <div className="max-w-md mx-auto px-5 pt-4 pb-3">
+          {/* Brand row */}
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <div className="flex items-baseline gap-2 min-w-0">
+              <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
+                Kiddaboo
+              </h1>
+              {profile?.first_name && (
+                <span className="text-sm font-medium text-taupe truncate">
+                  Hi, {profile.first_name} (Host)
+                </span>
+              )}
+            </div>
+            {isHostPremium ? (
+              <span className="flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1 flex-shrink-0">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="#D97706">
+                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                </svg>
+                Premium
+              </span>
+            ) : (
+              <button
+                onClick={() => navigate("/host/premium")}
+                className="flex items-center gap-1 text-[11px] font-bold text-white bg-gradient-to-r from-amber-500 to-amber-600 rounded-full px-3 py-1.5 cursor-pointer border-none hover:from-amber-600 hover:to-amber-700 transition-all shadow-sm flex-shrink-0"
+                aria-label="Upgrade to Premium"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                Go Premium
+              </button>
+            )}
           </div>
-          {isHostPremium ? (
-            <span className="flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1 flex-shrink-0">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="#D97706">
-                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-              </svg>
-              Premium
-            </span>
-          ) : (
-            <button
-              onClick={() => navigate("/host/premium")}
-              className="flex items-center gap-1 text-[11px] font-bold text-white bg-gradient-to-r from-amber-500 to-amber-600 rounded-full px-3 py-1.5 cursor-pointer border-none hover:from-amber-600 hover:to-amber-700 transition-all shadow-sm flex-shrink-0"
-              aria-label="Upgrade to Premium"
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-              </svg>
-              Go Premium
-            </button>
-          )}
+          {/* Playgroup name */}
+          <div>
+            <p className="text-[11px] text-taupe uppercase tracking-wide">Your playgroup</p>
+            <h2 className="text-lg font-heading font-bold text-charcoal truncate">
+              {pg.name}
+            </h2>
+          </div>
         </div>
       </div>
 
