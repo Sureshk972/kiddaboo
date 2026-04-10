@@ -98,6 +98,34 @@ const DashboardIcon = (active) => (
   </svg>
 );
 
+const InsightsIcon = (active) => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <path
+      d="M3 3V21H21"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M7 14L11 10L14 13L20 7"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill={active ? "currentColor" : "none"}
+      fillOpacity={active ? 0.15 : 0}
+    />
+    <circle
+      cx="20"
+      cy="7"
+      r="1.5"
+      fill="currentColor"
+      fillOpacity={active ? 1 : 0.4}
+    />
+  </svg>
+);
+
 const MessagesIcon = (active) => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
     <path
@@ -151,7 +179,7 @@ const HOST_TABS = [
     label: "Dashboard",
     icon: DashboardIcon,
   },
-  { path: "/browse", label: "Discover", icon: BrowseIcon },
+  { path: "/host/insights", label: "Insights", icon: InsightsIcon },
   { path: "/messages", label: "Messages", icon: MessagesIcon },
   { path: "/my-profile", label: "Profile", icon: ProfileIcon },
 ];

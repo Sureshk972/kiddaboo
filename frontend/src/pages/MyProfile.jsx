@@ -95,6 +95,14 @@ export default function MyProfile() {
                   path: "/premium",
                   highlight: true,
                 },
+            ...(isHost
+              ? [{
+                  icon: "\ud83d\udd0d",
+                  label: "Discover other playgroups",
+                  sublabel: "Browse playgroups as a parent",
+                  path: "/browse",
+                }]
+              : []),
             { icon: "\ud83d\udc64", label: "Edit Profile", path: "/edit-profile" },
             { icon: "\ud83d\udc76", label: "Manage Children", path: "/edit-profile" },
             { icon: "\ud83d\udd14", label: "Notifications", path: "/notifications" },

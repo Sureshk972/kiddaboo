@@ -20,6 +20,7 @@ import EnvironmentSetup from "./pages/host/EnvironmentSetup";
 import HostPhotos from "./pages/host/HostPhotos";
 import HostSuccess from "./pages/host/HostSuccess";
 import HostDashboard from "./pages/host/HostDashboard";
+import HostInsights from "./pages/host/HostInsights";
 import EditPlaygroup from "./pages/host/EditPlaygroup";
 import HostPremium from "./pages/host/HostPremium";
 import Admin from "./pages/Admin";
@@ -74,6 +75,7 @@ export default function App() {
             <Route path="/messages" element={<RequireAuth><AppLayout><Messages /></AppLayout></RequireAuth>} />
             <Route path="/my-profile" element={<RequireAuth><AppLayout><MyProfile /></AppLayout></RequireAuth>} />
             <Route path="/host/dashboard" element={<RequireAuth><AppLayout><HostDashboard /></AppLayout></RequireAuth>} />
+            <Route path="/host/insights" element={<RequireAuth><AppLayout><HostInsights /></AppLayout></RequireAuth>} />
 
             {/* Admin — requires auth + admin role, no tab bar */}
             <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
