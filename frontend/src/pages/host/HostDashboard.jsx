@@ -466,12 +466,28 @@ export default function HostDashboard() {
               <h3 className="text-sm font-heading font-bold text-charcoal">
                 Next Session
               </h3>
-              <button
-                onClick={() => setShowScheduleSheet(true)}
-                className="text-[11px] text-sage-dark font-medium bg-transparent border-none cursor-pointer underline underline-offset-2"
-              >
-                + Add
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowScheduleSheet(true)}
+                  className="text-[11px] text-sage-dark font-medium bg-transparent border-none cursor-pointer underline underline-offset-2"
+                >
+                  + Add
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm("Cancel this session? This cannot be undone.")) {
+                      deleteSession(nextSession.id);
+                    }
+                  }}
+                  className="text-taupe/50 hover:text-terracotta transition-colors bg-transparent border-none cursor-pointer p-0.5"
+                  title="Cancel session"
+                  aria-label="Cancel session"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                </button>
+              </div>
             </div>
             <div className="flex items-center gap-2 text-sm text-taupe-dark mb-1">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">

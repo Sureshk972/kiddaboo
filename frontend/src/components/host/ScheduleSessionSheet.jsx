@@ -23,11 +23,26 @@ export default function ScheduleSessionSheet({
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [confirmOvernight, setConfirmOvernight] = useState(false);
 
   const canSubmit = date && time && !saving;
 
-  const handleSchedule = async () => {
-    if (!canSubmit) return;
+  // "12:00 AM" / overnight confirmation: most hosts don't schedule playdates
+  // between midnight and 6 AM. If they do, make them confirm — this catches
+  // the classic "I meant noon, the picker rolled to 12:00 AM" mistake.
+  const hour = time ? parseInt(time.split(":")[0], 10) : NaN;
+  const isOvernight = Number.isFinite(hour) && hour >= 0 && hour < 6;
+
+  // Friendly label for the overnight warning
+  const timeLabel = (() => {
+    if (!time) return "";
+    const [h, m] = time.split(":").map((n) => parseInt(n, 10));
+    const period = h >= 12 ? "PM" : "AM";
+    const displayH = h === 0 ? 12 : h > 12 ? h - 12 : h;
+    return `${displayH}:${String(m).padStart(2, "0")} ${period}`;
+  })();
+
+  const submit = async () => {
     setSaving(true);
 
     // Combine date + time into ISO string
@@ -48,6 +63,18 @@ export default function ScheduleSessionSheet({
     }
   };
 
+  const handleSchedule = async () => {
+    if (!canSubmit) return;
+
+    // If overnight and not yet confirmed, show the warning step instead
+    if (isOvernight && !confirmOvernight) {
+      setConfirmOvernight(true);
+      return;
+    }
+
+    await submit();
+  };
+
   const handleClose = () => {
     // Reset form on close
     setDate("");
@@ -57,6 +84,7 @@ export default function ScheduleSessionSheet({
     setNotes("");
     setSaving(false);
     setSuccess(false);
+    setConfirmOvernight(false);
     onClose();
   };
 
@@ -78,7 +106,43 @@ export default function ScheduleSessionSheet({
         </div>
 
         <div className="px-6 pb-8">
-          {success ? (
+          {confirmOvernight && !success ? (
+            /* Overnight confirmation step */
+            <div className="py-6">
+              <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 9v4M12 17h.01" />
+                  <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-heading font-bold text-charcoal mb-2 text-center">
+                Confirm overnight time
+              </h3>
+              <p className="text-sm text-taupe leading-relaxed mb-4 text-center">
+                You&apos;ve scheduled this session for{" "}
+                <span className="font-bold text-charcoal">{timeLabel}</span>
+                {hour === 0 && " (midnight)"}. Most playdates happen during the day.
+              </p>
+              <p className="text-xs text-taupe/70 text-center mb-6">
+                If you meant noon, tap &ldquo;Go back&rdquo; and change the time to <span className="font-medium">12:00 PM</span>.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setConfirmOvernight(false)}
+                  className="flex-1 bg-white border border-cream-dark text-charcoal font-medium rounded-xl py-3 text-sm cursor-pointer transition-colors hover:bg-cream-dark/50"
+                >
+                  Go back
+                </button>
+                <button
+                  onClick={submit}
+                  disabled={saving}
+                  className="flex-1 bg-sage hover:bg-sage-dark text-white font-medium rounded-xl py-3 text-sm cursor-pointer border-none transition-colors disabled:opacity-50"
+                >
+                  {saving ? "Saving…" : "Yes, it's overnight"}
+                </button>
+              </div>
+            </div>
+          ) : success ? (
             /* Success state */
             <div className="py-12 text-center">
               <div className="w-16 h-16 bg-sage-light rounded-full flex items-center justify-center mx-auto mb-4">
