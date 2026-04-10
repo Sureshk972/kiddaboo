@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import PhotoCarousel from "../components/playgroup/PhotoCarousel";
 import HostCard from "../components/playgroup/HostCard";
 import EnvironmentChecklist from "../components/playgroup/EnvironmentChecklist";
@@ -78,6 +78,8 @@ function transformRealPlaygroup(pg) {
 export default function PlaygroupDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const previewMode = searchParams.get("preview") === "true";
   const { user, profile: authProfile } = useAuth();
   const [showJoinSheet, setShowJoinSheet] = useState(false);
   const [showReviewSheet, setShowReviewSheet] = useState(false);
@@ -120,8 +122,9 @@ export default function PlaygroupDetail() {
       if (!error && data) {
         setRealGroup(transformRealPlaygroup(data));
 
-        // Check if the current user already has a membership
-        if (user) {
+        // In preview mode, don't reflect the host's own "creator" status —
+        // we want to see the parent CTA as a parent would.
+        if (user && !previewMode) {
           const existing = (data.memberships || []).find(
             (m) => m.user_id === user.id
           );
@@ -131,11 +134,12 @@ export default function PlaygroupDetail() {
       setLoading(false);
     };
     fetchGroup();
-  }, [id, user]);
+  }, [id, user, previewMode]);
 
   // Track playgroup view for host analytics (deduplicated hourly)
   useEffect(() => {
     if (!id || !user) return;
+    if (previewMode) return;
     const key = `pv_${id}`;
     const last = localStorage.getItem(key);
     if (last && Date.now() - parseInt(last) < 3600000) return;
@@ -144,7 +148,7 @@ export default function PlaygroupDetail() {
       .from("playgroup_views")
       .insert({ playgroup_id: id, viewer_id: user.id })
       .then(() => {});
-  }, [id, user?.id]);
+  }, [id, user?.id, previewMode]);
 
   const group = realGroup;
 
@@ -264,6 +268,29 @@ export default function PlaygroupDetail() {
           </button>
         )}
       </div>
+
+      {previewMode && (
+        <div className="max-w-md mx-auto w-full px-6 mt-2 mb-4">
+          <div className="bg-sage-light border border-sage/30 rounded-2xl px-4 py-3 flex items-start gap-3">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="mt-0.5 flex-shrink-0">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="#5C6B52" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <circle cx="12" cy="12" r="3" stroke="#5C6B52" strokeWidth="1.5"/>
+            </svg>
+            <div className="flex-1">
+              <p className="text-xs font-heading font-bold text-sage-dark">Preview mode</p>
+              <p className="text-[11px] text-sage-dark/80 leading-relaxed">
+                This is how parents see your playgroup. Actions are disabled.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate(-1)}
+              className="text-[11px] font-medium text-sage-dark underline underline-offset-2 cursor-pointer bg-transparent border-none flex-shrink-0"
+            >
+              Exit
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-md mx-auto w-full px-6">
         {/* Photo carousel */}
@@ -493,7 +520,11 @@ export default function PlaygroupDetail() {
       {/* Sticky bottom CTA */}
       <div className="fixed bottom-0 left-0 right-0 bg-cream/90 backdrop-blur-md border-t border-cream-dark px-6 py-4 z-30">
         <div className="max-w-md mx-auto">
-          {joinStatus === "member" || joinStatus === "creator" ? (
+          {previewMode ? (
+            <Button fullWidth variant="secondary" disabled>
+              Preview mode — actions disabled
+            </Button>
+          ) : joinStatus === "member" || joinStatus === "creator" ? (
             <Button fullWidth onClick={() => navigate(`/messages/${id}`)}>
               Group Chat
             </Button>

@@ -9,6 +9,8 @@ import useSessions from "../../hooks/useSessions";
 import useReviews from "../../hooks/useReviews";
 import RsvpCount from "../../components/host/RsvpCount";
 import ReviewCard from "../../components/playgroup/ReviewCard";
+import PlaygroupCard from "../../components/browse/PlaygroupCard";
+import { transformPlaygroup } from "../../lib/playgroupTransform";
 import { friendlyDate, formatSessionTime, formatDuration } from "../../lib/dateUtils";
 
 // Helper: time ago string
@@ -321,6 +323,37 @@ export default function HostDashboard() {
       {header}
 
       <div className="max-w-md mx-auto px-5 py-5 flex flex-col gap-5">
+        {/* How parents see you — preview card */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <h3 className="text-base font-heading font-bold text-charcoal">
+                How parents see you
+              </h3>
+              <p className="text-[11px] text-taupe">
+                This is your Browse listing
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate(`/playgroup/${realPlaygroup.id}?preview=true`)}
+              className="text-[11px] text-sage-dark font-medium bg-transparent border-none cursor-pointer underline underline-offset-2"
+            >
+              See full preview →
+            </button>
+          </div>
+          <PlaygroupCard
+            group={transformPlaygroup(realPlaygroup, 0, {
+              hostFirstName: profile?.first_name,
+              hostLastName: profile?.last_name,
+              hostProfile: profile,
+              memberCount: realMembers.filter((m) => m.role !== "host").length,
+            })}
+            premium={isHostPremium}
+            onClick={() => navigate(`/playgroup/${realPlaygroup.id}?preview=true`)}
+          />
+        </div>
+
         {/* Stats row (each card is a CTA to its section below) */}
         <div className="grid grid-cols-3 gap-3">
           <button

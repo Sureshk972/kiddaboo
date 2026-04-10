@@ -6,6 +6,7 @@ import { useUserLocation } from "../hooks/useUserLocation";
 import { useAuth } from "../context/AuthContext";
 import FilterSheet from "../components/browse/FilterSheet";
 import PlaygroupCard from "../components/browse/PlaygroupCard";
+import { transformPlaygroup } from "../lib/playgroupTransform";
 
 const SORT_OPTIONS = [
   { value: "distance", label: "Nearest" },
@@ -13,47 +14,6 @@ const SORT_OPTIONS = [
   { value: "reviews", label: "Most Reviewed" },
   { value: "spots", label: "Spots Open" },
 ];
-
-// Color palette for playgroup cards without photos
-const CARD_COLORS = [
-  "#7A8F6D", "#E8C4B0", "#F0EBE3", "#C08B6E",
-  "#DAE4D0", "#5C6B52", "#D4A574", "#B8C9A3",
-];
-
-// Transform a Supabase playgroup row into the shape Browse expects
-function transformPlaygroup(pg, index) {
-  const host = pg.profiles;
-  const hostFirst = host?.first_name || "Host";
-  const hostLast = host?.last_name || "";
-  const hostInitials =
-    (hostFirst[0] || "H").toUpperCase() + (hostLast[0] || "").toUpperCase();
-
-  const memberCount = pg.memberships
-    ? pg.memberships.filter((m) => m.role === "member").length
-    : 0;
-
-  return {
-    id: pg.id,
-    name: pg.name,
-    location: pg.location_name || "Location TBD",
-    tags: pg.vibe_tags || [],
-    familyCount: memberCount,
-    maxFamilies: pg.max_families || 8,
-    ageRange: pg.age_range || "All ages",
-    nextSession: pg.frequency || "TBD",
-    rating: Number(pg.trust_score) || 0,
-    reviewCount: pg.review_count || 0,
-    accessType: pg.access_type || "request",
-    setting: pg.environment?.setting || "Indoor",
-    hostName: `${hostFirst} ${hostLast}`.trim(),
-    hostInitials,
-    verified: host?.is_verified || false,
-    photoColor: CARD_COLORS[index % CARD_COLORS.length],
-    photos: pg.photos || [],
-    latitude: pg.latitude || null,
-    longitude: pg.longitude || null,
-  };
-}
 
 export default function Browse() {
   const navigate = useNavigate();
