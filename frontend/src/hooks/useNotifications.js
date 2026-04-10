@@ -33,12 +33,13 @@ export default function useNotifications(userId) {
 
     if (hosted && hosted.length > 0) {
       const pgIds = hosted.map((h) => h.playgroup_id);
-      const { count } = await supabase
+      // Avoid HEAD count=exact — see notes below on the messages query.
+      const { data: pendingRows } = await supabase
         .from("memberships")
-        .select("id", { count: "exact", head: true })
+        .select("id")
         .in("playgroup_id", pgIds)
         .eq("role", "pending");
-      setPendingRequests(count || 0);
+      setPendingRequests(pendingRows?.length || 0);
     } else {
       setPendingRequests(0);
     }

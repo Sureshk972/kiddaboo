@@ -94,29 +94,23 @@ export default function HostInsights() {
         const weekAgo = new Date(now.getTime() - 7 * 86400000);
         const twoWeeksAgo = new Date(now.getTime() - 14 * 86400000);
 
-        const [{ count: thisWeekCount }, { count: lastWeekCount }, { data: windowData }] =
-          await Promise.all([
-            supabase
-              .from("playgroup_views")
-              .select("*", { count: "exact", head: true })
-              .eq("playgroup_id", pg.id)
-              .gte("viewed_at", weekAgo.toISOString()),
-            supabase
-              .from("playgroup_views")
-              .select("*", { count: "exact", head: true })
-              .eq("playgroup_id", pg.id)
-              .gte("viewed_at", twoWeeksAgo.toISOString())
-              .lt("viewed_at", weekAgo.toISOString()),
-            supabase
-              .from("playgroup_views")
-              .select("viewed_at, profiles:viewer_id(first_name, last_name)")
-              .eq("playgroup_id", pg.id)
-              .gte("viewed_at", weekAgo.toISOString())
-              .order("viewed_at", { ascending: false }),
-          ]);
+        // Single GET over the past two weeks — bucket client-side.
+        // Avoids HEAD count=exact (intermittent 503s; see BUG #1 notes).
+        const { data: twoWeekData } = await supabase
+          .from("playgroup_views")
+          .select("viewed_at, profiles:viewer_id(first_name, last_name)")
+          .eq("playgroup_id", pg.id)
+          .gte("viewed_at", twoWeeksAgo.toISOString())
+          .order("viewed_at", { ascending: false });
 
-        setViewsThisWeek(thisWeekCount || 0);
-        setViewsLastWeek(lastWeekCount || 0);
+        const weekAgoMs = weekAgo.getTime();
+        const windowData = (twoWeekData || []).filter(
+          (v) => new Date(v.viewed_at).getTime() >= weekAgoMs
+        );
+        const lastWeekCount = (twoWeekData || []).length - windowData.length;
+
+        setViewsThisWeek(windowData.length);
+        setViewsLastWeek(lastWeekCount);
 
         // Build a 7-day bucket
         const buckets = Array.from({ length: 7 }, (_, i) => {

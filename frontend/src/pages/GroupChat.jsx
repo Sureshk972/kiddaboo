@@ -54,14 +54,16 @@ export default function GroupChat() {
 
       setAuthorized(!!membership);
 
-      // Member count
-      const { count } = await supabase
+      // Member count — use a range GET instead of HEAD count=exact.
+      // The HEAD count=exact variant intermittently 503s on cold load
+      // (same failure mode as useNotifications' message counts).
+      const { data: memberRows } = await supabase
         .from("memberships")
-        .select("id", { count: "exact", head: true })
+        .select("id")
         .eq("playgroup_id", playgroupId)
         .in("role", ["creator", "member"]);
 
-      setMemberCount(count || 0);
+      setMemberCount(memberRows?.length || 0);
     };
 
     fetchGroupInfo();

@@ -49,10 +49,11 @@ export default function useConversations(userId) {
               .limit(1)
               .maybeSingle();
 
-            // Count members
-            const { count } = await supabase
+            // Count members — avoid HEAD count=exact (intermittent 503s
+            // on cold load; same failure mode as BUG #1 in useNotifications).
+            const { data: memberRows } = await supabase
               .from("memberships")
-              .select("id", { count: "exact", head: true })
+              .select("id")
               .eq("playgroup_id", pg.id)
               .in("role", ["creator", "member"]);
 
@@ -61,7 +62,7 @@ export default function useConversations(userId) {
               name: pg.name,
               photo: pg.photos?.[0] || null,
               role: m.role,
-              memberCount: count || 0,
+              memberCount: memberRows?.length || 0,
               lastMessage: lastMsg?.content || null,
               lastSender: lastMsg?.profiles?.first_name || null,
               lastMessageAt: lastMsg?.created_at || null,
