@@ -967,6 +967,7 @@ export default function Admin() {
           message={confirmAction.message}
           confirmLabel={confirmAction.confirmLabel}
           confirmColor={confirmAction.confirmColor}
+          input={confirmAction.input}
           onConfirm={confirmAction.onConfirm}
           onCancel={() => setConfirmAction(null)}
           loading={actionLoading}

@@ -12,7 +12,6 @@ export default function PlaygroupsTab({
 }) {
   const [filter, setFilter] = useState("all");
   const [selectedIds, setSelectedIds] = useState(new Set());
-  const [bulkFlagReason, setBulkFlagReason] = useState("");
 
   const filters = ["all", "active", "inactive", "flagged"];
 
@@ -55,19 +54,26 @@ export default function PlaygroupsTab({
     });
   }
 
+  // #39: bulk flag now prompts for a reason inside the ConfirmModal
+  // instead of an inline input in the bulk action bar. Leaving it
+  // blank falls back to "Flagged by admin" to preserve the previous
+  // behavior for admins who don't care about capturing a reason.
   function handleBulkFlag() {
     const ids = Array.from(selectedIds);
-    const reason = bulkFlagReason.trim() || "Flagged by admin";
     setConfirmAction({
       type: "bulk-flag",
       title: "Flag Selected Playgroups",
-      message: `Flag ${ids.length} playgroup${ids.length > 1 ? "s" : ""} with reason: "${reason}"?`,
+      message: `Flag ${ids.length} playgroup${ids.length > 1 ? "s" : ""}. This marks them for review.`,
       confirmLabel: "Flag All",
       confirmColor: "bg-amber-600 hover:bg-amber-700",
-      onConfirm: async () => {
+      input: {
+        label: "Reason",
+        placeholder: "Why are you flagging these?",
+        fallback: "Flagged by admin",
+      },
+      onConfirm: async (reason) => {
         await bulkFlagPlaygroups(ids, reason);
         setSelectedIds(new Set());
-        setBulkFlagReason("");
       },
     });
   }
@@ -129,21 +135,14 @@ export default function PlaygroupsTab({
           >
             Deactivate
           </button>
-          <div className="flex items-center gap-1">
-            <input
-              type="text"
-              placeholder="Flag reason..."
-              value={bulkFlagReason}
-              onChange={(e) => setBulkFlagReason(e.target.value)}
-              className="bg-cream border border-cream-dark rounded-lg px-2 py-1.5 text-xs text-charcoal placeholder:text-taupe/50 outline-none w-28"
-            />
-            <button
-              onClick={handleBulkFlag}
-              className="px-3 py-1.5 rounded-lg bg-amber-100 text-amber-700 text-xs font-medium hover:bg-amber-200 transition-colors cursor-pointer border-none"
-            >
-              Flag
-            </button>
-          </div>
+          {/* #39: flag button is now a standalone — the reason is */}
+          {/* collected in the confirm modal. */}
+          <button
+            onClick={handleBulkFlag}
+            className="px-3 py-1.5 rounded-lg bg-amber-100 text-amber-700 text-xs font-medium hover:bg-amber-200 transition-colors cursor-pointer border-none"
+          >
+            Flag
+          </button>
           <button
             onClick={handleBulkUnflag}
             className="px-3 py-1.5 rounded-lg bg-sage-light text-sage-dark text-xs font-medium hover:bg-sage hover:text-white transition-colors cursor-pointer border-none"
@@ -258,13 +257,26 @@ export default function PlaygroupsTab({
                   ) : (
                     <button
                       onClick={() => {
+                        // #39: was passing a hardcoded "Flagged by
+                        // admin" string so the flag_reason column
+                        // was effectively useless for any per-card
+                        // flag. Now we prompt for a reason inline in
+                        // the ConfirmModal, consistent with the bulk
+                        // flag flow. Blank falls back to the same
+                        // hardcoded label as before so the UX is
+                        // strictly additive.
                         setConfirmAction({
                           type: "flag-playgroup",
                           title: "Flag Playgroup",
-                          message: `Flag "${pg.name}"? This marks it for review.`,
+                          message: `Flag "${pg.name}". This marks it for review.`,
                           confirmLabel: "Flag",
                           confirmColor: "bg-amber-600 hover:bg-amber-700",
-                          onConfirm: () => flagPlaygroup(pg.id, "Flagged by admin"),
+                          input: {
+                            label: "Reason",
+                            placeholder: "Why are you flagging this?",
+                            fallback: "Flagged by admin",
+                          },
+                          onConfirm: (reason) => flagPlaygroup(pg.id, reason),
                         });
                       }}
                       className="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-600 text-xs font-medium hover:bg-amber-100 transition-colors cursor-pointer border-none"

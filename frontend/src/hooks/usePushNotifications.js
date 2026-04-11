@@ -90,6 +90,14 @@ export default function usePushNotifications(userId) {
 
   // Unsubscribe from push notifications
   const unsubscribe = useCallback(async () => {
+    // #34: subscribe() guards on `!userId`; unsubscribe() was missing the
+    // same guard, so calling it during a logged-out / mid-sign-out state
+    // issued `.eq("user_id", undefined)` → PostgREST receives
+    // `user_id=eq.undefined`, which RLS either errors on or silently
+    // matches zero rows. The browser subscription was still cancelled
+    // regardless, leaving the local and remote state drifted. Guard the
+    // DB write on userId; still cancel the browser subscription below so
+    // the user's intent (stop receiving pushes) is honored either way.
     if (!isSupported) return;
 
     try {
@@ -97,12 +105,19 @@ export default function usePushNotifications(userId) {
       const subscription = await registration.pushManager.getSubscription();
 
       if (subscription) {
-        // Remove from Supabase
-        await supabase
-          .from("push_subscriptions")
-          .delete()
-          .eq("user_id", userId)
-          .eq("endpoint", subscription.endpoint);
+        // Only touch the DB row if we know which user owns it. When
+        // userId is missing we still cancel the browser subscription
+        // below — the stale DB row will be cleaned up the next time
+        // this user signs in and unsubscribes with a valid userId, or
+        // when send-push tries to deliver to a cancelled endpoint and
+        // prunes it. Either way, no `eq("user_id", undefined)` write.
+        if (userId) {
+          await supabase
+            .from("push_subscriptions")
+            .delete()
+            .eq("user_id", userId)
+            .eq("endpoint", subscription.endpoint);
+        }
 
         // Unsubscribe from browser
         await subscription.unsubscribe();

@@ -114,6 +114,25 @@ export function HostProvider({ children }) {
 
   // Save playgroup to Supabase
   const savePlaygroup = async (userId) => {
+    // #27: backstop the UI flow's name validation. HostSuccess.jsx
+    // auto-saves on mount, and any navigation path that lands on that
+    // route with an empty name (direct nav, browser back/forward, state
+    // restore race) would previously insert a `name = ''` row that
+    // later got deactivated, leaving an abandoned draft in the table.
+    // Now the insert short-circuits before it hits the DB, and the
+    // caller surfaces the error the same way it already surfaces
+    // ALREADY_HOSTING. Migration 019 adds a DB-level CHECK to backstop
+    // this backstop.
+    if (!data.name || !data.name.trim()) {
+      return {
+        data: null,
+        error: {
+          message: "Playgroup name is required.",
+          code: "NAME_REQUIRED",
+        },
+      };
+    }
+
     // Enforce one playgroup per host: bail out if this user already owns one
     const { data: existing, error: existingErr } = await supabase
       .from("playgroups")
@@ -261,6 +280,20 @@ export function HostProvider({ children }) {
 
   // Update existing playgroup in Supabase
   const updatePlaygroup = async (userId) => {
+    // #27: same name backstop as savePlaygroup. EditPlaygroup.jsx
+    // already validates the name in its submit handler, but keeping
+    // the guard here too means any future caller of updatePlaygroup
+    // can't accidentally clear the name.
+    if (!data.name || !data.name.trim()) {
+      return {
+        data: null,
+        error: {
+          message: "Playgroup name is required.",
+          code: "NAME_REQUIRED",
+        },
+      };
+    }
+
     // Same serialization as savePlaygroup (see note there).
     const questions = data.screeningQuestions
       .map((q) => q.value)
