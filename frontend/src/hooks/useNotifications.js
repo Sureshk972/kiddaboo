@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabase";
 
 const LAST_READ_KEY = "kiddaboo_last_read";
 
-function getLastReadMap() {
+export function getLastReadMap() {
   try {
     return JSON.parse(localStorage.getItem(LAST_READ_KEY) || "{}");
   } catch {

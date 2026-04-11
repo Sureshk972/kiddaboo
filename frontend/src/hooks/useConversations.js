@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
+import { getLastReadMap } from "./useNotifications";
+
+// Floor per-group unread lookback. Anything older than this isn't
+// worth surfacing as a badge on the inbox card, and it bounds the
+// range query for brand-new users who have no last-read markers yet.
+// Matches the 30-day window used by the global notifications bell.
+const UNREAD_LOOKBACK_MS = 30 * 24 * 60 * 60 * 1000;
 
 export default function useConversations(userId) {
   const [conversations, setConversations] = useState([]);
@@ -69,6 +76,47 @@ export default function useConversations(userId) {
             };
           })
       );
+
+      // Per-group unread counts (#23). Same technique as
+      // useNotifications.fetchCounts: one range query over messages
+      // that belong to any of my groups, are not from me, and are
+      // newer than the earliest cutoff across all groups. Then bucket
+      // client-side against each group's last-read marker. One query
+      // per inbox render, not one per group.
+      const lastReadMap = getLastReadMap();
+      const pgIds = convos.map((c) => c.playgroupId);
+      const unreadByGroup = Object.create(null);
+      for (const id of pgIds) unreadByGroup[id] = 0;
+
+      if (pgIds.length > 0) {
+        const thirtyDaysAgo = new Date(Date.now() - UNREAD_LOOKBACK_MS).toISOString();
+        const cutoffs = pgIds.map((id) => lastReadMap[id] || thirtyDaysAgo);
+        const globalCutoff = cutoffs.reduce((a, b) => (a < b ? a : b));
+
+        const { data: recent, error: recentErr } = await supabase
+          .from("messages")
+          .select("playgroup_id, created_at")
+          .in("playgroup_id", pgIds)
+          .neq("sender_id", userId)
+          .gt("created_at", globalCutoff)
+          .order("created_at", { ascending: false })
+          .limit(500);
+
+        if (recentErr) {
+          console.error("useConversations: failed to fetch recent messages for unread counts", recentErr);
+        } else {
+          for (const msg of recent || []) {
+            const lr = lastReadMap[msg.playgroup_id] || thirtyDaysAgo;
+            if (msg.created_at > lr) {
+              unreadByGroup[msg.playgroup_id] = (unreadByGroup[msg.playgroup_id] || 0) + 1;
+            }
+          }
+        }
+      }
+
+      for (const c of convos) {
+        c.unreadCount = unreadByGroup[c.playgroupId] || 0;
+      }
 
       // Sort by last message time (most recent first), no-message groups at bottom
       convos.sort((a, b) => {

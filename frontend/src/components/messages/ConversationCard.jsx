@@ -15,17 +15,23 @@ function timeAgo(dateStr) {
 }
 
 export default function ConversationCard({ conversation, onClick }) {
-  const { name, photo, lastMessage, lastSender, lastMessageAt, memberCount } =
+  const { name, photo, lastMessage, lastSender, lastMessageAt, memberCount, unreadCount = 0 } =
     conversation;
 
   const preview = lastMessage
     ? `${lastSender}: ${lastMessage}`
     : "No messages yet — say hi!";
 
+  const hasUnread = unreadCount > 0;
+
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-2xl border border-cream-dark p-4 cursor-pointer hover:border-sage-light transition-all hover:shadow-sm active:scale-[0.99]"
+      className={`rounded-2xl border p-4 cursor-pointer transition-all hover:shadow-sm active:scale-[0.99] ${
+        hasUnread
+          ? "bg-sage-light/20 border-sage-light hover:border-sage"
+          : "bg-white border-cream-dark hover:border-sage-light"
+      }`}
     >
       <div className="flex items-center gap-3">
         {/* Avatar */}
@@ -76,17 +82,31 @@ export default function ConversationCard({ conversation, onClick }) {
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2 mb-0.5">
-            <h3 className="font-heading font-bold text-charcoal text-sm truncate">
+            <h3 className={`font-heading text-sm truncate ${
+              hasUnread ? "font-bold text-charcoal" : "font-bold text-charcoal"
+            }`}>
               {name}
             </h3>
-            {lastMessageAt && (
-              <span className="text-[10px] text-taupe shrink-0">
-                {timeAgo(lastMessageAt)}
-              </span>
-            )}
+            <div className="flex items-center gap-1.5 shrink-0">
+              {lastMessageAt && (
+                <span className={`text-[10px] ${hasUnread ? "text-sage-dark font-semibold" : "text-taupe"}`}>
+                  {timeAgo(lastMessageAt)}
+                </span>
+              )}
+              {hasUnread && (
+                <span
+                  aria-label={`${unreadCount} unread`}
+                  className="bg-sage text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1.5 flex items-center justify-center"
+                >
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </div>
           </div>
           <div className="flex items-center justify-between gap-2">
-            <p className="text-xs text-taupe truncate">{preview}</p>
+            <p className={`text-xs truncate ${hasUnread ? "text-charcoal font-medium" : "text-taupe"}`}>
+              {preview}
+            </p>
             <span className="text-[10px] text-taupe/60 shrink-0">
               {memberCount} {memberCount === 1 ? "member" : "members"}
             </span>
