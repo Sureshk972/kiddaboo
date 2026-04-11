@@ -100,10 +100,22 @@ export async function deletePhoto(publicUrl) {
     return { error: null };
   }
   const fileName = match[1];
-  const { error } = await supabase.storage.from(BUCKET).remove([fileName]);
+  // #49: Supabase storage `remove()` returns `{ data: [], error: null }`
+  // when RLS filters out the target — zero rows affected but no error —
+  // which made the previous version of this function silently no-op.
+  // We now inspect the returned `data` array: if it's empty we treat
+  // that as a soft failure so the caller (and the console) can see the
+  // cleanup didn't actually happen. Migration 018 adds the missing
+  // DELETE policy so this path should stop triggering once it's live.
+  const { data, error } = await supabase.storage.from(BUCKET).remove([fileName]);
   if (error) {
     console.error("Delete error:", error);
     return { error: error.message };
+  }
+  if (!Array.isArray(data) || data.length === 0) {
+    const msg = `Storage remove() returned zero rows for "${fileName}" — likely RLS DELETE policy missing (see #49).`;
+    console.warn(msg);
+    return { error: msg };
   }
   return { error: null };
 }
