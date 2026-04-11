@@ -375,6 +375,33 @@ deno_version = 2
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
+# #10: The gateway-level JWT verifier on this project was provisioned when
+# auth tokens were signed with HS256 (symmetric JWT_SECRET). The project
+# has since been migrated to asymmetric signing keys (ES256, kid-based),
+# and the gateway verifier can no longer validate real user tokens —
+# every call lands as `{"code":401,"message":"Invalid JWT"}` BEFORE the
+# function body runs. Disabling gateway verify_jwt on the affected
+# functions pushes auth into the function itself — each of the three
+# below already calls `supabase.auth.getUser(token)` (or constructs a
+# per-request client with `Authorization: <header>`) against a
+# service-role client that reads the current JWKS, so the security
+# posture is identical (bearer token still required, still validated),
+# just with a working verifier. Reproduced on 2026-04-11 with
+# rooblix2000@gmail.com on /premium: ES256 kid
+# edda533a-7638-497a-947f-7bfe8c5a8568 → {"code":401,"Invalid JWT"}.
+#
+# stripe-webhook is unaffected (uses Stripe signature verification, no
+# Supabase user JWT). send-push is unaffected (invoked by Postgres
+# database webhooks, not by browser clients).
+[functions.create-checkout]
+verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false
+
+[functions.admin-delete-user]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327
