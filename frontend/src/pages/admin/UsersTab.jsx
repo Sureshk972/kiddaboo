@@ -64,7 +64,11 @@ export default function UsersTab({
           const role = getUserRole(profile.id);
           const kidCount = childrenCounts[profile.id] || 0;
           const hasBio = profile.bio && profile.bio.trim().length > 0;
-          const isSuspended = false; // is_suspended not available via PostgREST yet
+          // #35: read from the actual profile column. Admin.jsx now
+          // includes is_suspended in fetchProfiles (migration 008 added
+          // the column; the old "not available via PostgREST yet"
+          // comment was stale from before that migration shipped).
+          const isSuspended = !!profile.is_suspended;
           const reportCount = reports.filter(
             (r) => r.reported_user_id === profile.id
           ).length;

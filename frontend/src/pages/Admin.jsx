@@ -46,6 +46,10 @@ export default function Admin() {
   const [actionLoading, setActionLoading] = useState(false);
   const [reportFilter, setReportFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  // Shared error banner for admin mutations (#36). Every mutation clears
+  // this at the start and sets it on failure so the admin sees ground
+  // truth instead of an optimistic-then-silent no-op.
+  const [adminError, setAdminError] = useState("");
 
   useEffect(() => {
     if (authLoading) return;
@@ -76,9 +80,13 @@ export default function Admin() {
   }
 
   async function fetchProfiles() {
+    // #35: include is_suspended so UsersTab can actually show suspension
+    // state. The column has existed since migration 008 — the stale
+    // "not available via PostgREST yet" comment was from before that
+    // migration was applied.
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, created_at, updated_at, notification_prefs, role")
+      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, is_suspended, created_at, updated_at, notification_prefs, role")
       .order("created_at", { ascending: false });
     if (!error && data) {
       setProfiles(data);
@@ -211,83 +219,151 @@ export default function Admin() {
 
   async function togglePlaygroupActive(playgroupId, currentState) {
     setTogglingId(playgroupId);
+    setAdminError("");
     const { error } = await supabase
       .from("playgroups")
       .update({ is_active: !currentState })
       .eq("id", playgroupId);
-    if (!error) {
-      logAdminAction(currentState ? "deactivate_playgroup" : "activate_playgroup", "playgroup", playgroupId);
-      setPlaygroups((prev) =>
-        prev.map((pg) =>
-          pg.id === playgroupId ? { ...pg, is_active: !currentState } : pg
-        )
+    if (error) {
+      // #36: surface the failure so the admin knows the click did nothing
+      console.error("togglePlaygroupActive failed:", error);
+      setAdminError(
+        `Couldn't ${currentState ? "deactivate" : "activate"} playgroup — ${error.message || "please try again"}`
       );
-      setStats((prev) => ({
-        ...prev,
-        totalPlaygroups: prev.totalPlaygroups + (currentState ? -1 : 1),
-      }));
+      setTogglingId(null);
+      return;
     }
+    logAdminAction(currentState ? "deactivate_playgroup" : "activate_playgroup", "playgroup", playgroupId);
+    setPlaygroups((prev) =>
+      prev.map((pg) =>
+        pg.id === playgroupId ? { ...pg, is_active: !currentState } : pg
+      )
+    );
+    setStats((prev) => ({
+      ...prev,
+      totalPlaygroups: prev.totalPlaygroups + (currentState ? -1 : 1),
+    }));
     setTogglingId(null);
   }
 
   async function updateReportStatus(reportId, newStatus) {
     setActionLoading(true);
+    setAdminError("");
     const { error } = await supabase
       .from("reports")
       .update({ status: newStatus })
       .eq("id", reportId);
-    if (!error) {
-      logAdminAction("update_report", "report", reportId, { new_status: newStatus });
-      setReports((prev) =>
-        prev.map((r) => (r.id === reportId ? { ...r, status: newStatus } : r))
-      );
-      setStats((prev) => ({
-        ...prev,
-        openReports:
-          newStatus === "pending"
-            ? prev.openReports + 1
-            : prev.openReports - 1,
-      }));
+    if (error) {
+      // #36: don't silently close the modal on failure
+      console.error("updateReportStatus failed:", error);
+      setAdminError(`Couldn't update report status — ${error.message || "please try again"}`);
+      setActionLoading(false);
+      return false;
     }
+    logAdminAction("update_report", "report", reportId, { new_status: newStatus });
+    // #37: derive openReports delta from the row's previous status
+    // instead of assuming it was the opposite of newStatus. Latent today
+    // (only pending→resolved transitions exist in UI) but this protects
+    // the counter once an "undo" button lands.
+    setReports((prev) => {
+      const prevStatus = prev.find((r) => r.id === reportId)?.status;
+      const wasPending = prevStatus === "pending";
+      const willBePending = newStatus === "pending";
+      const delta = (willBePending ? 1 : 0) - (wasPending ? 1 : 0);
+      setStats((s) => ({ ...s, openReports: s.openReports + delta }));
+      return prev.map((r) => (r.id === reportId ? { ...r, status: newStatus } : r));
+    });
     setActionLoading(false);
     setConfirmAction(null);
+    return true;
   }
 
   async function deleteReview(reviewId) {
     setActionLoading(true);
+    setAdminError("");
     const { error } = await supabase.from("reviews").delete().eq("id", reviewId);
-    if (!error) {
-      logAdminAction("delete_review", "review", reviewId);
-      setReviews((prev) => prev.filter((r) => r.id !== reviewId));
-      setStats((prev) => ({ ...prev, totalReviews: prev.totalReviews - 1 }));
+    if (error) {
+      console.error("deleteReview failed:", error);
+      setAdminError(`Couldn't delete review — ${error.message || "please try again"}`);
+      setActionLoading(false);
+      return;
     }
+    logAdminAction("delete_review", "review", reviewId);
+    setReviews((prev) => prev.filter((r) => r.id !== reviewId));
+    setStats((prev) => ({ ...prev, totalReviews: prev.totalReviews - 1 }));
     setActionLoading(false);
     setConfirmAction(null);
   }
 
+  // #38: suspendUser is not truly atomic (would need an RPC for that),
+  // but we at least check every step, bail on the first failure, don't
+  // refetch over clean-looking partial state, and only write the audit
+  // log entry on actual success. Previously: three unchecked sequential
+  // awaits that could silently leave the user half-suspended while the
+  // admin saw a clean confirm close.
   async function suspendUser(userId) {
     setActionLoading(true);
-    await supabase.from("memberships").delete().eq("user_id", userId);
-    await supabase
+    setAdminError("");
+
+    const { error: memErr } = await supabase
+      .from("memberships")
+      .delete()
+      .eq("user_id", userId);
+    if (memErr) {
+      console.error("suspendUser: memberships delete failed:", memErr);
+      setAdminError(`Couldn't suspend user (memberships step) — ${memErr.message || "please try again"}`);
+      setActionLoading(false);
+      return false;
+    }
+
+    const { error: pgErr } = await supabase
       .from("playgroups")
       .update({ is_active: false })
       .eq("creator_id", userId);
-    await supabase
+    if (pgErr) {
+      console.error("suspendUser: playgroups deactivate failed:", pgErr);
+      setAdminError(
+        `Partially suspended: memberships removed but couldn't deactivate hosted playgroups — ${pgErr.message || "check DB"}`
+      );
+      await fetchAllData();
+      setActionLoading(false);
+      return false;
+    }
+
+    const { error: profErr } = await supabase
       .from("profiles")
       .update({ is_suspended: true })
       .eq("id", userId);
+    if (profErr) {
+      console.error("suspendUser: profile update failed:", profErr);
+      setAdminError(
+        `Partially suspended: memberships removed and playgroups deactivated but is_suspended flag not set — ${profErr.message || "check DB"}`
+      );
+      await fetchAllData();
+      setActionLoading(false);
+      return false;
+    }
+
     logAdminAction("suspend_user", "profile", userId);
     await fetchAllData();
     setActionLoading(false);
     setConfirmAction(null);
+    return true;
   }
 
   async function unsuspendUser(userId) {
     setActionLoading(true);
-    await supabase
+    setAdminError("");
+    const { error } = await supabase
       .from("profiles")
       .update({ is_suspended: false })
       .eq("id", userId);
+    if (error) {
+      console.error("unsuspendUser failed:", error);
+      setAdminError(`Couldn't unsuspend user — ${error.message || "please try again"}`);
+      setActionLoading(false);
+      return;
+    }
     logAdminAction("unsuspend_user", "profile", userId);
     await fetchAllData();
     setActionLoading(false);
@@ -296,6 +372,7 @@ export default function Admin() {
 
   async function deleteUser(userId) {
     setActionLoading(true);
+    setAdminError("");
     const { data: { session } } = await supabase.auth.getSession();
     const res = await fetch(
       `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-delete-user`,
@@ -312,16 +389,21 @@ export default function Admin() {
     const result = await res.json();
     if (!res.ok) {
       console.error("Delete user failed:", result.error);
-      alert(`Failed to delete user: ${result.error}`);
-    } else {
-      logAdminAction("delete_user", "profile", userId);
+      // #36: replace the bare alert() with the shared banner so the
+      // admin sees it in context. Alert is keep-alive for now as a
+      // fallback in case the banner is scrolled out of view.
+      setAdminError(`Failed to delete user — ${result.error || "please try again"}`);
+      setActionLoading(false);
+      return;
     }
+    logAdminAction("delete_user", "profile", userId);
     await fetchAllData();
     setActionLoading(false);
     setConfirmAction(null);
   }
 
   async function flagPlaygroup(playgroupId, reason) {
+    setAdminError("");
     const { error } = await supabase
       .from("playgroups")
       .update({
@@ -331,20 +413,24 @@ export default function Admin() {
         flagged_by: user.id,
       })
       .eq("id", playgroupId);
-    if (!error) {
-      logAdminAction("flag_playgroup", "playgroup", playgroupId, { reason });
-      setPlaygroups((prev) =>
-        prev.map((pg) =>
-          pg.id === playgroupId
-            ? { ...pg, is_flagged: true, flag_reason: reason, flagged_at: new Date().toISOString(), flagged_by: user.id }
-            : pg
-        )
-      );
+    if (error) {
+      console.error("flagPlaygroup failed:", error);
+      setAdminError(`Couldn't flag playgroup — ${error.message || "please try again"}`);
+      return;
     }
+    logAdminAction("flag_playgroup", "playgroup", playgroupId, { reason });
+    setPlaygroups((prev) =>
+      prev.map((pg) =>
+        pg.id === playgroupId
+          ? { ...pg, is_flagged: true, flag_reason: reason, flagged_at: new Date().toISOString(), flagged_by: user.id }
+          : pg
+      )
+    );
     setConfirmAction(null);
   }
 
   async function unflagPlaygroup(playgroupId) {
+    setAdminError("");
     const { error } = await supabase
       .from("playgroups")
       .update({
@@ -354,25 +440,35 @@ export default function Admin() {
         flagged_by: null,
       })
       .eq("id", playgroupId);
-    if (!error) {
-      logAdminAction("unflag_playgroup", "playgroup", playgroupId);
-      setPlaygroups((prev) =>
-        prev.map((pg) =>
-          pg.id === playgroupId
-            ? { ...pg, is_flagged: false, flag_reason: null, flagged_at: null, flagged_by: null }
-            : pg
-        )
-      );
+    if (error) {
+      console.error("unflagPlaygroup failed:", error);
+      setAdminError(`Couldn't unflag playgroup — ${error.message || "please try again"}`);
+      return;
     }
+    logAdminAction("unflag_playgroup", "playgroup", playgroupId);
+    setPlaygroups((prev) =>
+      prev.map((pg) =>
+        pg.id === playgroupId
+          ? { ...pg, is_flagged: false, flag_reason: null, flagged_at: null, flagged_by: null }
+          : pg
+      )
+    );
   }
 
+  // #41: single .in() batch update instead of N sequential round-trips.
+  // #36: check the error and surface it instead of silently half-applying.
   async function bulkDeactivatePlaygroups(ids) {
     setActionLoading(true);
-    for (const id of ids) {
-      await supabase
-        .from("playgroups")
-        .update({ is_active: false })
-        .eq("id", id);
+    setAdminError("");
+    const { error } = await supabase
+      .from("playgroups")
+      .update({ is_active: false })
+      .in("id", ids);
+    if (error) {
+      console.error("bulkDeactivatePlaygroups failed:", error);
+      setAdminError(`Couldn't deactivate ${ids.length} playgroup${ids.length > 1 ? "s" : ""} — ${error.message || "please try again"}`);
+      setActionLoading(false);
+      return;
     }
     logAdminAction("bulk_deactivate_playgroups", "playgroup", ids[0], { count: ids.length, ids });
     const deactivatedActive = playgroups.filter((pg) => ids.includes(pg.id) && pg.is_active).length;
@@ -389,17 +485,22 @@ export default function Admin() {
 
   async function bulkFlagPlaygroups(ids, reason) {
     setActionLoading(true);
+    setAdminError("");
     const now = new Date().toISOString();
-    for (const id of ids) {
-      await supabase
-        .from("playgroups")
-        .update({
-          is_flagged: true,
-          flag_reason: reason,
-          flagged_at: now,
-          flagged_by: user.id,
-        })
-        .eq("id", id);
+    const { error } = await supabase
+      .from("playgroups")
+      .update({
+        is_flagged: true,
+        flag_reason: reason,
+        flagged_at: now,
+        flagged_by: user.id,
+      })
+      .in("id", ids);
+    if (error) {
+      console.error("bulkFlagPlaygroups failed:", error);
+      setAdminError(`Couldn't flag ${ids.length} playgroup${ids.length > 1 ? "s" : ""} — ${error.message || "please try again"}`);
+      setActionLoading(false);
+      return;
     }
     logAdminAction("bulk_flag_playgroups", "playgroup", ids[0], { count: ids.length, ids, reason });
     setPlaygroups((prev) =>
@@ -450,7 +551,9 @@ export default function Admin() {
   // Derive user role from memberships
   function getUserRole(userId) {
     const profile = profiles.find((p) => p.id === userId);
-    // is_suspended not available via PostgREST yet — skip suspended check for now
+    // #35: suspended trumps everything else so the status badge reflects
+    // the user's actual state, not their historical engagement role.
+    if (profile?.is_suspended) return "suspended";
     const pgCreated = playgroups.find((pg) => pg.creator_id === userId);
     if (pgCreated) return "host";
     const mem = memberships.find((m) => m.user_id === userId);
@@ -551,6 +654,25 @@ export default function Admin() {
             )}
           </div>
         </header>
+
+        {/* #36: Admin-wide error banner. Sticky under the header so it
+            stays visible when scrolling long lists. Cleared at the start
+            of every mutation and set on failure. */}
+        {adminError && (
+          <div className="sticky top-16 md:top-20 z-30 px-6 md:px-8 pt-3">
+            <div className="max-w-7xl mx-auto bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 flex items-start gap-3">
+              <span className="material-symbols-outlined text-red-600 text-[20px] shrink-0">error</span>
+              <p className="text-sm flex-1 leading-relaxed">{adminError}</p>
+              <button
+                onClick={() => setAdminError("")}
+                aria-label="Dismiss error"
+                className="shrink-0 text-red-600 hover:text-red-800 cursor-pointer bg-transparent border-none"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Mobile section pills */}
         <div className="md:hidden px-4 pt-3 pb-1 flex gap-1.5 overflow-x-auto no-scrollbar">
