@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Input from "../components/ui/Input";
 import TagSelector from "../components/ui/TagSelector";
@@ -7,6 +7,21 @@ import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 import { uploadProfilePhoto } from "../lib/storage";
 import { PHILOSOPHY_TAGS, AGE_RANGES, PERSONALITY_TAGS } from "../data/mockData";
+
+// Shallow equality on the child fields that can be edited from this screen.
+// Used by handleSave to decide which rows actually need an UPDATE so we
+// don't issue pointless writes.
+function childFieldsDiffer(a, b) {
+  if (a.name !== b.name) return true;
+  if (a.ageRange !== b.ageRange) return true;
+  const at = a.personalityTags || [];
+  const bt = b.personalityTags || [];
+  if (at.length !== bt.length) return true;
+  for (let i = 0; i < at.length; i++) {
+    if (at[i] !== bt[i]) return true;
+  }
+  return false;
+}
 
 export default function EditProfile() {
   const navigate = useNavigate();
@@ -25,6 +40,11 @@ export default function EditProfile() {
     { id: crypto.randomUUID(), name: "", ageRange: "", personalityTags: [], isExisting: false },
   ]);
   const [loadingChildren, setLoadingChildren] = useState(true);
+
+  // Snapshot of children as last loaded from the DB. Used by handleSave to
+  // compute a diff (added / removed / changed) instead of the old
+  // destructive wipe-and-reinsert pattern (see #29). Keyed by DB id.
+  const initialChildrenRef = useRef(new Map());
 
   // Save state
   const [saving, setSaving] = useState(false);
@@ -64,19 +84,31 @@ export default function EditProfile() {
         .order("created_at", { ascending: true });
 
       if (data && data.length > 0) {
-        setChildren(
-          data.map((c) => ({
-            id: c.id,
-            name: c.name || "",
-            ageRange: c.age_range || "",
-            personalityTags: c.personality_tags || [],
-            isExisting: true,
-          }))
-        );
+        const loaded = data.map((c) => ({
+          id: c.id,
+          name: c.name || "",
+          ageRange: c.age_range || "",
+          personalityTags: c.personality_tags || [],
+          isExisting: true,
+        }));
+        setChildren(loaded);
+        // Snapshot each row (keyed by DB id) for later diffing. Clone the
+        // personalityTags array so later edits to state don't mutate the
+        // snapshot.
+        const snap = new Map();
+        for (const c of loaded) {
+          snap.set(c.id, {
+            name: c.name,
+            ageRange: c.ageRange,
+            personalityTags: [...c.personalityTags],
+          });
+        }
+        initialChildrenRef.current = snap;
       } else {
         setChildren([
           { id: crypto.randomUUID(), name: "", ageRange: "", personalityTags: [], isExisting: false },
         ]);
+        initialChildrenRef.current = new Map();
       }
       setLoadingChildren(false);
     };
@@ -106,6 +138,20 @@ export default function EditProfile() {
       return;
     }
 
+    // Guard: any child row in state with a blank name is ambiguous. The
+    // supported way to delete a child is the Remove button on the card,
+    // not clearing the Name field. Refuse to save until every visible
+    // child has a name — otherwise the diff below would either silently
+    // drop an existing child (data loss, #29) or try to insert a row
+    // that violates the `name NOT NULL` constraint.
+    const blankChild = children.find((c) => !c.name.trim());
+    if (blankChild) {
+      setError(
+        "Every child needs a name. Use Remove to delete a child, or fill in the name field."
+      );
+      return;
+    }
+
     setSaving(true);
     setError("");
     setSaved(false);
@@ -113,12 +159,16 @@ export default function EditProfile() {
     try {
       // 1. Upload photo if changed
       let photoUrl = null;
+      let photoUploadFailed = false;
       if (photoFile && user) {
         const { url, error: uploadErr } = await uploadProfilePhoto(photoFile, user.id);
-        if (!uploadErr) {
+        if (!uploadErr && url) {
           photoUrl = url;
+        } else {
+          // Track so we can surface a non-fatal warning after the save
+          // completes (see #30).
+          photoUploadFailed = true;
         }
-        // Photo upload failure is non-critical — continue saving other fields
       }
 
       // 2. Update profile
@@ -138,32 +188,107 @@ export default function EditProfile() {
         return;
       }
 
-      // 3. Replace children
-      const { error: deleteError } = await supabase.from("children").delete().eq("user_id", user.id);
-      if (deleteError) {
-        setError("Profile saved but children could not be updated.");
-        setSaving(false);
-        return;
+      // 3. Reconcile children via diff instead of wipe-and-reinsert.
+      //
+      // Previously this block ran a DELETE on every row keyed to user_id
+      // and then INSERTed the current state. That was non-atomic — a
+      // failure between the delete and the insert wiped every child row —
+      // and it churned DB ids on every save (see #29). Now we compute a
+      // diff against the snapshot captured at load time and only write
+      // what actually changed.
+      const initialSnap = initialChildrenRef.current;
+
+      // Rows in state that carry an isExisting flag AND appear in the
+      // initial snapshot are existing DB rows. Rows with !isExisting are
+      // newly added via "Add another child". Rows that were in the
+      // snapshot but not in state have been removed via the Remove
+      // button.
+      const stateExistingIds = new Set(
+        children.filter((c) => c.isExisting).map((c) => c.id)
+      );
+
+      const toDeleteIds = [];
+      for (const id of initialSnap.keys()) {
+        if (!stateExistingIds.has(id)) toDeleteIds.push(id);
       }
 
-      const validChildren = children.filter((c) => c.name.trim());
-      if (validChildren.length > 0) {
-        const rows = validChildren.map((c) => ({
+      const toInsertRows = children
+        .filter((c) => !c.isExisting)
+        .map((c) => ({
           user_id: user.id,
           name: c.name.trim(),
           age_range: c.ageRange || null,
           personality_tags: c.personalityTags,
         }));
 
-        const { error: childError } = await supabase.from("children").insert(rows);
-        if (childError) {
-          setError("Profile saved but children could not be updated.");
+      const toUpdate = children
+        .filter((c) => c.isExisting)
+        .map((c) => {
+          const prev = initialSnap.get(c.id);
+          const current = {
+            name: c.name.trim(),
+            ageRange: c.ageRange || "",
+            personalityTags: c.personalityTags,
+          };
+          if (!prev || childFieldsDiffer(prev, current)) {
+            return { id: c.id, current };
+          }
+          return null;
+        })
+        .filter(Boolean);
+
+      // Execute in an order that minimises blast radius on partial
+      // failure: inserts first (purely additive), updates next
+      // (idempotent), deletes last (destructive).
+      if (toInsertRows.length > 0) {
+        const { error: insertError } = await supabase
+          .from("children")
+          .insert(toInsertRows);
+        if (insertError) {
+          setError("Profile saved but new children could not be added.");
+          setSaving(false);
+          return;
+        }
+      }
+
+      for (const { id, current } of toUpdate) {
+        const { error: updateError } = await supabase
+          .from("children")
+          .update({
+            name: current.name,
+            age_range: current.ageRange || null,
+            personality_tags: current.personalityTags,
+          })
+          .eq("id", id)
+          .eq("user_id", user.id); // defense in depth; RLS is the real gate
+        if (updateError) {
+          setError("Profile saved but some children could not be updated.");
+          setSaving(false);
+          return;
+        }
+      }
+
+      if (toDeleteIds.length > 0) {
+        const { error: deleteError } = await supabase
+          .from("children")
+          .delete()
+          .in("id", toDeleteIds)
+          .eq("user_id", user.id); // defense in depth
+        if (deleteError) {
+          setError("Profile saved but some children could not be removed.");
           setSaving(false);
           return;
         }
       }
 
       setSaving(false);
+      if (photoUploadFailed) {
+        setError(
+          "Profile saved — but your new photo couldn't be uploaded. Please try again."
+        );
+        // Don't redirect; let the user retry the photo.
+        return;
+      }
       setSaved(true);
       setTimeout(() => navigate("/my-profile"), 800);
     } catch {
