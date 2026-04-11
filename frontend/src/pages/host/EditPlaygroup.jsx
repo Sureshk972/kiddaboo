@@ -280,11 +280,11 @@ export default function EditPlaygroup() {
           </p>
           <div className="flex flex-col gap-3">
             {data.screeningQuestions.map((q, i) => (
-              <div key={i} className="flex items-start gap-2">
+              <div key={q.id} className="flex items-start gap-2">
                 <span className="text-sm text-taupe font-medium mt-3">{i + 1}.</span>
                 <div className="flex-1">
                   <textarea
-                    value={q}
+                    value={q.value}
                     onChange={(e) => updateScreeningQuestion(i, e.target.value)}
                     placeholder="e.g., What's your parenting philosophy?"
                     maxLength={200}
@@ -318,16 +318,18 @@ export default function EditPlaygroup() {
           <div className="mt-3">
             <p className="text-[11px] text-taupe/50 mb-2">Suggested questions:</p>
             <div className="flex flex-wrap gap-1.5">
-              {SUGGESTIONS.filter((s) => !data.screeningQuestions.includes(s)).map((s) => (
+              {SUGGESTIONS.filter(
+                (s) => !data.screeningQuestions.some((q) => q.value === s)
+              ).map((s) => (
                 <button
                   key={s}
                   onClick={() => {
-                    const emptyIdx = data.screeningQuestions.findIndex((q) => !q.trim());
+                    const emptyIdx = data.screeningQuestions.findIndex(
+                      (q) => !q.value.trim()
+                    );
                     if (emptyIdx >= 0) updateScreeningQuestion(emptyIdx, s);
-                    else if (data.screeningQuestions.length < 5) {
-                      addScreeningQuestion();
-                      setTimeout(() => updateScreeningQuestion(data.screeningQuestions.length, s), 0);
-                    }
+                    // #43: push suggestion straight in as initial value.
+                    else if (data.screeningQuestions.length < 5) addScreeningQuestion(s);
                   }}
                   className="text-[11px] text-taupe bg-cream-dark/50 px-2.5 py-1 rounded-full cursor-pointer border-none hover:bg-sage-light transition-colors"
                 >

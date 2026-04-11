@@ -32,13 +32,13 @@ export default function ScreeningQuestions() {
         {/* Questions */}
         <div className="flex flex-col gap-3">
           {data.screeningQuestions.map((q, i) => (
-            <div key={i} className="relative">
+            <div key={q.id} className="relative">
               <div className="flex items-start gap-2">
                 <span className="text-xs text-taupe/50 font-medium mt-3.5 w-5 flex-shrink-0">
                   {i + 1}.
                 </span>
                 <textarea
-                  value={q}
+                  value={q.value}
                   onChange={(e) => updateScreeningQuestion(i, e.target.value)}
                   placeholder="e.g., What's your parenting philosophy?"
                   rows={2}
@@ -93,19 +93,14 @@ export default function ScreeningQuestions() {
                 type="button"
                 onClick={() => {
                   const emptyIndex = data.screeningQuestions.findIndex(
-                    (q) => !q.trim()
+                    (q) => !q.value.trim()
                   );
                   if (emptyIndex >= 0) {
                     updateScreeningQuestion(emptyIndex, suggestion);
                   } else if (data.screeningQuestions.length < 5) {
-                    addScreeningQuestion();
-                    // Need a small delay so the state updates
-                    setTimeout(() => {
-                      updateScreeningQuestion(
-                        data.screeningQuestions.length,
-                        suggestion
-                      );
-                    }, 0);
+                    // #43: push the suggestion in as the initial value
+                    // in one step — no more setTimeout stale-closure race.
+                    addScreeningQuestion(suggestion);
                   }
                 }}
                 className="text-[11px] bg-cream-dark text-taupe px-3 py-1.5 rounded-full cursor-pointer hover:bg-sage-light hover:text-sage-dark transition-colors border-none"

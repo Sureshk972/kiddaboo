@@ -5,6 +5,21 @@ import { geocodeAddress } from "../lib/geocode";
 
 const HostContext = createContext(null);
 
+// #42 / #43: screening questions carry a stable `id` so React's reconciler
+// can track them across insert/remove without reusing DOM from the wrong
+// row, and so we no longer need the old setTimeout-on-addScreeningQuestion
+// trick (which was a stale-closure race) to fill a suggestion — we just
+// pass the initial value straight into `addScreeningQuestion(value)`.
+// The id is ephemeral: we serialize to `string[]` on save and rebuild
+// ids on load, so the DB column shape stays unchanged.
+const newQuestion = (value = "") => ({
+  id:
+    typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `q-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  value,
+});
+
 const initialState = {
   // Playgroup basics
   name: "",
@@ -16,8 +31,8 @@ const initialState = {
   frequency: "",
   location: "",
 
-  // Screening questions
-  screeningQuestions: [""],
+  // Screening questions — {id, value}[] internally (see #42/#43 note above)
+  screeningQuestions: [newQuestion()],
 
   // Environment
   environment: {
@@ -52,10 +67,14 @@ export function HostProvider({ children }) {
     }));
   };
 
-  const addScreeningQuestion = () => {
+  // #43: accepts an optional initial value so callers filling in a
+  // suggestion chip don't have to do `add() → setTimeout(update)`, which
+  // was a stale-closure race that could update the wrong row when the
+  // batched setState hadn't flushed yet.
+  const addScreeningQuestion = (value = "") => {
     setData((prev) => ({
       ...prev,
-      screeningQuestions: [...prev.screeningQuestions, ""],
+      screeningQuestions: [...prev.screeningQuestions, newQuestion(value)],
     }));
   };
 
@@ -63,7 +82,7 @@ export function HostProvider({ children }) {
     setData((prev) => ({
       ...prev,
       screeningQuestions: prev.screeningQuestions.map((q, i) =>
-        i === index ? value : q
+        i === index ? { ...q, value } : q
       ),
     }));
   };
@@ -117,8 +136,10 @@ export function HostProvider({ children }) {
       };
     }
 
-    // Filter out empty screening questions
-    const questions = data.screeningQuestions.filter((q) => q.trim() !== "");
+    // Serialize internal {id,value}[] → DB string[], dropping empties.
+    const questions = data.screeningQuestions
+      .map((q) => q.value)
+      .filter((v) => v.trim() !== "");
 
     // Geocode the location to get lat/lng
     const geo = await geocodeAddress(data.location);
@@ -224,7 +245,11 @@ export function HostProvider({ children }) {
       maxFamilies: pg.max_families || 6,
       frequency: pg.frequency || "",
       location: pg.location_name || "",
-      screeningQuestions: questions.length > 0 ? questions : [""],
+      // Rehydrate DB string[] into internal {id,value}[] (see #42/#43).
+      screeningQuestions:
+        questions.length > 0
+          ? questions.map((v) => newQuestion(v))
+          : [newQuestion()],
       environment: pg.environment || initialState.environment,
       photos: pg.photos || [],
     });
@@ -236,7 +261,10 @@ export function HostProvider({ children }) {
 
   // Update existing playgroup in Supabase
   const updatePlaygroup = async (userId) => {
-    const questions = data.screeningQuestions.filter((q) => q.trim() !== "");
+    // Same serialization as savePlaygroup (see note there).
+    const questions = data.screeningQuestions
+      .map((q) => q.value)
+      .filter((v) => v.trim() !== "");
 
     // Handle photos: keep existing remote URLs + upload new blob URLs
     const keptUrls = data.photos.filter((url) => !url.startsWith("blob:"));
