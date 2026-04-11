@@ -12,6 +12,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@sentry/react": "^10.48.0",
     "@supabase/supabase-js": "^2.101.1",
     "autoprefixer": "^10.4.27",
     "leaflet": "^1.9.4",
