@@ -380,7 +380,7 @@ export default function PlaygroupDetail() {
                 location={group.location}
                 frequency={group.frequency}
                 ageRange={group.ageRange}
-                showRsvp={joinStatus === "member" || joinStatus === "creator"}
+                showRsvp={joinStatus === "member"}
                 variant="featured"
               />
 
@@ -392,7 +392,7 @@ export default function PlaygroupDetail() {
                   location={group.location}
                   frequency={group.frequency}
                   ageRange={group.ageRange}
-                  showRsvp={joinStatus === "member" || joinStatus === "creator"}
+                  showRsvp={joinStatus === "member"}
                   variant="compact"
                 />
               ))}

@@ -376,8 +376,8 @@ export default function Browse() {
               ))}
             </div>
 
-            {/* Host CTA */}
-            {!search && activeFilterCount === 0 && (
+            {/* Host CTA — hide for users who are already hosts */}
+            {!search && activeFilterCount === 0 && !isHost && (
               <div className="mt-12 relative overflow-hidden rounded-2xl bg-sage-light/15 p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 group">
                 <div className="relative z-10 md:w-3/5">
                   <h2 className="text-2xl md:text-3xl font-heading font-bold text-sage-dark mb-3 leading-tight">
