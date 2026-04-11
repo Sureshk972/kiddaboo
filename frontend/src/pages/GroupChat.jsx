@@ -92,13 +92,18 @@ export default function GroupChat() {
     if (messages.length > 0) markChatRead(playgroupId);
   }, [messages.length]);
 
-  // Handle send
+  // Handle send. Return the ok flag from sendMessage so ChatInput can
+  // keep the typed text in the field on failure (#24) instead of
+  // silently vaporising the user's message.
   const handleSend = async (content) => {
-    await sendMessage(content);
-    // Scroll to bottom after sending
-    setTimeout(() => {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, 100);
+    const ok = await sendMessage(content);
+    if (ok) {
+      // Scroll to bottom after sending
+      setTimeout(() => {
+        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    }
+    return ok;
   };
 
   // Loading state

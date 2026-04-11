@@ -2,12 +2,28 @@ import { useState, useRef } from "react";
 
 export default function ChatInput({ onSend, disabled }) {
   const [text, setText] = useState("");
+  const [sendError, setSendError] = useState("");
   const inputRef = useRef(null);
 
-  const handleSend = () => {
+  // #24: handleSend used to clear the input synchronously *before* the
+  // send resolved, so any failure (network blip, RLS reject, offline)
+  // silently vaporised the user's message. Now we await the result and
+  // only clear on success; on failure we keep the text in the field
+  // and show a retry-friendly error line under the input.
+  const handleSend = async () => {
     if (!text.trim() || disabled) return;
-    onSend(text);
+    setSendError("");
+    const ok = await onSend(text);
+    if (ok === false) {
+      setSendError("Couldn't send — tap again to retry.");
+      return;
+    }
     setText("");
+    // Reset textarea auto-grow height so it doesn't stay expanded
+    // after a multi-line send.
+    if (inputRef.current) {
+      inputRef.current.style.height = "auto";
+    }
     inputRef.current?.focus();
   };
 
@@ -20,6 +36,9 @@ export default function ChatInput({ onSend, disabled }) {
 
   return (
     <div className="sticky bottom-0 bg-cream/95 backdrop-blur-sm border-t border-cream-dark px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      {sendError && (
+        <p className="text-[11px] text-red-500 mb-2 text-center">{sendError}</p>
+      )}
       <div className="flex items-end gap-2">
         <textarea
           ref={inputRef}
