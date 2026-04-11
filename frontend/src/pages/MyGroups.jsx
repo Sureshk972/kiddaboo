@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const CARD_COLORS = [
   "#7A8F6D", "#E8C4B0", "#F0EBE3", "#C08B6E",
@@ -28,6 +29,7 @@ const STATUS_BADGES = {
 };
 
 export default function MyGroups() {
+  useDocumentTitle("My Groups"); // #50
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
 

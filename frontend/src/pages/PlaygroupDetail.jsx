@@ -18,6 +18,7 @@ import useReviews from "../hooks/useReviews";
 import useBlocks from "../hooks/useBlocks";
 import ReportSheet from "../components/ui/ReportSheet";
 import { friendlyDate, formatSessionTime, formatDuration } from "../lib/dateUtils";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const ACCESS_LABELS = {
   open: { text: "Open", color: "bg-sage-light text-sage-dark" },
@@ -87,6 +88,10 @@ export default function PlaygroupDetail() {
   const [editingReview, setEditingReview] = useState(null);
   const [realGroup, setRealGroup] = useState(null);
   const [loading, setLoading] = useState(true);
+  // #50: dynamic per-group title — "Kiddaboo — DJT Forever" — falls
+  // back to "Playgroup" while the fetch is in flight so we don't
+  // briefly flash "Kiddaboo — null" in the tab.
+  useDocumentTitle(realGroup?.name || "Playgroup");
   const [joinStatus, setJoinStatus] = useState(null);
   const [reportTarget, setReportTarget] = useState(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);

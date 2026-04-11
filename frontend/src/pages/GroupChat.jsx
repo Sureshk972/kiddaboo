@@ -8,6 +8,7 @@ import { markChatRead } from "../hooks/useNotifications";
 import MessageBubble from "../components/messages/MessageBubble";
 import ChatInput from "../components/messages/ChatInput";
 import ReportSheet from "../components/ui/ReportSheet";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 export default function GroupChat() {
   const { playgroupId } = useParams();
@@ -15,6 +16,9 @@ export default function GroupChat() {
   const { user } = useAuth();
 
   const [groupName, setGroupName] = useState("");
+  // #50: show the group name in the tab once it's loaded so users
+  // can tell multiple open chats apart.
+  useDocumentTitle(groupName ? `${groupName} chat` : "Chat");
   const [memberCount, setMemberCount] = useState(0);
   const [authorized, setAuthorized] = useState(null); // null = loading
 

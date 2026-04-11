@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSubscription } from "../../hooks/useSubscription";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../context/AuthContext";
+import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 
 const PLANS = [
   {
@@ -54,6 +55,7 @@ const FEATURES = [
 ];
 
 export default function HostPremium() {
+  useDocumentTitle("Host Premium"); // #50
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -61,12 +63,17 @@ export default function HostPremium() {
   const [selectedPlan, setSelectedPlan] = useState("host_annual");
   const [processing, setProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  // #52: mirror the /premium cancel handling on the host side — same
+  // Stripe flow, same gap. See Premium.jsx for the longer rationale.
+  const [cancelMessage, setCancelMessage] = useState("");
 
   // Handle return from Stripe Checkout
   useEffect(() => {
     if (searchParams.get("success") === "true") {
       setSuccessMessage("You're now a Host Premium member!");
       refresh();
+    } else if (searchParams.get("cancelled") === "true") {
+      setCancelMessage("Checkout cancelled — no charges were made.");
     }
   }, [searchParams]);
 
@@ -128,6 +135,14 @@ export default function HostPremium() {
         {successMessage && (
           <div className="bg-sage-light border border-sage rounded-xl p-4 mb-6 text-center">
             <p className="text-sm text-sage-dark font-medium">{successMessage}</p>
+          </div>
+        )}
+
+        {/* #52: cancelled banner for the host-side Stripe cancel */}
+        {/* round-trip. See Premium.jsx for the same pattern. */}
+        {cancelMessage && (
+          <div className="bg-cream-dark/50 border border-cream-dark rounded-xl p-4 mb-6 text-center">
+            <p className="text-sm text-taupe-dark font-medium">{cancelMessage}</p>
           </div>
         )}
 

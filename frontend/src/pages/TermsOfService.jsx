@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 export default function TermsOfService() {
+  useDocumentTitle("Terms of Service"); // #50
   const navigate = useNavigate();
 
   return (

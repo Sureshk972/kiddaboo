@@ -12,6 +12,7 @@ import ReviewCard from "../../components/playgroup/ReviewCard";
 import PlaygroupCard from "../../components/browse/PlaygroupCard";
 import { transformPlaygroup } from "../../lib/playgroupTransform";
 import { friendlyDate, formatSessionTime, formatDuration } from "../../lib/dateUtils";
+import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 
 // Helper: time ago string
 function timeAgo(dateStr) {
@@ -25,6 +26,7 @@ function timeAgo(dateStr) {
 }
 
 export default function HostDashboard() {
+  useDocumentTitle("Host Dashboard"); // #50
   const navigate = useNavigate();
   const { user, profile } = useAuth();
 

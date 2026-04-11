@@ -7,6 +7,7 @@ import { useAuth } from "../context/AuthContext";
 import FilterSheet from "../components/browse/FilterSheet";
 import PlaygroupCard from "../components/browse/PlaygroupCard";
 import { transformPlaygroup } from "../lib/playgroupTransform";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const SORT_OPTIONS = [
   { value: "distance", label: "Nearest" },
@@ -16,6 +17,8 @@ const SORT_OPTIONS = [
 ];
 
 export default function Browse() {
+  // #50: per-route document title
+  useDocumentTitle("Browse");
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const [isHost, setIsHost] = useState(false);

@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 import { useSubscription } from "../hooks/useSubscription";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 export default function MyProfile() {
+  useDocumentTitle("My Profile"); // #50
   const navigate = useNavigate();
   const { user, profile, signOut, isHost } = useAuth();
   const { isPremium, isHostPremium, subscription } = useSubscription();

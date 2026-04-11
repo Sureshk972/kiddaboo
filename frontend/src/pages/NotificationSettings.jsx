@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 import usePushNotifications from "../hooks/usePushNotifications";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const NOTIFICATION_TYPES = [
   {
@@ -71,6 +72,7 @@ const DEFAULT_PREFS = {
 };
 
 export default function NotificationSettings() {
+  useDocumentTitle("Notifications"); // #50
   const navigate = useNavigate();
   const { user } = useAuth();
   const {

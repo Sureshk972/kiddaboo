@@ -7,6 +7,7 @@ import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 import { uploadProfilePhoto } from "../lib/storage";
 import { PHILOSOPHY_TAGS, AGE_RANGES, PERSONALITY_TAGS } from "../data/mockData";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 // Shallow equality on the child fields that can be edited from this screen.
 // Used by handleSave to decide which rows actually need an UPDATE so we
@@ -24,6 +25,7 @@ function childFieldsDiffer(a, b) {
 }
 
 export default function EditProfile() {
+  useDocumentTitle("Edit Profile"); // #50
   const navigate = useNavigate();
   const { user, profile, updateProfile } = useAuth();
 

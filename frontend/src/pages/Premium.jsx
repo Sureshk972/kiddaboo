@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSubscription } from "../hooks/useSubscription";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../context/AuthContext";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const PLANS = [
   {
@@ -36,6 +37,7 @@ const FEATURES = [
 ];
 
 export default function Premium() {
+  useDocumentTitle("Premium"); // #50
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -43,12 +45,22 @@ export default function Premium() {
   const [selectedPlan, setSelectedPlan] = useState("annual");
   const [processing, setProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  // #52: the cancel return from Stripe Checkout used to be silently
+  // ignored — user would bounce off the Stripe page, land on
+  // /premium?cancelled=true, and see nothing acknowledging their
+  // cancel. Now we surface a subtle banner so it's clear the cancel
+  // was received and no charge was made.
+  const [cancelMessage, setCancelMessage] = useState("");
 
   // Handle return from Stripe Checkout
   useEffect(() => {
     if (searchParams.get("success") === "true") {
       setSuccessMessage("Payment successful! Your premium access is now active.");
       refresh();
+    } else if (searchParams.get("cancelled") === "true") {
+      // #52: friendly confirmation that the Stripe back/cancel
+      // round-trip worked and nothing was charged.
+      setCancelMessage("Checkout cancelled — no charges were made.");
     }
   }, [searchParams]);
 
@@ -110,6 +122,16 @@ export default function Premium() {
         {successMessage && (
           <div className="bg-sage-light border border-sage rounded-xl p-4 mb-6 text-center">
             <p className="text-sm text-sage-dark font-medium">{successMessage}</p>
+          </div>
+        )}
+
+        {/* #52: cancelled banner — shown on ?cancelled=true return from */}
+        {/* Stripe Checkout. Intentionally muted cream styling so it reads */}
+        {/* as "confirmation, not error" — we don't want to scold users */}
+        {/* for backing out of checkout. */}
+        {cancelMessage && (
+          <div className="bg-cream-dark/50 border border-cream-dark rounded-xl p-4 mb-6 text-center">
+            <p className="text-sm text-taupe-dark font-medium">{cancelMessage}</p>
           </div>
         )}
 

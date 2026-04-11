@@ -2,8 +2,10 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import useConversations from "../hooks/useConversations";
 import ConversationCard from "../components/messages/ConversationCard";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 export default function Messages() {
+  useDocumentTitle("Messages"); // #50
   const navigate = useNavigate();
   const { user } = useAuth();
   const { conversations, loading } = useConversations(user?.id);

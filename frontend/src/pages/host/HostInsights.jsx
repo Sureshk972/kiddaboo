@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
 import { useSubscription } from "../../hooks/useSubscription";
+import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 
 // Helper: time ago string
 function timeAgo(dateStr) {
@@ -21,6 +22,7 @@ function dayLabel(date) {
 }
 
 export default function HostInsights() {
+  useDocumentTitle("Host Insights"); // #50
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isHostPremium } = useSubscription();

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "../ui/Button";
 
 export default function JoinRequestSheet({
@@ -13,6 +13,25 @@ export default function JoinRequestSheet({
     screeningQuestions.reduce((acc, q, i) => ({ ...acc, [i]: "" }), {})
   );
   const [submitted, setSubmitted] = useState(false);
+
+  // #51: Escape-to-close for keyboard users. Click-outside already
+  // worked via the backdrop onClick, but Escape was ignored so keyboard
+  // users had no way out short of tabbing to Send Request and filling
+  // out the form. Listener is scoped to `isOpen` so we're not keeping a
+  // window handler live for every mounted sheet — and we bail if the
+  // sheet is already in the "submitted" success state, since at that
+  // point Escape should still close (identical to clicking Got it).
+  useEffect(() => {
+    if (!isOpen) return;
+    function onKeyDown(e) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose?.();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, onClose]);
 
   const handleSubmit = () => {
     setSubmitted(true);

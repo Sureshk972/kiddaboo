@@ -13,10 +13,12 @@ import RequestsTab from "./admin/RequestsTab";
 import SubscriptionsTab from "./admin/SubscriptionsTab";
 import AnalyticsTab from "./admin/AnalyticsTab";
 import AuditLogTab from "./admin/AuditLogTab";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 // Admin access is now enforced via database role column + RequireAdmin wrapper in App.jsx
 
 export default function Admin() {
+  useDocumentTitle("Admin"); // #50
   const { user, profile, loading: authLoading, isAdmin } = useAuth();
   const navigate = useNavigate();
 

@@ -40,6 +40,25 @@ export default function ConfirmModal({
     setValue(input?.initial || "");
   }, [input?.initial, input?.label, input?.placeholder]);
 
+  // #51: Escape-to-cancel for keyboard users. The Enter key already
+  // confirms from the input (see onKeyDown below), but Escape was
+  // unhandled — keyboard users couldn't dismiss the modal without
+  // tab-walking to the Cancel button. Listener is window-scoped so it
+  // works even when focus isn't in the input field. We respect the
+  // `loading` flag the same way the backdrop click does: you can't
+  // escape out of a modal that's mid-action, so we don't half-apply a
+  // bulk operation.
+  useEffect(() => {
+    function onKeyDown(e) {
+      if (e.key === "Escape" && !loading) {
+        e.preventDefault();
+        onCancel?.();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [loading, onCancel]);
+
   const trimmed = value.trim();
   const isBlank = trimmed.length === 0;
   const isBlocked = !!input && !!input.required && isBlank;
