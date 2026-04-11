@@ -69,8 +69,16 @@ export default function EditPlaygroup() {
   }, [id, user]);
 
   const handleSave = async () => {
+    // #48: match the create flow's minimum validation — name + at least
+    // one vibe tag. Previously a host could clear all vibe tags in edit
+    // and save a row that the Browse listing couldn't meaningfully
+    // render or filter.
     if (!data.name.trim()) {
       setError("Playgroup name is required");
+      return;
+    }
+    if (!data.vibeTags || data.vibeTags.length === 0) {
+      setError("Pick at least one vibe tag");
       return;
     }
 

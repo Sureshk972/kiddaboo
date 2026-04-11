@@ -33,6 +33,9 @@ export default function HostDashboard() {
   const [realRequests, setRealRequests] = useState([]);
   const [realMembers, setRealMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+  // #44: surface failures from approve/decline/waitlist mutations so the
+  // host isn't left guessing when the optimistic state flips back.
+  const [dashboardError, setDashboardError] = useState("");
 
   useEffect(() => {
     if (!user) {
@@ -206,33 +209,79 @@ export default function HostDashboard() {
   const requests = realRequests;
   const members = realMembers;
 
+  // #44: shared error-handling helper. On failure we roll back the
+  // optimistic state AND surface the error to the host via the sticky
+  // banner — old code only console.error'd.
+  const rollback = (id, message) => {
+    setActionedIds((prev) => { const next = { ...prev }; delete next[id]; return next; });
+    setDashboardError(message);
+  };
+
   const handleApprove = async (id) => {
+    const request = realRequests.find((r) => r.id === id);
+    if (!request) return;
+    const firstName = request.name.split(" ")[0] || "request";
+
     setActionedIds((prev) => ({ ...prev, [id]: "approved" }));
+    setDashboardError("");
+
+    const joinedAt = new Date().toISOString();
     const { error } = await supabase
       .from("memberships")
-      .update({ role: "member", joined_at: new Date().toISOString() })
+      .update({ role: "member", joined_at: joinedAt })
       .eq("id", id);
     if (error) {
       console.error("Failed to approve membership:", error);
-      setActionedIds((prev) => { const next = { ...prev }; delete next[id]; return next; });
+      rollback(id, `Couldn't approve ${firstName}. ${error.message || "Please try again."}`);
+      return;
     }
+
+    // #44: promote the approved request into the local members list so
+    // the Members section and the "X of Y families" stat card update
+    // immediately, without waiting for a full refetch/navigation. We
+    // leave the row in realRequests so the RequestCard still shows its
+    // brief "approved" animation (activeRequests filters on actionedIds).
+    setRealMembers((prev) => [
+      ...prev,
+      {
+        id: request.id,
+        name: request.name,
+        initials: request.initials,
+        role: "member",
+        childrenAges: request.childrenAges,
+        joinedAt: new Date(joinedAt).toLocaleDateString("en-US", {
+          month: "short",
+          year: "numeric",
+        }),
+      },
+    ]);
   };
 
   const handleDecline = async (id) => {
+    const request = realRequests.find((r) => r.id === id);
+    const firstName = request?.name.split(" ")[0] || "request";
+
     setActionedIds((prev) => ({ ...prev, [id]: "declined" }));
+    setDashboardError("");
+
     const { error } = await supabase.from("memberships").update({ role: "declined" }).eq("id", id);
     if (error) {
       console.error("Failed to decline membership:", error);
-      setActionedIds((prev) => { const next = { ...prev }; delete next[id]; return next; });
+      rollback(id, `Couldn't decline ${firstName}. ${error.message || "Please try again."}`);
     }
   };
 
   const handleWaitlist = async (id) => {
+    const request = realRequests.find((r) => r.id === id);
+    const firstName = request?.name.split(" ")[0] || "request";
+
     setActionedIds((prev) => ({ ...prev, [id]: "waitlisted" }));
+    setDashboardError("");
+
     const { error } = await supabase.from("memberships").update({ role: "waitlisted" }).eq("id", id);
     if (error) {
       console.error("Failed to waitlist membership:", error);
-      setActionedIds((prev) => { const next = { ...prev }; delete next[id]; return next; });
+      rollback(id, `Couldn't waitlist ${firstName}. ${error.message || "Please try again."}`);
     }
   };
 
@@ -320,6 +369,29 @@ export default function HostDashboard() {
   return (
     <div className="bg-cream">
       {header}
+
+      {/* #44: sticky error banner — mirrors the Admin pattern. */}
+      {dashboardError && (
+        <div className="sticky top-[68px] z-20 px-5 pt-3">
+          <div className="max-w-md mx-auto bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 flex items-start gap-3">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="shrink-0 mt-0.5">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M12 8V12M12 16H12.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+            <p className="text-sm flex-1 leading-relaxed">{dashboardError}</p>
+            <button
+              type="button"
+              onClick={() => setDashboardError("")}
+              aria-label="Dismiss error"
+              className="text-red-500 hover:text-red-700 bg-transparent border-none cursor-pointer p-0.5 shrink-0"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-md mx-auto px-5 py-5 flex flex-col gap-5">
         {/* How parents see you — preview card */}

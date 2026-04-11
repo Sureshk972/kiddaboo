@@ -41,6 +41,10 @@ export default function HostInsights() {
     declined: 0,
     waitlisted: 0,
     total: 0,
+    // #45: weekly counts, scoped to the last 7 days, so the view→request
+    // conversion metric below divides against viewsThisWeek on the same
+    // time window instead of mixing all-time requests with 7-day views.
+    weeklyRequests: 0,
   });
 
   useEffect(() => {
@@ -65,25 +69,42 @@ export default function HostInsights() {
       const pg = pgs[0];
       setPlaygroup(pg);
 
-      // Funnel — memberships by role
+      // Funnel — memberships by role. We also pull created_at so the
+      // view→request conversion ratio below can be scoped to the same
+      // 7-day window as viewsThisWeek (#45).
       const { data: memberships } = await supabase
         .from("memberships")
-        .select("role")
+        .select("role, created_at")
         .eq("playgroup_id", pg.id);
 
       if (memberships) {
+        const weekAgoMs = Date.now() - 7 * 86400000;
         const counts = {
           pending: 0,
           approved: 0,
           declined: 0,
           waitlisted: 0,
           total: memberships.length,
+          weeklyRequests: 0,
         };
         memberships.forEach((m) => {
           if (m.role === "pending") counts.pending += 1;
           else if (m.role === "member" || m.role === "creator") counts.approved += 1;
           else if (m.role === "declined") counts.declined += 1;
           else if (m.role === "waitlisted") counts.waitlisted += 1;
+
+          // Only count actual join attempts within the last 7 days. The
+          // "creator" role is excluded — the host is not a viewer-turned-
+          // requester.
+          const createdAtMs = new Date(m.created_at).getTime();
+          const isRequestAttempt =
+            m.role === "pending" ||
+            m.role === "member" ||
+            m.role === "declined" ||
+            m.role === "waitlisted";
+          if (isRequestAttempt && createdAtMs >= weekAgoMs) {
+            counts.weeklyRequests += 1;
+          }
         });
         setFunnel(counts);
       }
@@ -227,10 +248,12 @@ export default function HostInsights() {
   const weekDeltaPct =
     viewsLastWeek > 0 ? Math.round((weekDelta / viewsLastWeek) * 100) : null;
 
-  // Conversion metrics
+  // Conversion metrics — #45: numerator is now weekly requests (same
+  // 7-day window as viewsThisWeek) so this ratio can't exceed 100% the
+  // way it used to when all-time memberships were divided by weekly views.
   const viewToRequest =
     viewsThisWeek > 0
-      ? Math.round(((funnel.pending + funnel.approved + funnel.declined) / viewsThisWeek) * 100)
+      ? Math.min(100, Math.round((funnel.weeklyRequests / viewsThisWeek) * 100))
       : 0;
   const requestToApproved =
     funnel.pending + funnel.approved + funnel.declined > 0

@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useRef } from "react";
 import { supabase } from "../lib/supabase";
-import { uploadPhoto } from "../lib/storage";
+import { uploadPhoto, deletePhoto } from "../lib/storage";
 import { geocodeAddress } from "../lib/geocode";
 
 const HostContext = createContext(null);
@@ -120,20 +120,15 @@ export function HostProvider({ children }) {
     // Filter out empty screening questions
     const questions = data.screeningQuestions.filter((q) => q.trim() !== "");
 
-    // Upload photos to Supabase Storage
-    let photoUrls = [];
-    if (photoFilesRef.current.length > 0) {
-      for (const file of photoFilesRef.current) {
-        const { url, error: uploadErr } = await uploadPhoto(file, "playgroups", userId);
-        if (url) photoUrls.push(url);
-        if (uploadErr) console.warn("Photo upload failed:", uploadErr);
-      }
-    }
-
     // Geocode the location to get lat/lng
     const geo = await geocodeAddress(data.location);
 
-    // Insert playgroup row
+    // #46: insert the playgroup row BEFORE uploading any photos. The
+    // previous order uploaded files first, so any insert failure
+    // (ALREADY_HOSTING race, geocode-driven validation, network) left
+    // orphaned files in Storage with no row pointing at them. With the
+    // row-first order, a failed insert means zero uploads — no orphans.
+    // Photos are attached in a follow-up update once the row exists.
     const { data: playgroup, error } = await supabase
       .from("playgroups")
       .insert({
@@ -150,7 +145,7 @@ export function HostProvider({ children }) {
         access_type: data.accessType,
         screening_questions: questions,
         environment: data.environment,
-        photos: photoUrls,
+        photos: [],
       })
       .select()
       .single();
@@ -173,6 +168,34 @@ export function HostProvider({ children }) {
         };
       }
       return { data: null, error };
+    }
+
+    // #46 (cont.): now that the row exists, upload the photos. Per-file
+    // failures continue to warn-and-skip — the existing behavior — but
+    // now a failed upload just means fewer photos on an otherwise valid
+    // playgroup instead of an orphaned Storage file.
+    let photoUrls = [];
+    if (photoFilesRef.current.length > 0) {
+      for (const file of photoFilesRef.current) {
+        const { url, error: uploadErr } = await uploadPhoto(file, "playgroups", userId);
+        if (url) photoUrls.push(url);
+        if (uploadErr) console.warn("Photo upload failed:", uploadErr);
+      }
+    }
+
+    // Attach the uploaded photos to the row. A failure here does NOT
+    // fail the overall save — the playgroup is already live and the
+    // host can add photos later from the edit flow.
+    if (photoUrls.length > 0) {
+      const { error: photosErr } = await supabase
+        .from("playgroups")
+        .update({ photos: photoUrls })
+        .eq("id", playgroup.id);
+      if (photosErr) {
+        console.warn("Attaching photos to new playgroup failed:", photosErr);
+      } else {
+        playgroup.photos = photoUrls;
+      }
     }
 
     // Also create a membership record for the host (role = creator)
@@ -219,6 +242,14 @@ export function HostProvider({ children }) {
     const keptUrls = data.photos.filter((url) => !url.startsWith("blob:"));
     const newFiles = photoFilesRef.current;
 
+    // #47: diff the original remote photo list against the kept list so
+    // we know which URLs the host removed in-session. We delete those
+    // from Storage after the row update succeeds (not before — a failed
+    // update shouldn't orphan the host's data in the other direction).
+    const removedUrls = existingPhotoUrls.current.filter(
+      (url) => !keptUrls.includes(url)
+    );
+
     let newPhotoUrls = [];
     if (newFiles.length > 0) {
       for (const file of newFiles) {
@@ -255,7 +286,26 @@ export function HostProvider({ children }) {
       .select()
       .single();
 
-    return { data: updated, error };
+    if (error) {
+      return { data: updated, error };
+    }
+
+    // #47: the row is now the authoritative "new" list. Delete any
+    // remote photos the host removed. Per-file deletion failures just
+    // warn — worst case one or two orphans remain, but the row is
+    // consistent. This runs AFTER the update so a failed update never
+    // destroys storage.
+    if (removedUrls.length > 0) {
+      for (const url of removedUrls) {
+        const { error: delErr } = await deletePhoto(url);
+        if (delErr) console.warn("Failed to delete removed playgroup photo:", delErr);
+      }
+      // Track the fresh remote list so a second save in the same session
+      // doesn't try to delete the same URLs again.
+      existingPhotoUrls.current = [...keptUrls];
+    }
+
+    return { data: updated, error: null };
   };
 
   // Reset form after successful save

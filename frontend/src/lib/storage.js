@@ -78,6 +78,37 @@ export async function uploadProfilePhoto(file, userId) {
 }
 
 /**
+ * Delete a photo from Supabase Storage given its public URL.
+ * Used when a host removes a remote photo in the edit flow so the
+ * underlying file doesn't sit in Storage orphaned (#47).
+ *
+ * Public URLs look like:
+ *   https://<project>.supabase.co/storage/v1/object/public/photos/playgroups/<userId>/<timestamp>.<ext>
+ * We extract everything after `/public/photos/` as the bucket key.
+ *
+ * @param {string} publicUrl
+ * @returns {{ error: string|null }}
+ */
+export async function deletePhoto(publicUrl) {
+  if (typeof publicUrl !== "string" || !publicUrl) {
+    return { error: "Invalid photo URL" };
+  }
+  const match = publicUrl.match(new RegExp(`/public/${BUCKET}/(.+)$`));
+  if (!match) {
+    // Not one of ours (external URL, data URL, blob URL, etc). Treat as
+    // a no-op so the caller doesn't blow up cleaning up a mixed list.
+    return { error: null };
+  }
+  const fileName = match[1];
+  const { error } = await supabase.storage.from(BUCKET).remove([fileName]);
+  if (error) {
+    console.error("Delete error:", error);
+    return { error: error.message };
+  }
+  return { error: null };
+}
+
+/**
  * Upload multiple playgroup photos.
  * @param {File[]} files
  * @param {string} userId
