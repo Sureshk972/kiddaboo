@@ -85,6 +85,7 @@ export default function NotificationSettings() {
   const [prefs, setPrefs] = useState(DEFAULT_PREFS);
   const [saving, setSaving] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   // Load notification preferences from profile
   useEffect(() => {
@@ -102,17 +103,26 @@ export default function NotificationSettings() {
     loadPrefs();
   }, [user]);
 
-  // Save preference toggle
+  // Save preference toggle. Optimistic update with rollback on write
+  // failure (#33): previously we fired the update and never checked
+  // the error, so a dropped network request would leave the UI in a
+  // state that silently disagreed with the DB until the next reload.
   const togglePref = async (key) => {
     if (!user) return;
+    const previous = prefs;
     const updated = { ...prefs, [key]: !prefs[key] };
     setPrefs(updated);
     setSaving(true);
-    await supabase
+    setSaveError("");
+    const { error } = await supabase
       .from("profiles")
       .update({ notification_prefs: updated })
       .eq("id", user.id);
     setSaving(false);
+    if (error) {
+      setPrefs(previous);
+      setSaveError("Couldn't save that change — please try again.");
+    }
   };
 
   // Handle enable/disable push
@@ -264,6 +274,9 @@ export default function NotificationSettings() {
         {/* Saving indicator */}
         {saving && (
           <p className="text-xs text-taupe text-center">Saving preferences...</p>
+        )}
+        {saveError && (
+          <p className="text-xs text-red-500 text-center">{saveError}</p>
         )}
       </div>
     </div>
