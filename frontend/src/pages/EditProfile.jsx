@@ -61,14 +61,21 @@ export default function EditProfile() {
   // children section. MyProfile's "Manage Children" entry uses this so
   // the two menu items don't just navigate to the same top-of-page
   // (#31). Wait until children finish loading so the target element
-  // has its final height before we scroll.
+  // has its final height before we scroll. Use instant scroll (not
+  // smooth) because smooth scrollIntoView intermittently no-ops in
+  // some renderer contexts and the user expects to land directly on
+  // the section.
   useEffect(() => {
     if (loadingChildren) return;
     if (location.hash !== "#children") return;
-    const el = childrenSectionRef.current;
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+    // Defer one frame so the just-mounted children list has laid out.
+    const raf = requestAnimationFrame(() => {
+      const el = childrenSectionRef.current;
+      if (el) {
+        el.scrollIntoView({ behavior: "auto", block: "start" });
+      }
+    });
+    return () => cancelAnimationFrame(raf);
   }, [location.hash, loadingChildren]);
 
   // Populate from profile
