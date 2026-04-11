@@ -160,11 +160,16 @@ export default function Browse() {
 
     // Sort
     if (sortBy === "distance" && userLocation) {
-      // Open groups first, then by distance
+      // #22: strict distance sort. We used to bucket Open groups above
+      // Request-only groups and then sort by distance within each
+      // bucket, but that made an 828-mi Open group rank above a 0.7-mi
+      // Request group, which is the opposite of what "Nearest" means.
+      // Users who only want Open groups can use the access-type filter
+      // in FilterSheet — sort should honor its label and nothing more.
+      // Request-only groups are not second-class; hosts use that
+      // access type to vet families before sharing kid info, which is
+      // a kid-safety feature we actively want to reward, not bury.
       list.sort((a, b) => {
-        const aOpen = a.accessType === "open" ? 0 : 1;
-        const bOpen = b.accessType === "open" ? 0 : 1;
-        if (aOpen !== bOpen) return aOpen - bOpen;
         if (a.distance == null && b.distance == null) return 0;
         if (a.distance == null) return 1;
         if (b.distance == null) return -1;
