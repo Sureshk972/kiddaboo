@@ -104,6 +104,7 @@ export default function MyProfile() {
                 }]
               : []),
             { icon: "\ud83d\udc64", label: "Edit Profile", path: "/edit-profile" },
+            { icon: "\ud83d\udc76", label: "Manage Children", path: "/edit-profile#children" },
             { icon: "\ud83d\udd14", label: "Notifications", path: "/notifications" },
             { icon: "\ud83d\udcdc", label: "Terms of Service", path: "/terms" },
             { icon: "\ud83d\udee1\ufe0f", label: "Privacy Policy", path: "/privacy" },

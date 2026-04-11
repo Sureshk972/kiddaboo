@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Input from "../components/ui/Input";
 import TagSelector from "../components/ui/TagSelector";
 import Button from "../components/ui/Button";
@@ -25,7 +25,13 @@ function childFieldsDiffer(a, b) {
 
 export default function EditProfile() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, profile, updateProfile } = useAuth();
+
+  // Ref on the children section so we can scroll to it when we're
+  // entered via the /edit-profile#children deep-link from the account
+  // menu.
+  const childrenSectionRef = useRef(null);
 
   // Profile fields
   const [firstName, setFirstName] = useState("");
@@ -50,6 +56,20 @@ export default function EditProfile() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
+
+  // Deep-link support: /edit-profile#children scrolls straight to the
+  // children section. MyProfile's "Manage Children" entry uses this so
+  // the two menu items don't just navigate to the same top-of-page
+  // (#31). Wait until children finish loading so the target element
+  // has its final height before we scroll.
+  useEffect(() => {
+    if (loadingChildren) return;
+    if (location.hash !== "#children") return;
+    const el = childrenSectionRef.current;
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [location.hash, loadingChildren]);
 
   // Populate from profile
   useEffect(() => {
@@ -413,7 +433,7 @@ export default function EditProfile() {
         <div className="h-px bg-cream-dark" />
 
         {/* Children section */}
-        <div>
+        <div ref={childrenSectionRef} id="children" style={{ scrollMarginTop: "80px" }}>
           <h2 className="text-lg font-bold tracking-tight mb-1" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
             Your little ones
           </h2>
