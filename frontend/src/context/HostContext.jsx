@@ -155,7 +155,25 @@ export function HostProvider({ children }) {
       .select()
       .single();
 
-    if (error) return { data: null, error };
+    if (error) {
+      // Partial unique index `one_active_playgroup_per_host` (migration
+      // 017) is the authoritative enforcement of the one-playgroup-per-
+      // host rule. The pre-check above catches the common case quickly,
+      // but a race between the SELECT and the INSERT could still slip
+      // through without this. Translate the Postgres 23505 into the
+      // same friendly ALREADY_HOSTING error shape the caller expects.
+      if (error.code === "23505") {
+        return {
+          data: null,
+          error: {
+            message:
+              "You already have an active playgroup. Each host can manage one playgroup at a time.",
+            code: "ALREADY_HOSTING",
+          },
+        };
+      }
+      return { data: null, error };
+    }
 
     // Also create a membership record for the host (role = creator)
     const { error: memberError } = await supabase.from("memberships").insert({
