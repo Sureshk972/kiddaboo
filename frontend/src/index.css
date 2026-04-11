@@ -9,13 +9,18 @@
     color: #6B5E54;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    overflow-x: hidden;
+    /* overflow-x: clip prevents horizontal bleed without turning
+       html into a phantom scroll container. See #32 — overflow-x:
+       hidden implicitly sets overflow-y: auto, which broke every
+       `sticky top-0` header in the app. */
+    overflow-x: clip;
   }
 
   body {
     margin: 0;
     min-height: 100vh;
-    overflow-x: hidden;
+    /* Same as html above: clip, not hidden. See #32. */
+    overflow-x: clip;
     -webkit-text-size-adjust: 100%;
   }
 
