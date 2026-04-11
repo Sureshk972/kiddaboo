@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Input from "../components/ui/Input";
 import TagSelector from "../components/ui/TagSelector";
 import Button from "../components/ui/Button";
@@ -25,13 +25,7 @@ function childFieldsDiffer(a, b) {
 
 export default function EditProfile() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { user, profile, updateProfile } = useAuth();
-
-  // Ref on the children section so we can scroll to it when we're
-  // entered via the /edit-profile#children deep-link from the account
-  // menu.
-  const childrenSectionRef = useRef(null);
 
   // Profile fields
   const [firstName, setFirstName] = useState("");
@@ -56,27 +50,6 @@ export default function EditProfile() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
-
-  // Deep-link support: /edit-profile#children scrolls straight to the
-  // children section. MyProfile's "Manage Children" entry uses this so
-  // the two menu items don't just navigate to the same top-of-page
-  // (#31). Wait until children finish loading so the target element
-  // has its final height before we scroll. Use instant scroll (not
-  // smooth) because smooth scrollIntoView intermittently no-ops in
-  // some renderer contexts and the user expects to land directly on
-  // the section.
-  useEffect(() => {
-    if (loadingChildren) return;
-    if (location.hash !== "#children") return;
-    // Defer one frame so the just-mounted children list has laid out.
-    const raf = requestAnimationFrame(() => {
-      const el = childrenSectionRef.current;
-      if (el) {
-        el.scrollIntoView({ behavior: "auto", block: "start" });
-      }
-    });
-    return () => cancelAnimationFrame(raf);
-  }, [location.hash, loadingChildren]);
 
   // Populate from profile
   useEffect(() => {
@@ -138,6 +111,23 @@ export default function EditProfile() {
         initialChildrenRef.current = new Map();
       }
       setLoadingChildren(false);
+      // Deep-link support: /edit-profile#children scrolls straight to
+      // the children section. MyProfile's "Manage Children" entry
+      // uses this so the two menu items don't both navigate to
+      // top-of-page (#31). Scrolling lives here because (a) this is
+      // the moment we know the children list has its real height and
+      // (b) running it off a useLocation-dependent effect proved
+      // unreliable — the effect wouldn't fire in some client-side
+      // navigation paths. Instant (not smooth) scroll because smooth
+      // scrollIntoView no-ops in some renderer contexts. We defer
+      // one tick so React has committed the post-load DOM before we
+      // try to measure.
+      if (window.location.hash === "#children") {
+        setTimeout(() => {
+          const el = document.getElementById("children");
+          if (el) el.scrollIntoView({ behavior: "auto", block: "start" });
+        }, 50);
+      }
     };
     fetchChildren();
   }, [user]);
@@ -440,7 +430,7 @@ export default function EditProfile() {
         <div className="h-px bg-cream-dark" />
 
         {/* Children section */}
-        <div ref={childrenSectionRef} id="children" style={{ scrollMarginTop: "80px" }}>
+        <div id="children" style={{ scrollMarginTop: "80px" }}>
           <h2 className="text-lg font-bold tracking-tight mb-1" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
             Your little ones
           </h2>
