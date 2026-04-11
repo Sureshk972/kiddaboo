@@ -11,6 +11,12 @@ const UNREAD_LOOKBACK_MS = 30 * 24 * 60 * 60 * 1000;
 export default function useConversations(userId) {
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Stable sorted-and-joined playgroup id list. Used as the dep key
+  // for the realtime subscription so we can scope it to just the
+  // groups the current user actually belongs to (#25). Stored as a
+  // string so referentially-stable diffing plays nicely with
+  // useEffect's dep comparison.
+  const [pgIdsKey, setPgIdsKey] = useState("");
 
   const fetchConversations = async () => {
     if (!userId) {
@@ -127,6 +133,12 @@ export default function useConversations(userId) {
       });
 
       setConversations(convos);
+      // Update the dep key for the realtime subscription. Sort so the
+      // key is stable regardless of convos ordering above — we only
+      // want to re-subscribe when the *set* of groups changes, not
+      // when sort order flips.
+      const nextKey = [...pgIds].sort().join(",");
+      setPgIdsKey((prev) => (prev === nextKey ? prev : nextKey));
     } catch (err) {
       console.error("Failed to fetch conversations:", err);
     }
@@ -137,15 +149,30 @@ export default function useConversations(userId) {
     fetchConversations();
   }, [userId]);
 
-  // Realtime: listen for new messages to update previews
+  // Realtime: listen for new messages to update previews. Scope the
+  // subscription to the user's own groups (#25) — previously this
+  // had no filter, so every message inserted *anywhere* on the
+  // platform triggered a full refetch for every user with the inbox
+  // open. RLS blocked *reading* the foreign messages, but the
+  // realtime notification still fired and the callback still ran.
+  //
+  // We re-subscribe whenever the set of groups changes (tracked via
+  // the stable sorted-join pgIdsKey). No groups → no subscription;
+  // the inbox just won't live-update, which is fine because there's
+  // nothing to update.
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || !pgIdsKey) return;
 
     const channel = supabase
-      .channel("user-conversations")
+      .channel(`user-conversations:${userId}`)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages" },
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `playgroup_id=in.(${pgIdsKey})`,
+        },
         () => {
           // Refetch conversations to update last message preview
           fetchConversations();
@@ -154,7 +181,8 @@ export default function useConversations(userId) {
       .subscribe();
 
     return () => supabase.removeChannel(channel);
-  }, [userId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, pgIdsKey]);
 
   return { conversations, loading };
 }
