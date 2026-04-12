@@ -44,7 +44,7 @@ function PlaceholderHero() {
           </svg>
         </div>
         <p className="text-white/70 text-sm font-medium tracking-wide">
-          Playgroup photos coming soon
+          No photos yet
         </p>
       </div>
     </div>
@@ -54,74 +54,31 @@ function PlaceholderHero() {
 export default function PhotoCarousel({ photos = [] }) {
   const [active, setActive] = useState(0);
 
-  // Show branded placeholder when no photos
-  if (!photos.length) return <PlaceholderHero />;
+  // Normalize photos: support both plain URL strings and {url/src} objects
+  const normalized = photos
+    .map((p) => (typeof p === "string" ? { url: p } : p))
+    .filter((p) => p.url || p.src);
 
-  // Check if photos have actual image URLs
-  const hasRealImages = photos.some((p) => p.url || p.src);
+  // Show branded placeholder when no usable photos
+  if (!normalized.length) return <PlaceholderHero />;
 
-  if (!hasRealImages) {
-    return <PlaceholderHero />;
-  }
+  const current = normalized[active] || normalized[0];
 
   return (
     <div className="relative">
       {/* Photo display */}
       <div className="w-full h-56 rounded-2xl overflow-hidden relative">
-        {photos[active]?.url || photos[active]?.src ? (
-          <img
-            src={photos[active].url || photos[active].src}
-            alt={photos[active].label || "Playgroup photo"}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div
-            className="w-full h-full flex items-center justify-center transition-colors duration-300"
-            style={{ backgroundColor: photos[active]?.color }}
-          >
-            <div className="text-center">
-              <svg
-                width="32"
-                height="32"
-                viewBox="0 0 24 24"
-                fill="none"
-                className="mx-auto mb-2 opacity-40"
-              >
-                <rect
-                  x="3"
-                  y="3"
-                  width="18"
-                  height="18"
-                  rx="2"
-                  stroke="white"
-                  strokeWidth="1.5"
-                />
-                <circle cx="8.5" cy="8.5" r="1.5" fill="white" opacity="0.5" />
-                <path
-                  d="M3 16L8 11L13 16"
-                  stroke="white"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M14 14L17 11L21 15"
-                  stroke="white"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-              <p className="text-white/60 text-sm font-medium">
-                {photos[active]?.label}
-              </p>
-            </div>
-          </div>
-        )}
+        <img
+          src={current.url || current.src}
+          alt={current.label || "Playgroup photo"}
+          className="w-full h-full object-cover"
+        />
       </div>
 
       {/* Dots */}
-      {photos.length > 1 && (
+      {normalized.length > 1 && (
         <div className="flex justify-center gap-1.5 mt-3">
-          {photos.map((_, i) => (
+          {normalized.map((_, i) => (
             <button
               key={i}
               onClick={() => setActive(i)}
