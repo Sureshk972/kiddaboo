@@ -68,7 +68,7 @@ export default function HostDashboard() {
         .from("memberships")
         .select(`
           id, user_id, role, intro_message, screening_answers, created_at, joined_at,
-          profiles:user_id ( first_name, last_name, bio, philosophy_tags )
+          profiles:user_id ( first_name, last_name, bio, philosophy_tags, photo_url )
         `)
         .eq("playgroup_id", pg.id)
         .order("created_at", { ascending: false });
@@ -125,11 +125,15 @@ export default function HostDashboard() {
             const kids = childrenByUser[m.user_id] || [];
             return {
               id: m.id,
+              userId: m.user_id,
               name: `${first} ${last}`.trim(),
               initials:
                 (first[0] || "U").toUpperCase() + (last[0] || "").toUpperCase(),
               role: m.role === "creator" ? "host" : "member",
               childrenAges: kids.map((c) => c.age_range ? `${c.name} (${c.age_range})` : c.name),
+              bio: m.profiles?.bio || "",
+              philosophyTags: m.profiles?.philosophy_tags || [],
+              photoUrl: m.profiles?.photo_url || "",
               joinedAt: m.joined_at
                 ? new Date(m.joined_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })
                 : new Date(m.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" }),
@@ -149,6 +153,7 @@ export default function HostDashboard() {
   const [expandedRequest, setExpandedRequest] = useState(null);
   const [actionedIds, setActionedIds] = useState({});
   const [showScheduleSheet, setShowScheduleSheet] = useState(false);
+  const [selectedMember, setSelectedMember] = useState(null);
   const { isHostPremium } = useSubscription();
   const [viewStats, setViewStats] = useState({ thisWeek: 0, recentViewers: [] });
 
@@ -247,10 +252,14 @@ export default function HostDashboard() {
       ...prev,
       {
         id: request.id,
+        userId: request.userId,
         name: request.name,
         initials: request.initials,
         role: "member",
         childrenAges: request.childrenAges,
+        bio: request.bio || "",
+        philosophyTags: request.philosophyTags || [],
+        photoUrl: "",
         joinedAt: new Date(joinedAt).toLocaleDateString("en-US", {
           month: "short",
           year: "numeric",
@@ -710,20 +719,29 @@ export default function HostDashboard() {
             {members.map((member, i) => (
               <div
                 key={member.id}
+                onClick={() => member.role !== "host" && setSelectedMember(member)}
                 className={`flex items-center gap-3 p-4 ${
                   i < members.length - 1 ? "border-b border-cream-dark" : ""
-                }`}
+                } ${member.role !== "host" ? "cursor-pointer hover:bg-cream/50 active:bg-cream transition-colors" : ""}`}
               >
                 {/* Avatar */}
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    member.role === "host"
-                      ? "bg-sage text-white"
-                      : "bg-sage-light text-sage-dark"
-                  }`}
-                >
-                  <span className="text-xs font-bold">{member.initials}</span>
-                </div>
+                {member.photoUrl ? (
+                  <img
+                    src={member.photoUrl}
+                    alt={member.name}
+                    className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                  />
+                ) : (
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      member.role === "host"
+                        ? "bg-sage text-white"
+                        : "bg-sage-light text-sage-dark"
+                    }`}
+                  >
+                    <span className="text-xs font-bold">{member.initials}</span>
+                  </div>
+                )}
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
@@ -741,6 +759,13 @@ export default function HostDashboard() {
                     Joined {member.joinedAt}
                   </p>
                 </div>
+
+                {/* Chevron for non-host members */}
+                {member.role !== "host" && (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A3A08C" strokeWidth="1.5" strokeLinecap="round" className="shrink-0">
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                )}
               </div>
             ))}
           </div>
@@ -882,6 +907,14 @@ export default function HostDashboard() {
         <div className="h-4" />
       </div>
 
+      {/* Member detail slide-over */}
+      {selectedMember && (
+        <MemberDetailPanel
+          member={selectedMember}
+          onClose={() => setSelectedMember(null)}
+        />
+      )}
+
       {/* Schedule session bottom sheet */}
       <ScheduleSessionSheet
         isOpen={showScheduleSheet}
@@ -897,5 +930,116 @@ export default function HostDashboard() {
         }}
       />
     </div>
+  );
+}
+
+/**
+ * Slide-over panel showing details of a member in the host's playgroup.
+ * Keeps the same visual language as the admin detail panels.
+ */
+function MemberDetailPanel({ member, onClose }) {
+  return (
+    <>
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-charcoal/30 z-40" onClick={onClose} />
+
+      {/* Panel */}
+      <div className="fixed top-0 right-0 bottom-0 w-full max-w-sm bg-cream z-50 shadow-xl overflow-y-auto animate-slideIn">
+        {/* Header */}
+        <div className="sticky top-0 bg-cream/95 backdrop-blur-sm border-b border-cream-dark px-5 py-4 flex items-center gap-3 z-10">
+          <button
+            onClick={onClose}
+            aria-label="Close panel"
+            className="w-8 h-8 rounded-full bg-white border border-cream-dark flex items-center justify-center cursor-pointer hover:border-sage-light transition-colors"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6l12 12" stroke="#5C5C5C" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </button>
+          <h2 className="font-heading font-bold text-charcoal text-base">
+            Member Details
+          </h2>
+        </div>
+
+        <div className="px-5 py-6 space-y-5">
+          {/* Profile card */}
+          <div className="bg-white rounded-2xl border border-cream-dark p-5 text-center">
+            {member.photoUrl ? (
+              <img
+                src={member.photoUrl}
+                alt={member.name}
+                className="w-20 h-20 rounded-full object-cover mx-auto mb-3"
+              />
+            ) : (
+              <div className="w-20 h-20 rounded-full bg-sage-light flex items-center justify-center mx-auto mb-3">
+                <span className="text-2xl font-bold text-sage-dark">
+                  {member.initials}
+                </span>
+              </div>
+            )}
+            <h3 className="font-heading font-bold text-charcoal text-lg">
+              {member.name}
+            </h3>
+            <p className="text-xs text-taupe mt-1">
+              Joined {member.joinedAt}
+            </p>
+          </div>
+
+          {/* Bio */}
+          <div className="bg-white rounded-2xl border border-cream-dark p-5">
+            <h4 className="text-xs text-taupe uppercase tracking-wide font-medium mb-2">
+              About
+            </h4>
+            {member.bio?.trim() ? (
+              <p className="text-sm text-charcoal leading-relaxed">
+                {member.bio}
+              </p>
+            ) : (
+              <p className="text-sm text-taupe/60 italic">No bio provided</p>
+            )}
+          </div>
+
+          {/* Children */}
+          {member.childrenAges?.length > 0 && (
+            <div className="bg-white rounded-2xl border border-cream-dark p-5">
+              <h4 className="text-xs text-taupe uppercase tracking-wide font-medium mb-3">
+                Children
+              </h4>
+              <div className="space-y-2">
+                {member.childrenAges.map((child, i) => (
+                  <div key={i} className="flex items-center gap-2.5 bg-cream rounded-xl px-3 py-2.5">
+                    <div className="w-8 h-8 rounded-full bg-sage-light flex items-center justify-center shrink-0">
+                      <span className="text-xs font-medium text-sage-dark">
+                        {(child[0] || "?").toUpperCase()}
+                      </span>
+                    </div>
+                    <p className="text-sm text-charcoal">{child}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Philosophy tags */}
+          {member.philosophyTags?.length > 0 && (
+            <div className="bg-white rounded-2xl border border-cream-dark p-5">
+              <h4 className="text-xs text-taupe uppercase tracking-wide font-medium mb-2">
+                Parenting Style
+              </h4>
+              <div className="flex flex-wrap gap-1.5">
+                {member.philosophyTags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="text-xs bg-sage-light text-sage-dark px-2.5 py-1 rounded-full"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
   );
 }
