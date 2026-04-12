@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 
 function PlaceholderHero() {
   return (
@@ -53,6 +53,8 @@ function PlaceholderHero() {
 
 export default function PhotoCarousel({ photos = [] }) {
   const [active, setActive] = useState(0);
+  const touchStart = useRef(null);
+  const touchEnd = useRef(null);
 
   // Normalize photos: support both plain URL strings and {url/src} objects
   const normalized = photos
@@ -64,27 +66,62 @@ export default function PhotoCarousel({ photos = [] }) {
 
   const current = normalized[active] || normalized[0];
 
+  // Minimum swipe distance (px) to trigger navigation
+  const minSwipe = 40;
+
+  const handleTouchStart = useCallback((e) => {
+    touchEnd.current = null;
+    touchStart.current = e.targetTouches[0].clientX;
+  }, []);
+
+  const handleTouchMove = useCallback((e) => {
+    touchEnd.current = e.targetTouches[0].clientX;
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!touchStart.current || !touchEnd.current) return;
+    const distance = touchStart.current - touchEnd.current;
+    if (Math.abs(distance) >= minSwipe) {
+      if (distance > 0) {
+        // Swiped left → next photo
+        setActive((prev) => Math.min(prev + 1, normalized.length - 1));
+      } else {
+        // Swiped right → previous photo
+        setActive((prev) => Math.max(prev - 1, 0));
+      }
+    }
+    touchStart.current = null;
+    touchEnd.current = null;
+  }, [normalized.length]);
+
   return (
     <div className="relative">
-      {/* Photo display */}
-      <div className="w-full h-56 rounded-2xl overflow-hidden relative">
+      {/* Photo display — swipeable */}
+      <div
+        className="w-full h-56 rounded-2xl overflow-hidden relative touch-pan-y"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <img
           src={current.url || current.src}
           alt={current.label || "Playgroup photo"}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover select-none pointer-events-none"
+          draggable={false}
         />
       </div>
 
       {/* Dots */}
       {normalized.length > 1 && (
-        <div className="flex justify-center gap-1.5 mt-3">
+        <div className="flex justify-center gap-2 mt-3">
           {normalized.map((_, i) => (
             <button
               key={i}
               onClick={() => setActive(i)}
+              aria-label={`Photo ${i + 1}`}
               className={`
-                w-2 h-2 rounded-full transition-all duration-200 cursor-pointer
-                ${i === active ? "bg-sage w-5" : "bg-cream-dark"}
+                h-2 rounded-full transition-all duration-200 cursor-pointer border-none p-0
+                ${i === active ? "bg-sage w-5" : "bg-cream-dark w-2"}
               `}
             />
           ))}
