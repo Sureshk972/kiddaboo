@@ -5,6 +5,7 @@ import Input from "../components/ui/Input";
 import Button from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
+import { friendlyAuthError } from "../lib/authErrors";
 
 export default function PhoneVerification() {
   const navigate = useNavigate();
@@ -29,7 +30,12 @@ export default function PhoneVerification() {
       setLoading(false);
 
       if (err) {
-        setError(err.message);
+        // #55: parent-voice error instead of raw Supabase string
+        const friendly = friendlyAuthError(err.message);
+        setError(friendly.message);
+        if (friendly.action === "switch_to_signin") {
+          setMode("signin");
+        }
         return;
       }
 
@@ -46,7 +52,8 @@ export default function PhoneVerification() {
       setLoading(false);
 
       if (err) {
-        setError(err.message);
+        // #55: parent-voice error instead of raw Supabase string
+        setError(friendlyAuthError(err.message).message);
         return;
       }
 
@@ -92,7 +99,8 @@ export default function PhoneVerification() {
     setResetLoading(false);
 
     if (err) {
-      setError(err.message);
+      // #55: parent-voice error
+      setError(friendlyAuthError(err.message).message);
       return;
     }
 

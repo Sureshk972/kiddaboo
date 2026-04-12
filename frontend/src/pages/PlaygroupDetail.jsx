@@ -95,6 +95,10 @@ export default function PlaygroupDetail() {
   const [joinStatus, setJoinStatus] = useState(null);
   const [reportTarget, setReportTarget] = useState(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
+  // #57: visible feedback for join actions — previously the CTA label
+  // changed silently with no banner, and errors were swallowed.
+  const [joinMessage, setJoinMessage] = useState("");
+  const [joinError, setJoinError] = useState("");
 
   const { blockUser, submitReport } = useBlocks(user?.id);
   const { canSendJoinRequest, joinRequestsRemaining, joinRequestLimit, isPremium, incrementUsage } = useSubscription();
@@ -208,15 +212,22 @@ export default function PlaygroupDetail() {
       });
       if (!error) {
         setJoinStatus("member");
+        setJoinError("");
+        setJoinMessage("You're in! Say hi in the group chat.");
+      } else {
+        setJoinMessage("");
+        setJoinError("Something went wrong joining this group. Please try again.");
       }
     } else {
       setShowJoinSheet(true);
     }
   };
 
-  // Handle join request submission (for request-to-join groups)
+  // Handle join request submission (for request-to-join groups).
+  // #53: returns { error } so JoinRequestSheet can gate its success
+  // screen on actual DB success, not fire-and-forget.
   const handleJoinSubmit = async ({ intro, answers }) => {
-    if (!user) return;
+    if (!user) return { error: "Not signed in" };
 
     await incrementUsage();
     const { error } = await supabase.from("memberships").insert({
@@ -230,6 +241,7 @@ export default function PlaygroupDetail() {
     if (!error) {
       setJoinStatus("pending");
     }
+    return { error: error || null };
   };
 
   return (
@@ -298,6 +310,18 @@ export default function PlaygroupDetail() {
       )}
 
       <div className="max-w-md mx-auto w-full px-6">
+        {/* #57: success/error banners for join actions */}
+        {joinMessage && (
+          <div className="bg-sage-light border border-sage rounded-xl p-4 mb-4 text-center">
+            <p className="text-sm text-sage-dark font-medium">{joinMessage}</p>
+          </div>
+        )}
+        {joinError && (
+          <div className="bg-terracotta-light/30 border border-terracotta-light rounded-xl p-4 mb-4 text-center">
+            <p className="text-sm text-terracotta font-medium">{joinError}</p>
+          </div>
+        )}
+
         {/* Photo carousel */}
         <div className="mb-6">
           <PhotoCarousel photos={group.photos} />

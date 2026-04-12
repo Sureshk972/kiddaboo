@@ -66,6 +66,8 @@ export default function HostPremium() {
   // #52: mirror the /premium cancel handling on the host side — same
   // Stripe flow, same gap. See Premium.jsx for the longer rationale.
   const [cancelMessage, setCancelMessage] = useState("");
+  // #54: inline error replaces jarring alert() on checkout failure
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Handle return from Stripe Checkout
   useEffect(() => {
@@ -97,7 +99,7 @@ export default function HostPremium() {
       }
     } catch (err) {
       console.error("Checkout error:", err);
-      alert("Failed to start checkout: " + (err.message || "Please try again."));
+      setErrorMessage("We couldn't start checkout. Please try again in a moment — no charges were made.");
       setProcessing(false);
     }
   };
@@ -143,6 +145,13 @@ export default function HostPremium() {
         {cancelMessage && (
           <div className="bg-cream-dark/50 border border-cream-dark rounded-xl p-4 mb-6 text-center">
             <p className="text-sm text-taupe-dark font-medium">{cancelMessage}</p>
+          </div>
+        )}
+
+        {/* #54: inline error banner replaces alert() */}
+        {errorMessage && (
+          <div className="bg-terracotta-light/30 border border-terracotta-light rounded-xl p-4 mb-6 text-center">
+            <p className="text-sm text-terracotta font-medium">{errorMessage}</p>
           </div>
         )}
 

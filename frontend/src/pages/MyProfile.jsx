@@ -12,6 +12,8 @@ export default function MyProfile() {
   const { isPremium, isHostPremium, subscription } = useSubscription();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  // #54: inline error replaces jarring alert()
+  const [deleteError, setDeleteError] = useState("");
 
   const firstName = profile?.first_name || "Your";
   const lastName = profile?.last_name || "Name";
@@ -207,6 +209,12 @@ export default function MyProfile() {
                 This action cannot be undone.
               </p>
 
+              {deleteError && (
+                <div className="bg-terracotta-light/30 border border-terracotta-light rounded-xl p-3 mb-4">
+                  <p className="text-sm text-terracotta font-medium">{deleteError}</p>
+                </div>
+              )}
+
               <div className="flex gap-3">
                 <button
                   onClick={async () => {
@@ -223,7 +231,7 @@ export default function MyProfile() {
                       navigate("/");
                     } catch (err) {
                       console.error("Delete failed:", err);
-                      alert("Failed to delete account. Please try again.");
+                      setDeleteError("Something went wrong deleting your account. Please try again.");
                       setDeleting(false);
                     }
                   }}

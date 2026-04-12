@@ -13,6 +13,8 @@ export default function JoinRequestSheet({
     screeningQuestions.reduce((acc, q, i) => ({ ...acc, [i]: "" }), {})
   );
   const [submitted, setSubmitted] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   // #51: Escape-to-close for keyboard users. Click-outside already
   // worked via the backdrop onClick, but Escape was ignored so keyboard
@@ -33,9 +35,27 @@ export default function JoinRequestSheet({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [isOpen, onClose]);
 
-  const handleSubmit = () => {
-    setSubmitted(true);
-    onSubmit?.({ intro, answers });
+  // #53: await the parent callback so we only show "Request sent!" on
+  // actual success. Previously this was fire-and-forget — the success
+  // screen appeared even if the DB insert failed, which is the worst
+  // possible outcome for a trust-based product: silent false confirmation.
+  const handleSubmit = async () => {
+    setSaving(true);
+    setError("");
+    try {
+      const result = await onSubmit?.({ intro, answers });
+      // The parent callback should return { error } on failure
+      if (result?.error) {
+        setError("Something went wrong sending your request. Please try again.");
+        setSaving(false);
+        return;
+      }
+      setSubmitted(true);
+    } catch {
+      setError("Something went wrong sending your request. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const canSubmit =
@@ -150,8 +170,14 @@ export default function JoinRequestSheet({
                 </div>
               )}
 
-              <Button fullWidth onClick={handleSubmit} disabled={!canSubmit}>
-                Send Request
+              {error && (
+                <div className="bg-terracotta-light/30 border border-terracotta-light rounded-xl p-3 mb-4 text-center">
+                  <p className="text-sm text-terracotta font-medium">{error}</p>
+                </div>
+              )}
+
+              <Button fullWidth onClick={handleSubmit} disabled={!canSubmit || saving}>
+                {saving ? "Sending..." : "Send Request"}
               </Button>
             </>
           )}
