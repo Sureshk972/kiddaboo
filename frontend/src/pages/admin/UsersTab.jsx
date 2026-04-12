@@ -1,4 +1,6 @@
+import { useState } from "react";
 import StatusBadge from "./StatusBadge";
+import UserDetailPanel from "./UserDetailPanel";
 
 export default function UsersTab({
   profiles,
@@ -12,6 +14,8 @@ export default function UsersTab({
   unsuspendUser,
   deleteUser,
 }) {
+  const [selectedUserId, setSelectedUserId] = useState(null);
+
   const filteredProfiles = searchQuery
     ? profiles.filter((p) => {
         const name = `${p.first_name || ""} ${p.last_name || ""}`.toLowerCase();
@@ -20,6 +24,10 @@ export default function UsersTab({
         return name.includes(q) || id.includes(q);
       })
     : profiles;
+
+  const selectedProfile = selectedUserId
+    ? profiles.find((p) => p.id === selectedUserId)
+    : null;
 
   return (
     <div className="space-y-3">
@@ -75,9 +83,10 @@ export default function UsersTab({
           return (
             <div
               key={profile.id}
-              className={`bg-white rounded-2xl border p-4 ${
-                isSuspended ? "border-red-200" : "border-cream-dark"
+              className={`bg-white rounded-2xl border p-4 cursor-pointer hover:shadow-sm transition-all ${
+                isSuspended ? "border-red-200" : "border-cream-dark hover:border-sage-light"
               }`}
+              onClick={() => setSelectedUserId(profile.id)}
             >
               <div className="flex items-start gap-3">
                 {/* Avatar */}
@@ -137,7 +146,7 @@ export default function UsersTab({
                     </span>
                   </div>
                 </div>
-                <div className="flex gap-2 shrink-0">
+                <div className="flex gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => {
                       if (isSuspended) {
@@ -186,6 +195,18 @@ export default function UsersTab({
             </div>
           );
         })
+      )}
+
+      {/* User detail slide-over panel */}
+      {selectedProfile && (
+        <UserDetailPanel
+          profile={selectedProfile}
+          role={getUserRole(selectedProfile.id)}
+          reportCount={
+            reports.filter((r) => r.reported_user_id === selectedProfile.id).length
+          }
+          onClose={() => setSelectedUserId(null)}
+        />
       )}
     </div>
   );
