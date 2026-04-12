@@ -63,6 +63,16 @@ export default function AddChildren() {
           </p>
         </div>
 
+        {/* #58: trust reassurance — parents are anxious about putting kid info online */}
+        <div className="bg-sage-light/30 border border-sage-light rounded-xl px-4 py-3 flex items-start gap-2.5">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="mt-0.5 flex-shrink-0 text-sage-dark">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <p className="text-[11px] text-sage-dark leading-relaxed">
+            We only collect first names and age ranges — never full names, birthdates, or photos of children. This info is only visible to members of groups you join.
+          </p>
+        </div>
+
         {/* Children cards */}
         <div className="flex flex-col gap-4">
           {data.children.map((child, index) => (

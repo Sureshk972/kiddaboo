@@ -73,52 +73,50 @@ export default function Welcome() {
         </div>
       </div>
 
-      {/* CTA */}
+      {/* CTA — #59: simplified from four items to three. The old
+           "New here? Create an account" link duplicated the primary CTA
+           (both went to /verify), which confused first-time users. Now
+           the hierarchy is: one primary action → one secondary → one
+           text link for returning users. */}
       <div className="w-full max-w-xs flex flex-col gap-4">
         <Button fullWidth onClick={() => navigate("/verify")}>
-          Find Your Playgroup
+          Get Started
         </Button>
         <Button variant="secondary" fullWidth onClick={() => navigate("/host/create")}>
           Host a Playgroup
         </Button>
         <button
           onClick={() => navigate("/verify?mode=signin")}
-          className="text-sm text-sage hover:text-sage-dark transition-colors cursor-pointer bg-transparent border-none"
+          className="text-sm text-sage hover:text-sage-dark transition-colors cursor-pointer bg-transparent border-none py-2"
         >
           Already have an account? <span className="underline underline-offset-4">Sign in</span>
         </button>
-        <button
-          onClick={() => navigate("/verify")}
-          className="text-sm text-sage hover:text-sage-dark transition-colors cursor-pointer bg-transparent border-none"
-        >
-          New here? <span className="underline underline-offset-4">Create an account</span>
-        </button>
       </div>
 
-      {/* Legal links */}
-      <div className="mt-8 flex gap-4">
+      {/* Legal links — #61: enlarged touch targets (min 44pt tap area) */}
+      <div className="mt-8 flex gap-2">
         <button
           onClick={() => navigate("/terms")}
-          className="text-xs text-taupe/60 hover:text-taupe transition-colors cursor-pointer bg-transparent border-none underline underline-offset-2"
+          className="text-xs text-taupe/60 hover:text-taupe transition-colors cursor-pointer bg-transparent border-none underline underline-offset-2 px-3 py-3"
         >
           Terms of Service
         </button>
         <button
           onClick={() => navigate("/privacy")}
-          className="text-xs text-taupe/60 hover:text-taupe transition-colors cursor-pointer bg-transparent border-none underline underline-offset-2"
+          className="text-xs text-taupe/60 hover:text-taupe transition-colors cursor-pointer bg-transparent border-none underline underline-offset-2 px-3 py-3"
         >
           Privacy Policy
         </button>
       </div>
 
-      {/* Social */}
+      {/* Social — #61: enlarged icon + tap area */}
       <a
         href="https://www.instagram.com/kiddaboo1/"
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-4 flex items-center gap-1.5 text-xs text-taupe/60 hover:text-sage transition-colors"
+        className="mt-2 flex items-center gap-2 text-xs text-taupe/60 hover:text-sage transition-colors px-3 py-3"
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
           <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" strokeWidth="1.5" />
           <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.5" />
           <circle cx="18" cy="6" r="1.5" fill="currentColor" />

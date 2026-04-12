@@ -36,14 +36,19 @@ export default function CreateProfile() {
       setSaving(true);
 
       // Upload profile photo if selected
+      // #56: block navigation on upload failure instead of silently
+      // continuing with a blank avatar — hosts use the photo to decide
+      // whether to approve join requests.
       let photoUrl = null;
       if (photoFile && user) {
         const { url, error: uploadErr } = await uploadProfilePhoto(photoFile, user.id);
         if (uploadErr) {
           console.warn("Photo upload failed:", uploadErr);
-        } else {
-          photoUrl = url;
+          setSaving(false);
+          setErrors({ photo: "We couldn't upload your photo. Please try again, or pick a smaller image." });
+          return;
         }
+        photoUrl = url;
       }
 
       // Save profile to Supabase
@@ -108,6 +113,10 @@ export default function CreateProfile() {
             </div>
             <p className={`text-xs text-center mt-2 ${errors.photo ? "text-red-500 font-medium" : "text-taupe/60"}`}>
               {errors.photo || "Add photo (required)"}
+            </p>
+            {/* #58: trust microcopy — parents worry about photo visibility */}
+            <p className="text-[11px] text-taupe/50 text-center mt-1">
+              Only shown to hosts and members of groups you join. Never public.
             </p>
           </label>
         </div>

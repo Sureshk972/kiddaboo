@@ -195,11 +195,14 @@ export default function NotificationSettings() {
                 )}
               </div>
 
+              {/* #60: parent-voice notification status copy — the old text
+                  used "browser" jargon and gave Chrome-only unblock instructions
+                  that were wrong on iOS Safari. */}
               <p className="text-xs text-taupe mt-1 leading-relaxed">
                 {!isSupported
-                  ? "Push notifications are not supported on this browser."
+                  ? "Notifications aren't available here yet. Try opening Kiddaboo in Chrome or Safari for the best experience."
                   : pushBlocked
-                  ? "Notifications are blocked. Please enable them in your browser settings."
+                  ? "Notifications are turned off for Kiddaboo on this device."
                   : isSubscribed
                   ? "You'll receive push notifications on this device."
                   : "Enable to get notified about messages, join requests, and sessions."}
@@ -208,7 +211,11 @@ export default function NotificationSettings() {
               {pushBlocked && (
                 <div className="mt-2 bg-terracotta-light/30 rounded-lg px-3 py-2">
                   <p className="text-[11px] text-taupe-dark leading-relaxed">
-                    To unblock: tap the lock icon in your browser's address bar, find "Notifications", and change it to "Allow".
+                    {/iPad|iPhone|iPod/.test(navigator.userAgent)
+                      ? "To turn them on: open your iPhone Settings → scroll to Safari → Notifications → find Kiddaboo and switch it on."
+                      : /Android/.test(navigator.userAgent)
+                      ? "To turn them on: tap the lock icon next to the web address, then switch Notifications to Allow."
+                      : "To turn them on: click the icon to the left of the web address at the top of this window, then switch Notifications to Allow."}
                   </p>
                 </div>
               )}
