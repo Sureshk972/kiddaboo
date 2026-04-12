@@ -62,6 +62,9 @@ export default function MyProfile() {
           {user?.email && (
             <p className="text-xs text-taupe mt-1">{user.email}</p>
           )}
+          {profile?.zip_code && (
+            <p className="text-xs text-taupe mt-0.5">Zip: {profile.zip_code}</p>
+          )}
           {profile?.bio && (
             <p className="text-sm text-taupe mt-2 leading-relaxed max-w-xs">
               {profile.bio}

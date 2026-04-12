@@ -8,6 +8,7 @@ const initialState = {
   lastName: "",
   bio: "",
   photoUrl: null,
+  zipCode: "",
   philosophyTags: [],
   children: [{ id: crypto.randomUUID(), name: "", ageRange: "", personalityTags: [] }],
 };

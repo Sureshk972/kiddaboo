@@ -69,7 +69,7 @@ export default function HostDashboard() {
         .from("memberships")
         .select(`
           id, user_id, role, intro_message, screening_answers, created_at, joined_at,
-          profiles:user_id ( first_name, last_name, bio, philosophy_tags, photo_url )
+          profiles:user_id ( first_name, last_name, bio, philosophy_tags, photo_url, zip_code )
         `)
         .eq("playgroup_id", pg.id)
         .order("created_at", { ascending: false });
@@ -135,6 +135,7 @@ export default function HostDashboard() {
               bio: m.profiles?.bio || "",
               philosophyTags: m.profiles?.philosophy_tags || [],
               photoUrl: m.profiles?.photo_url || "",
+              zipCode: m.profiles?.zip_code || "",
               joinedAt: m.joined_at
                 ? new Date(m.joined_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })
                 : new Date(m.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" }),
@@ -984,6 +985,11 @@ function MemberDetailPanel({ member, onClose }) {
             <p className="text-xs text-taupe mt-1">
               Joined {member.joinedAt}
             </p>
+            {member.zipCode && (
+              <p className="text-xs text-charcoal font-medium mt-1">
+                Zip: {member.zipCode}
+              </p>
+            )}
           </div>
 
           {/* Bio */}

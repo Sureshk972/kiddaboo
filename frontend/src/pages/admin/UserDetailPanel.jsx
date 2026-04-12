@@ -111,6 +111,11 @@ export default function UserDetailPanel({
             <p className="text-xs text-taupe mt-0.5">
               Joined {joinDate}
             </p>
+            {profile.zip_code && (
+              <p className="text-xs text-charcoal font-medium mt-1.5">
+                Zip: {profile.zip_code}
+              </p>
+            )}
           </div>
 
           {/* Bio */}

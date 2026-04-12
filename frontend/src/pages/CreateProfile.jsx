@@ -57,6 +57,7 @@ export default function CreateProfile() {
         last_name: data.lastName.trim(),
         bio: data.bio.trim(),
         philosophy_tags: data.philosophyTags,
+        zip_code: data.zipCode.trim() || null,
       };
       if (photoUrl) profileData.photo_url = photoUrl;
 
@@ -137,6 +138,18 @@ export default function CreateProfile() {
             placeholder="Smith"
           />
         </div>
+
+        {/* Zip code */}
+        <Input
+          label="Zip code"
+          value={data.zipCode}
+          onChange={(val) => updateField("zipCode", val.replace(/[^0-9-]/g, "").slice(0, 10))}
+          placeholder="60640"
+          error={errors.zipCode}
+        />
+        <p className="text-[11px] text-taupe/50 -mt-4">
+          Helps us show you playgroups nearby. Never shared publicly.
+        </p>
 
         {/* Bio */}
         <div className="flex flex-col gap-1.5">
