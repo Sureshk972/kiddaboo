@@ -1,4 +1,5 @@
 import { useState } from "react";
+import PlaygroupDetailPanel from "./PlaygroupDetailPanel";
 
 export default function PlaygroupsTab({
   playgroups,
@@ -12,6 +13,7 @@ export default function PlaygroupsTab({
 }) {
   const [filter, setFilter] = useState("all");
   const [selectedIds, setSelectedIds] = useState(new Set());
+  const [detailPgId, setDetailPgId] = useState(null);
 
   const filters = ["all", "active", "inactive", "flagged"];
 
@@ -192,15 +194,17 @@ export default function PlaygroupsTab({
           return (
             <div
               key={pg.id}
-              className={`bg-white rounded-2xl border p-4 ${
-                pg.is_flagged ? "border-amber-300" : "border-cream-dark"
+              className={`bg-white rounded-2xl border p-4 cursor-pointer hover:shadow-sm transition-all ${
+                pg.is_flagged ? "border-amber-300" : "border-cream-dark hover:border-sage-light"
               }`}
+              onClick={() => setDetailPgId(pg.id)}
             >
               <div className="flex items-start gap-3">
                 <input
                   type="checkbox"
                   checked={selectedIds.has(pg.id)}
                   onChange={() => toggleSelect(pg.id)}
+                  onClick={(e) => e.stopPropagation()}
                   className="mt-1 w-3.5 h-3.5 rounded border-cream-dark accent-sage cursor-pointer shrink-0"
                 />
                 <div className="min-w-0 flex-1">
@@ -231,7 +235,7 @@ export default function PlaygroupsTab({
                     </p>
                   )}
                 </div>
-                <div className="flex flex-col gap-1.5 shrink-0">
+                <div className="flex flex-col gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => togglePlaygroupActive(pg.id, pg.is_active)}
                     disabled={togglingId === pg.id}
@@ -310,6 +314,18 @@ export default function PlaygroupsTab({
           );
         })
       )}
+
+      {/* Playgroup detail slide-over panel */}
+      {detailPgId && (() => {
+        const pg = playgroups.find((p) => p.id === detailPgId);
+        if (!pg) return null;
+        return (
+          <PlaygroupDetailPanel
+            playgroup={pg}
+            onClose={() => setDetailPgId(null)}
+          />
+        );
+      })()}
     </div>
   );
 }
