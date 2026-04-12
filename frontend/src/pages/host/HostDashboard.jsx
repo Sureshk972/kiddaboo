@@ -215,7 +215,7 @@ export default function HostDashboard() {
     : {};
 
   const requests = realRequests;
-  const members = realMembers;
+  const members = realMembers.filter((m) => m.role !== "host");
 
   // #44: shared error-handling helper. On failure we roll back the
   // optimistic state AND surface the error to the host via the sticky
