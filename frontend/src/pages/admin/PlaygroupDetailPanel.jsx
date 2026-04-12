@@ -9,6 +9,7 @@ import StatusBadge from "./StatusBadge";
 export default function PlaygroupDetailPanel({ playgroup: pg, onClose }) {
   const [members, setMembers] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const host = pg.profiles;
@@ -38,9 +39,18 @@ export default function PlaygroupDetailPanel({ playgroup: pg, onClose }) {
         .eq("playgroup_id", pg.id)
         .order("created_at", { ascending: false })
         .limit(10),
-    ]).then(([memRes, revRes]) => {
+      supabase
+        .from("sessions")
+        .select(`
+          id, title, scheduled_at, duration_minutes, location_name, notes,
+          rsvps ( id, status, profiles:user_id ( first_name, last_name, photo_url ) )
+        `)
+        .eq("playgroup_id", pg.id)
+        .order("scheduled_at", { ascending: false }),
+    ]).then(([memRes, revRes, sessRes]) => {
       if (!memRes.error) setMembers(memRes.data || []);
       if (!revRes.error) setReviews(revRes.data || []);
+      if (!sessRes.error) setSessions(sessRes.data || []);
       setLoading(false);
     });
   }, [pg.id]);
@@ -62,6 +72,19 @@ export default function PlaygroupDetailPanel({ playgroup: pg, onClose }) {
   );
   const declinedMembers = members.filter((m) => m.role === "declined");
   const waitlistedMembers = members.filter((m) => m.role === "waitlisted");
+
+  // Split sessions into past, today, and upcoming
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0, 10);
+  const pastSessions = sessions.filter(
+    (s) => s.scheduled_at && s.scheduled_at.slice(0, 10) < todayStr
+  );
+  const todaySessions = sessions.filter(
+    (s) => s.scheduled_at && s.scheduled_at.slice(0, 10) === todayStr
+  );
+  const upcomingSessions = sessions.filter(
+    (s) => s.scheduled_at && s.scheduled_at.slice(0, 10) > todayStr
+  );
 
   const avgRating =
     reviews.length > 0
@@ -359,6 +382,51 @@ export default function PlaygroupDetailPanel({ playgroup: pg, onClose }) {
             )}
           </div>
 
+          {/* Sessions */}
+          <div className="bg-white rounded-2xl border border-cream-dark p-5">
+            <div className="flex items-center justify-between mb-1">
+              <h4 className="text-xs text-taupe uppercase tracking-wide font-medium">
+                Sessions
+              </h4>
+              <span className="text-xs text-taupe">
+                {sessions.length} total
+              </span>
+            </div>
+            <div className="flex gap-3 mb-3">
+              <span className="text-[11px] text-taupe">
+                <span className="text-charcoal font-medium">{upcomingSessions.length}</span> upcoming
+              </span>
+              <span className="text-[11px] text-taupe">
+                <span className="text-charcoal font-medium">{todaySessions.length}</span> today
+              </span>
+              <span className="text-[11px] text-taupe">
+                <span className="text-charcoal font-medium">{pastSessions.length}</span> past
+              </span>
+            </div>
+            {loading ? (
+              <div className="flex justify-center py-4">
+                <div className="w-5 h-5 border-2 border-sage border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : sessions.length > 0 ? (
+              <div className="space-y-4">
+                {/* Today */}
+                {todaySessions.length > 0 && (
+                  <SessionGroup label="Today" sessions={todaySessions} variant="today" />
+                )}
+                {/* Upcoming */}
+                {upcomingSessions.length > 0 && (
+                  <SessionGroup label="Upcoming" sessions={upcomingSessions} variant="upcoming" />
+                )}
+                {/* Past */}
+                {pastSessions.length > 0 && (
+                  <SessionGroup label="Past" sessions={pastSessions} variant="past" />
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-taupe/60 italic">No sessions scheduled</p>
+            )}
+          </div>
+
           {/* Reviews */}
           <div className="bg-white rounded-2xl border border-cream-dark p-5">
             <div className="flex items-center justify-between mb-3">
@@ -412,6 +480,173 @@ export default function PlaygroupDetailPanel({ playgroup: pg, onClose }) {
         </div>
       </div>
     </>
+  );
+}
+
+/** Collapsible group of session cards with RSVP attendee lists */
+function SessionGroup({ label, sessions, variant = "upcoming" }) {
+  const [expanded, setExpanded] = useState(true);
+
+  const variantStyles = {
+    today: "bg-sage-light/40 border-sage-light",
+    upcoming: "bg-blue-50/50 border-blue-100",
+    past: "bg-cream border-cream-dark",
+  };
+
+  return (
+    <div>
+      <button
+        onClick={() => setExpanded((v) => !v)}
+        className="flex items-center gap-1.5 text-[11px] text-taupe uppercase tracking-wide font-medium mb-1.5 cursor-pointer bg-transparent border-none p-0"
+      >
+        <svg
+          width="10"
+          height="10"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          className={`transition-transform ${expanded ? "rotate-90" : ""}`}
+        >
+          <path d="M9 18l6-6-6-6" />
+        </svg>
+        {label} ({sessions.length})
+      </button>
+
+      {expanded && (
+        <div className="space-y-2">
+          {sessions.map((s) => {
+            const going = (s.rsvps || []).filter((r) => r.status === "going");
+            const notGoing = (s.rsvps || []).filter(
+              (r) => r.status === "not_going"
+            );
+            const dt = s.scheduled_at ? new Date(s.scheduled_at) : null;
+            const dateStr = dt
+              ? dt.toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                })
+              : "No date";
+            const timeStr = dt
+              ? dt.toLocaleTimeString("en-US", {
+                  hour: "numeric",
+                  minute: "2-digit",
+                })
+              : "";
+
+            return (
+              <div
+                key={s.id}
+                className={`rounded-xl border px-3 py-2.5 ${variantStyles[variant]}`}
+              >
+                {/* Session header */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-charcoal truncate">
+                      {s.title || "Untitled Session"}
+                    </p>
+                    <p className="text-[11px] text-taupe mt-0.5">
+                      {dateStr}
+                      {timeStr ? ` · ${timeStr}` : ""}
+                      {s.duration_minutes
+                        ? ` · ${s.duration_minutes} min`
+                        : ""}
+                    </p>
+                    {s.location_name && (
+                      <p className="text-[11px] text-taupe mt-0.5">
+                        {s.location_name}
+                      </p>
+                    )}
+                  </div>
+                  <span className="text-xs text-sage-dark font-medium shrink-0">
+                    {going.length} going
+                  </span>
+                </div>
+
+                {/* Notes */}
+                {s.notes?.trim() && (
+                  <p className="text-[11px] text-taupe mt-1.5 leading-relaxed line-clamp-2">
+                    {s.notes}
+                  </p>
+                )}
+
+                {/* Attendees — going */}
+                {going.length > 0 && (
+                  <div className="mt-2">
+                    <p className="text-[10px] text-sage-dark font-medium mb-1">
+                      Going ({going.length})
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {going.map((r) => (
+                        <RsvpChip key={r.id} rsvp={r} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Attendees — not going */}
+                {notGoing.length > 0 && (
+                  <div className="mt-1.5">
+                    <p className="text-[10px] text-taupe font-medium mb-1">
+                      Not going ({notGoing.length})
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {notGoing.map((r) => (
+                        <RsvpChip key={r.id} rsvp={r} muted />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {going.length === 0 && notGoing.length === 0 && (
+                  <p className="text-[10px] text-taupe/50 italic mt-1.5">
+                    No RSVPs yet
+                  </p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Tiny pill showing an RSVP attendee's name + photo */
+function RsvpChip({ rsvp, muted = false }) {
+  const p = rsvp.profiles;
+  const name = p
+    ? `${p.first_name || ""} ${p.last_name || ""}`.trim() || "Unknown"
+    : "Unknown";
+  const initial = (p?.first_name?.[0] || "?").toUpperCase();
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full pl-0.5 pr-2 py-0.5 text-[11px] ${
+        muted
+          ? "bg-cream text-taupe/70"
+          : "bg-sage-light/60 text-sage-dark"
+      }`}
+    >
+      {p?.photo_url ? (
+        <img
+          src={p.photo_url}
+          alt={name}
+          className="w-4 h-4 rounded-full object-cover"
+        />
+      ) : (
+        <span
+          className={`w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-medium ${
+            muted ? "bg-cream-dark text-taupe" : "bg-sage text-white"
+          }`}
+        >
+          {initial}
+        </span>
+      )}
+      {name}
+    </span>
   );
 }
 
