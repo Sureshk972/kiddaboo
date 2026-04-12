@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
@@ -938,18 +939,13 @@ export default function HostDashboard() {
  * Keeps the same visual language as the admin detail panels.
  */
 function MemberDetailPanel({ member, onClose }) {
-  const panelRef = useRef(null);
-  useEffect(() => {
-    if (panelRef.current) panelRef.current.scrollTop = 0;
-  }, [member]);
-
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       <div className="fixed inset-0 bg-charcoal/30 z-40" onClick={onClose} />
 
       {/* Panel */}
-      <div ref={panelRef} className="fixed top-0 right-0 bottom-0 w-full max-w-sm bg-cream z-50 shadow-xl overflow-y-auto animate-slideIn">
+      <div className="fixed top-0 right-0 bottom-0 w-full max-w-sm bg-cream z-50 shadow-xl overflow-y-auto animate-slideIn">
         {/* Header */}
         <div className="sticky top-0 bg-cream/95 backdrop-blur-sm border-b border-cream-dark px-5 py-4 flex items-center gap-3 z-10">
           <button
@@ -1045,6 +1041,7 @@ function MemberDetailPanel({ member, onClose }) {
           )}
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }
