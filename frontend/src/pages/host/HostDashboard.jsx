@@ -704,7 +704,7 @@ export default function HostDashboard() {
         {/* Members */}
         <div ref={membersRef} className="scroll-mt-24">
           <h3 className="text-base font-heading font-bold text-charcoal mb-3">
-            Members
+            Members in Your Group
           </h3>
           <div className="bg-white rounded-2xl border border-cream-dark overflow-hidden">
             {members.map((member, i) => (
