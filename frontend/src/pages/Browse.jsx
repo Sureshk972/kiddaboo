@@ -215,14 +215,37 @@ export default function Browse() {
       <div className="sticky top-0 z-20 bg-cream/95 backdrop-blur-sm border-b border-cream-dark">
         <div className="max-w-6xl mx-auto px-5 pt-4 pb-3">
           {/* Title row */}
-          <div className="mb-3 flex items-baseline gap-2">
-            <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
-              Kiddaboo
-            </h1>
-            {profile?.first_name && (
-              <span className="text-sm font-medium text-taupe">
-                Hi, {profile.first_name}{isHost ? " (Host)" : ""}
-              </span>
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <div className="flex items-baseline gap-2 min-w-0">
+              <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
+                Kiddaboo
+              </h1>
+              {profile?.first_name && (
+                <span className="text-sm font-medium text-taupe truncate">
+                  Hi, {profile.first_name}{isHost ? " (Host)" : ""}
+                </span>
+              )}
+            </div>
+            {profile && (
+              <div
+                className="w-9 h-9 rounded-full bg-sage-light flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer border-2 border-sage/30"
+                onClick={() => navigate("/my-profile")}
+                role="button"
+                aria-label="Go to profile"
+              >
+                {profile.photo_url ? (
+                  <img
+                    src={profile.photo_url}
+                    alt={`${profile.first_name}'s photo`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-xs font-heading font-bold text-sage-dark">
+                    {(profile.first_name?.[0] || "").toUpperCase()}
+                    {(profile.last_name?.[0] || "").toUpperCase()}
+                  </span>
+                )}
+              </div>
             )}
           </div>
 

@@ -315,25 +315,48 @@ export default function HostDashboard() {
               </span>
             )}
           </div>
-          {isHostPremium ? (
-            <span className="flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1 flex-shrink-0">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="#D97706">
-                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-              </svg>
-              Premium
-            </span>
-          ) : (
-            <button
-              onClick={() => navigate("/host/premium")}
-              className="flex items-center gap-1 text-[11px] font-bold text-white bg-gradient-to-r from-amber-500 to-amber-600 rounded-full px-3 py-1.5 cursor-pointer border-none hover:from-amber-600 hover:to-amber-700 transition-all shadow-sm flex-shrink-0"
-              aria-label="Upgrade to Premium"
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-              </svg>
-              Go Premium
-            </button>
-          )}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {isHostPremium ? (
+              <span className="flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="#D97706">
+                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                </svg>
+                Premium
+              </span>
+            ) : (
+              <button
+                onClick={() => navigate("/host/premium")}
+                className="flex items-center gap-1 text-[11px] font-bold text-white bg-gradient-to-r from-amber-500 to-amber-600 rounded-full px-3 py-1.5 cursor-pointer border-none hover:from-amber-600 hover:to-amber-700 transition-all shadow-sm"
+                aria-label="Upgrade to Premium"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                Go Premium
+              </button>
+            )}
+            {profile && (
+              <div
+                className="w-9 h-9 rounded-full bg-sage-light flex items-center justify-center overflow-hidden cursor-pointer border-2 border-sage/30"
+                onClick={() => navigate("/my-profile")}
+                role="button"
+                aria-label="Go to profile"
+              >
+                {profile.photo_url ? (
+                  <img
+                    src={profile.photo_url}
+                    alt={`${profile.first_name}'s photo`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-xs font-heading font-bold text-sage-dark">
+                    {(profile.first_name?.[0] || "").toUpperCase()}
+                    {(profile.last_name?.[0] || "").toUpperCase()}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
         </div>
         {/* Playgroup name */}
         <div>
