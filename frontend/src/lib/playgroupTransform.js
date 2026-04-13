@@ -42,6 +42,7 @@ export function transformPlaygroup(pg, index = 0, overrides = {}) {
 
   return {
     id: pg.id,
+    creatorId: pg.creator_id || null,
     name: pg.name,
     location: pg.location_name || "Location TBD",
     tags: pg.vibe_tags || [],

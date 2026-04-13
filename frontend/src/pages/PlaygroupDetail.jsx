@@ -57,7 +57,7 @@ function transformRealPlaygroup(pg) {
     accessType: pg.access_type || "request",
     screeningQuestions: pg.screening_questions || [],
     photos: (pg.photos || []).length > 0 ? pg.photos : [],
-    environment: { ...(pg.environment || {}), maxGroupSize: pg.max_families || 8 },
+    environment: pg.environment ? { ...pg.environment, maxGroupSize: pg.max_families || 8 } : null,
     host: {
       userId: pg.creator_id,
       name: `${hostFirst} ${hostLast}`.trim(),
@@ -384,13 +384,15 @@ export default function PlaygroupDetail() {
           <HostCard host={group.host} />
         </div>
 
-        {/* Divider */}
-        <div className="h-px bg-cream-dark mb-6" />
-
-        {/* Environment checklist */}
-        <div className="mb-6">
-          <EnvironmentChecklist environment={group.environment} />
-        </div>
+        {/* Environment checklist — only rendered when host configured it */}
+        {group.environment && (
+          <>
+            <div className="h-px bg-cream-dark mb-6" />
+            <div className="mb-6">
+              <EnvironmentChecklist environment={group.environment} />
+            </div>
+          </>
+        )}
 
         {/* Divider */}
         <div className="h-px bg-cream-dark mb-6" />

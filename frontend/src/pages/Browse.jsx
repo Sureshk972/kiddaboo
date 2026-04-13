@@ -376,7 +376,7 @@ export default function Browse() {
               {results.map((group, i) => (
                 <PlaygroupCard
                   key={group.id}
-                  group={group}
+                  group={{ ...group, isOwnGroup: group.creatorId === user?.id }}
                   featured={i === 0 && results.length > 1 && group.isHostPremium}
                   premium={group.isHostPremium}
                   onClick={() => navigate(`/playgroup/${group.id}`)}

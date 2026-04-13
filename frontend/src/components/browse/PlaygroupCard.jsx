@@ -65,14 +65,14 @@ export default function PlaygroupCard({ group, onClick, featured = false, premiu
                 <span className="font-bold text-sm text-charcoal">{group.rating}</span>
                 <span className="text-taupe text-sm">({group.reviewCount} reviews)</span>
               </div>
-              <p className="text-taupe text-sm mb-4 flex items-center gap-1.5">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <p className="text-taupe text-sm mb-4 flex items-center gap-1.5 min-w-0">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="shrink-0">
                   <path d="M7 1.5C4.5 1.5 2.5 3.5 2.5 6C2.5 9.5 7 12.5 7 12.5C7 12.5 11.5 9.5 11.5 6C11.5 3.5 9.5 1.5 7 1.5Z" stroke="currentColor" strokeWidth="1" />
                   <circle cx="7" cy="6" r="1.5" stroke="currentColor" strokeWidth="1" />
                 </svg>
-                {group.location}
+                <span className="truncate">{group.location}</span>
                 {group.distance != null && (
-                  <span className="text-taupe/60">
+                  <span className="text-taupe/60 shrink-0">
                     &middot; {group.distance < 0.1 ? "<0.1" : group.distance.toFixed(1)} mi
                   </span>
                 )}
@@ -191,14 +191,14 @@ export default function PlaygroupCard({ group, onClick, featured = false, premiu
           {group.name}
         </h3>
 
-        <p className="text-xs text-taupe mb-4 flex items-center gap-1">
-          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+        <p className="text-xs text-taupe mb-4 flex items-center gap-1 min-w-0">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none" className="shrink-0">
             <path d="M7 1.5C4.5 1.5 2.5 3.5 2.5 6C2.5 9.5 7 12.5 7 12.5C7 12.5 11.5 9.5 11.5 6C11.5 3.5 9.5 1.5 7 1.5Z" stroke="currentColor" strokeWidth="1" />
             <circle cx="7" cy="6" r="1.5" stroke="currentColor" strokeWidth="1" />
           </svg>
-          {group.location}
+          <span className="truncate">{group.location}</span>
           {group.distance != null && (
-            <span className="text-taupe/60 ml-1">
+            <span className="text-taupe/60 shrink-0 ml-1">
               &middot; {group.distance < 0.1 ? "<0.1" : group.distance.toFixed(1)} mi
             </span>
           )}
@@ -235,15 +235,21 @@ export default function PlaygroupCard({ group, onClick, featured = false, premiu
         </div>
 
         {/* CTA Button */}
-        <div className={`w-full text-center py-2.5 rounded-xl text-sm font-bold transition-colors ${
-          spotsLeft > 0
-            ? "bg-sage text-white group-hover:bg-sage-dark"
-            : "bg-cream-dark text-taupe"
-        }`}>
-          {spotsLeft > 0
-            ? group.accessType === "open" ? "Join Group" : "Request to Join"
-            : "Waitlist"}
-        </div>
+        {group.isOwnGroup ? (
+          <div className="w-full text-center py-2.5 rounded-xl text-sm font-bold bg-cream-dark text-taupe">
+            Your Group
+          </div>
+        ) : (
+          <div className={`w-full text-center py-2.5 rounded-xl text-sm font-bold transition-colors ${
+            spotsLeft > 0
+              ? "bg-sage text-white group-hover:bg-sage-dark"
+              : "bg-cream-dark text-taupe"
+          }`}>
+            {spotsLeft > 0
+              ? group.accessType === "open" ? "Join Group" : "Request to Join"
+              : "Waitlist"}
+          </div>
+        )}
       </div>
     </div>
   );

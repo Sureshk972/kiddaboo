@@ -38,6 +38,18 @@ function CheckItem({ label, checked, detail }) {
 export default function EnvironmentChecklist({ environment }) {
   if (!environment) return null;
 
+  // Don't render if the host never configured environment details —
+  // only maxGroupSize is set as a default from max_families.
+  const hasRealData =
+    environment.setting ||
+    environment.childproofed !== undefined ||
+    environment.supervisionRatio ||
+    environment.organicSnacks !== undefined ||
+    environment.screenFree !== undefined ||
+    environment.firstAidKit !== undefined ||
+    environment.pets;
+  if (!hasRealData) return null;
+
   const items = [
     {
       label: "Setting",
