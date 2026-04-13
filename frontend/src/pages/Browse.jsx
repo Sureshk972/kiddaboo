@@ -11,9 +11,8 @@ import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const SORT_OPTIONS = [
   { value: "distance", label: "Nearest" },
-  { value: "rating", label: "Top Rated" },
-  { value: "reviews", label: "Most Reviewed" },
-  { value: "spots", label: "Spots Open" },
+  { value: "rating", label: "Rated" },
+  { value: "spots", label: "Spots" },
 ];
 
 export default function Browse() {
@@ -286,33 +285,37 @@ export default function Browse() {
           </div>
 
           {/* Filter & Sort row */}
-          <div className="flex items-center gap-2">
-            {/* Filter button */}
+          <div className="flex items-center gap-3">
+            {/* Filter button — visually distinct */}
             <button
               onClick={() => setShowFilters(true)}
               className={`
-                flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium
-                transition-all duration-150 cursor-pointer border active:scale-95
+                flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold
+                transition-all duration-150 cursor-pointer border-2 active:scale-95 shrink-0
                 ${
                   activeFilterCount > 0
-                    ? "bg-sage-light text-sage-dark border-sage"
-                    : "bg-white text-taupe border-cream-dark hover:border-sage-light"
+                    ? "bg-sage text-white border-sage shadow-sm"
+                    : "bg-white text-charcoal border-charcoal/20 hover:border-charcoal/40"
                 }
               `}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                <path d="M3 6H21M7 12H17M10 18H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                <path d="M3 6H21M7 12H17M10 18H14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
               </svg>
               Filters
               {activeFilterCount > 0 && (
-                <span className="w-4 h-4 rounded-full bg-sage text-white text-[10px] flex items-center justify-center">
+                <span className="w-4 h-4 rounded-full bg-white text-sage text-[10px] flex items-center justify-center font-bold">
                   {activeFilterCount}
                 </span>
               )}
             </button>
 
-            {/* Sort chips */}
-            <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+            {/* Divider */}
+            <div className="w-px h-6 bg-cream-dark shrink-0" />
+
+            {/* Sort chips — with "Sort:" label */}
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
+              <span className="text-[10px] text-taupe/60 uppercase tracking-wider font-medium shrink-0">Sort</span>
               {SORT_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
@@ -320,13 +323,13 @@ export default function Browse() {
                     opt.value === "distance" ? handleNearestSort() : setSortBy(opt.value)
                   }
                   className={`
-                    px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap
-                    transition-all duration-150 cursor-pointer border flex items-center gap-1.5
+                    px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap
+                    transition-all duration-150 cursor-pointer flex items-center gap-1.5
                     active:scale-95
                     ${
                       sortBy === opt.value
-                        ? "bg-sage-light text-sage-dark border-sage"
-                        : "bg-white text-taupe border-cream-dark hover:border-sage-light"
+                        ? "bg-sage-light text-sage-dark font-bold"
+                        : "text-taupe hover:text-charcoal hover:bg-cream-dark/50"
                     }
                   `}
                 >
