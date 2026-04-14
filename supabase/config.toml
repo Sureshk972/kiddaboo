@@ -390,9 +390,20 @@ deno_version = 2
 # rooblix2000@gmail.com on /premium: ES256 kid
 # edda533a-7638-497a-947f-7bfe8c5a8568 → {"code":401,"Invalid JWT"}.
 #
-# stripe-webhook is unaffected (uses Stripe signature verification, no
-# Supabase user JWT). send-push is unaffected (invoked by Postgres
-# database webhooks, not by browser clients).
+# stripe-webhook needs verify_jwt = false for a different reason: Stripe
+# webhook deliveries carry a `stripe-signature` header, not a Supabase
+# JWT. With gateway verification on, every Stripe delivery gets 401'd
+# before the function runs — Stripe retries a few times then gives up,
+# and nothing appears in the function logs because the request never
+# reaches it. The handler does its own verification via
+# `stripe.webhooks.constructEventAsync` against STRIPE_WEBHOOK_SECRET,
+# so turning off the gateway JWT check is correct here, not a weakening.
+# Reproduced on 2026-04-14 with rooblix2000+k6@gmail.com: Stripe
+# checkout.session.completed fired, payment succeeded, but no rows in
+# subscriptions table and zero invocations in stripe-webhook logs.
+#
+# send-push is unaffected (invoked by Postgres database webhooks, not
+# by browser clients).
 [functions.create-checkout]
 verify_jwt = false
 
@@ -400,6 +411,9 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.admin-delete-user]
+verify_jwt = false
+
+[functions.stripe-webhook]
 verify_jwt = false
 
 [analytics]
