@@ -17,13 +17,16 @@ test("AuthContext exposes accountType from the profiles row", async () => {
   supabase.auth.onAuthStateChange.mockReturnValue({
     data: { subscription: { unsubscribe: vi.fn() } },
   });
+  // Mock covers both fetchProfile (profiles select → eq → single) and
+  // fetchHostStatus (memberships select → eq → eq → limit). Each .eq()
+  // returns the same chain so either call shape resolves cleanly.
+  const eqChain = {
+    single: () => Promise.resolve({ data: { id: "u1", first_name: "A", account_type: "organizer" }, error: null }),
+    limit: () => Promise.resolve({ data: [], error: null }),
+  };
+  eqChain.eq = () => eqChain;
   supabase.from.mockReturnValue({
-    select: () => ({
-      eq: () => ({
-        single: () => Promise.resolve({ data: { id: "u1", first_name: "A", account_type: "organizer" }, error: null }),
-        limit: () => Promise.resolve({ data: [], error: null }),
-      }),
-    }),
+    select: () => ({ eq: () => eqChain }),
   });
 
   render(
