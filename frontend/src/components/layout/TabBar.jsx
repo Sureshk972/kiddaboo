@@ -172,14 +172,14 @@ const PARENT_TABS = [
   { path: "/my-profile", label: "Profile", icon: ProfileIcon },
 ];
 
-const HOST_TABS = [
+const ORGANIZER_TABS = [
   {
     path: "/host/dashboard",
     matchPaths: ["/host/dashboard", "/my-groups"],
-    label: "Dashboard",
+    label: "My Group",
     icon: DashboardIcon,
   },
-  { path: "/host/insights", label: "Insights", icon: InsightsIcon },
+  { path: "/host/insights", label: "Members", icon: InsightsIcon },
   { path: "/messages", label: "Messages", icon: MessagesIcon },
   { path: "/my-profile", label: "Profile", icon: ProfileIcon },
 ];
@@ -187,8 +187,8 @@ const HOST_TABS = [
 export default function TabBar({ badges = {} }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signOut, isHost } = useAuth();
-  const TABS = isHost ? HOST_TABS : PARENT_TABS;
+  const { signOut, accountType } = useAuth();
+  const TABS = accountType === "organizer" ? ORGANIZER_TABS : PARENT_TABS;
 
   return (
     <nav aria-label="Main navigation" className="sticky bottom-0 z-30 bg-cream/95 backdrop-blur-sm border-t border-cream-dark pb-[env(safe-area-inset-bottom)]">
