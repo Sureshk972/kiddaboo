@@ -1,4 +1,4 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 /**
@@ -9,11 +9,14 @@ import { useAuth } from "../../context/AuthContext";
  * child. That's intentional for first-time onboarding, but devastating
  * if a logged-in user with a completed profile hits the route directly.
  *
- * This wrapper sends anyone who already has a `first_name` on their
- * profile to /my-profile, which is the supported edit surface.
+ * Returning users (first_name already set) are sent to /my-profile —
+ * the supported edit surface. The first-time signup flow threads
+ * `location.state.fromOnboarding = true` through the /profile → /children
+ * transition so this guard knows to let them pass.
  */
 export default function OnboardingOnly({ children }) {
   const { user, profile, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -25,6 +28,12 @@ export default function OnboardingOnly({ children }) {
 
   if (!user) {
     return <Navigate to="/" replace />;
+  }
+
+  // In-flight signup: CreateProfile just saved first_name and is routing
+  // the user to the next onboarding step. Don't bounce them out.
+  if (location.state?.fromOnboarding) {
+    return children;
   }
 
   if (profile?.first_name) {

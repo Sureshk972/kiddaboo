@@ -83,7 +83,10 @@ export default function CreateProfile() {
       }
 
       sessionStorage.removeItem("kiddaboo.pendingAccountType");
-      navigate(pendingAccountType === "organizer" ? "/host/create" : "/children");
+      navigate(
+        pendingAccountType === "organizer" ? "/host/create" : "/children",
+        { state: { fromOnboarding: true } }
+      );
     }
   };
 
