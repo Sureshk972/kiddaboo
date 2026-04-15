@@ -31,6 +31,10 @@ export default function PhoneVerification() {
     const role = searchParams.get("role");
     if (role === "parent" || role === "organizer") {
       sessionStorage.setItem("kiddaboo.pendingAccountType", role);
+      // Mark the onboarding flow as active so OnboardingOnly lets the
+      // user finish the multi-step signup even after setProfile() has
+      // populated first_name. Cleared at the terminal success page.
+      sessionStorage.setItem("kiddaboo.onboardingActive", "1");
     }
   }, [searchParams]);
 

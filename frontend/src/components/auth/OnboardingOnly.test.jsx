@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
-import { vi, describe, test, expect } from "vitest";
+import { vi, describe, test, expect, beforeEach } from "vitest";
 import OnboardingOnly from "./OnboardingOnly";
 
 vi.mock("../../context/AuthContext", () => ({
@@ -26,7 +26,11 @@ function renderWithRoute(initialEntries) {
 }
 
 describe("OnboardingOnly", () => {
-  test("redirects to /my-profile when user has first_name and no onboarding state", () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+  });
+
+  test("redirects to /my-profile when user has first_name and onboarding flag not set", () => {
     useAuth.mockReturnValue({
       user: { id: "u1" },
       profile: { first_name: "Jane" },
@@ -36,13 +40,14 @@ describe("OnboardingOnly", () => {
     expect(screen.getByText("My Profile page")).toBeInTheDocument();
   });
 
-  test("lets through when user has first_name but fromOnboarding state is set", () => {
+  test("lets through when user has first_name but onboardingActive flag is set", () => {
+    sessionStorage.setItem("kiddaboo.onboardingActive", "1");
     useAuth.mockReturnValue({
       user: { id: "u1" },
       profile: { first_name: "Jane" },
       loading: false,
     });
-    renderWithRoute([{ pathname: "/children", state: { fromOnboarding: true } }]);
+    renderWithRoute([{ pathname: "/children" }]);
     expect(screen.getByText("AddChildren content")).toBeInTheDocument();
   });
 

@@ -1,4 +1,4 @@
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 /**
@@ -10,13 +10,18 @@ import { useAuth } from "../../context/AuthContext";
  * if a logged-in user with a completed profile hits the route directly.
  *
  * Returning users (first_name already set) are sent to /my-profile —
- * the supported edit surface. The first-time signup flow threads
- * `location.state.fromOnboarding = true` through the /profile → /children
- * transition so this guard knows to let them pass.
+ * the supported edit surface.
+ *
+ * In-flight signup has a race: after CreateProfile saves, setProfile()
+ * flushes first_name into context, and OnboardingOnly may re-render at
+ * /profile before the navigate() to /children lands. To survive that
+ * window we gate on a sessionStorage flag set at the very start of the
+ * flow (PhoneVerification) and cleared only at the terminal success
+ * pages (BrowseSuccess, HostSuccess). Nav-state doesn't work here
+ * because it only applies to the destination route, not the source.
  */
 export default function OnboardingOnly({ children }) {
   const { user, profile, loading } = useAuth();
-  const location = useLocation();
 
   if (loading) {
     return (
@@ -30,9 +35,11 @@ export default function OnboardingOnly({ children }) {
     return <Navigate to="/" replace />;
   }
 
-  // In-flight signup: CreateProfile just saved first_name and is routing
-  // the user to the next onboarding step. Don't bounce them out.
-  if (location.state?.fromOnboarding) {
+  // In-flight signup: let through until the flow completes.
+  const onboardingActive =
+    typeof window !== "undefined" &&
+    sessionStorage.getItem("kiddaboo.onboardingActive") === "1";
+  if (onboardingActive) {
     return children;
   }
 

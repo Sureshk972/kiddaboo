@@ -40,7 +40,7 @@ test("routes parent to /children after save and writes account_type=parent", asy
   fireEvent.click(screen.getByRole("button", { name: /continue/i }));
   await waitFor(() => expect(updateProfile).toHaveBeenCalled());
   expect(updateProfile.mock.calls[0][0].account_type).toBe("parent");
-  expect(navigate).toHaveBeenCalledWith("/children", { state: { fromOnboarding: true } });
+  expect(navigate).toHaveBeenCalledWith("/children");
   expect(sessionStorage.getItem("kiddaboo.pendingAccountType")).toBeNull();
 });
 
@@ -50,7 +50,7 @@ test("routes organizer to /host/create after save and writes account_type=organi
   fireEvent.click(screen.getByRole("button", { name: /continue/i }));
   await waitFor(() => expect(updateProfile).toHaveBeenCalled());
   expect(updateProfile.mock.calls[0][0].account_type).toBe("organizer");
-  expect(navigate).toHaveBeenCalledWith("/host/create", { state: { fromOnboarding: true } });
+  expect(navigate).toHaveBeenCalledWith("/host/create");
   expect(sessionStorage.getItem("kiddaboo.pendingAccountType")).toBeNull();
 });
 
