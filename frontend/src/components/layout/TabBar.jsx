@@ -191,7 +191,7 @@ export default function TabBar({ badges = {} }) {
   const TABS = accountType === "organizer" ? ORGANIZER_TABS : PARENT_TABS;
 
   return (
-    <nav aria-label="Main navigation" className="sticky bottom-0 z-30 bg-cream/95 backdrop-blur-sm border-t border-cream-dark pb-[env(safe-area-inset-bottom)]">
+    <nav aria-label="Main navigation" className="sticky bottom-0 z-30 bg-white border-t border-cream-dark shadow-[0_-2px_8px_rgba(0,0,0,0.04)] pb-[env(safe-area-inset-bottom)]">
       <div className="max-w-md mx-auto flex items-center justify-around px-2 pt-2 pb-1">
         {TABS.map((tab) => {
           const isActive = tab.matchPaths
@@ -210,7 +210,7 @@ export default function TabBar({ badges = {} }) {
                 flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl
                 transition-colors duration-150 cursor-pointer
                 bg-transparent border-none min-w-[60px] relative
-                ${isActive ? "text-sage-dark" : "text-taupe/50 hover:text-taupe"}
+                ${isActive ? "text-sage-dark" : "text-taupe hover:text-taupe-dark"}
               `}
             >
               <div className="relative">
@@ -223,7 +223,7 @@ export default function TabBar({ badges = {} }) {
               </div>
               <span
                 className={`text-[10px] font-medium ${
-                  isActive ? "text-sage-dark" : "text-taupe/50"
+                  isActive ? "text-sage-dark" : "text-taupe"
                 }`}
               >
                 {tab.label}
@@ -234,14 +234,14 @@ export default function TabBar({ badges = {} }) {
         <button
           onClick={async () => { await signOut(); navigate("/"); }}
           aria-label="Sign out"
-          className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-colors duration-150 cursor-pointer bg-transparent border-none min-w-[60px] text-taupe/50 hover:text-taupe"
+          className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-colors duration-150 cursor-pointer bg-transparent border-none min-w-[60px] text-taupe hover:text-taupe-dark"
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
             <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             <polyline points="16 17 21 12 16 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <span className="text-[10px] font-medium text-taupe/50">Sign out</span>
+          <span className="text-[10px] font-medium text-taupe">Sign out</span>
         </button>
       </div>
     </nav>
