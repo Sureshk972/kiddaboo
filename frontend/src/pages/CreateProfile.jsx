@@ -17,6 +17,14 @@ export default function CreateProfile() {
   const [saving, setSaving] = useState(false);
   const [photoFile, setPhotoFile] = useState(null);
 
+  // Read role once on mount — determines which voice the copy uses.
+  // Missing value falls back to parent framing; handleContinue has a
+  // fail-closed guard that bounces the user back to /choose-role on save.
+  const [pendingAccountType] = useState(() =>
+    sessionStorage.getItem("kiddaboo.pendingAccountType")
+  );
+  const isOrganizer = pendingAccountType === "organizer";
+
   const handlePhotoChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -37,7 +45,6 @@ export default function CreateProfile() {
       // send the user back to pick one. The ChooseRole page is the
       // only authorized entry into signup, so we should never get
       // here without it — but guard anyway.
-      const pendingAccountType = sessionStorage.getItem("kiddaboo.pendingAccountType");
       if (pendingAccountType !== "parent" && pendingAccountType !== "organizer") {
         navigate("/choose-role");
         return;
@@ -97,7 +104,9 @@ export default function CreateProfile() {
             Tell us about you
           </h1>
           <p className="text-taupe leading-relaxed">
-            Other moms will see this when you request to join a playgroup.
+            {isOrganizer
+              ? "Parents will see this when they consider joining your playgroup."
+              : "Other families will see this when you request to join a playgroup."}
           </p>
         </div>
 
@@ -131,7 +140,9 @@ export default function CreateProfile() {
             </p>
             {/* #58: trust microcopy — parents worry about photo visibility */}
             <p className="text-[11px] text-taupe/50 text-center mt-1">
-              Only shown to hosts and members of groups you join. Never public.
+              {isOrganizer
+                ? "Shown to parents considering your playgroup. Helps build trust."
+                : "Only shown to organizers and members of groups you join. Never public."}
             </p>
           </label>
         </div>
@@ -153,27 +164,36 @@ export default function CreateProfile() {
           />
         </div>
 
-        {/* Zip code */}
-        <Input
-          label="Zip code"
-          value={data.zipCode}
-          onChange={(val) => updateField("zipCode", val.replace(/[^0-9-]/g, "").slice(0, 10))}
-          placeholder="60640"
-          error={errors.zipCode}
-        />
-        <p className="text-[11px] text-taupe/50 -mt-4">
-          Helps us show you playgroups nearby. Never shared publicly.
-        </p>
+        {/* Zip code — parent only. Organizers set their playgroup
+            location in /host/create, so asking here is noise. */}
+        {!isOrganizer && (
+          <>
+            <Input
+              label="Zip code"
+              value={data.zipCode}
+              onChange={(val) => updateField("zipCode", val.replace(/[^0-9-]/g, "").slice(0, 10))}
+              placeholder="60640"
+              error={errors.zipCode}
+            />
+            <p className="text-[11px] text-taupe/50 -mt-4">
+              Helps us show you playgroups nearby. Never shared publicly.
+            </p>
+          </>
+        )}
 
         {/* Bio */}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-taupe">
-            About you & your family
+            {isOrganizer ? "About you" : "About you & your family"}
           </label>
           <textarea
             value={data.bio}
             onChange={(e) => updateField("bio", e.target.value)}
-            placeholder="A little about your family, your values, and what you're looking for in a playgroup..."
+            placeholder={
+              isOrganizer
+                ? "Why you're starting this playgroup, your experience with kids, what parents should know about you..."
+                : "A little about your family, your values, and what you're looking for in a playgroup..."
+            }
             maxLength={200}
             rows={3}
             className="
@@ -188,14 +208,19 @@ export default function CreateProfile() {
           </span>
         </div>
 
-        {/* Philosophy tags */}
-        <TagSelector
-          label="Parenting philosophy"
-          options={PHILOSOPHY_TAGS}
-          selected={data.philosophyTags}
-          onChange={(tags) => updateField("philosophyTags", tags)}
-          maxSelections={4}
-        />
+        {/* Philosophy tags — parent only. These are parenting styles
+            parents use to find a compatible playgroup; organizers
+            describe their group's philosophy on the playgroup itself
+            in /host/create. */}
+        {!isOrganizer && (
+          <TagSelector
+            label="Parenting philosophy"
+            options={PHILOSOPHY_TAGS}
+            selected={data.philosophyTags}
+            onChange={(tags) => updateField("philosophyTags", tags)}
+            maxSelections={4}
+          />
+        )}
 
         {errors.save && (
           <p className="text-sm text-red-500">{errors.save}</p>
