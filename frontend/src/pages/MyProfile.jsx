@@ -90,7 +90,7 @@ export default function MyProfile() {
             isHost
               ? {
                   icon: "\u2b50",
-                  label: isHostPremium ? "Host Premium Member" : "Upgrade to Host Premium",
+                  label: isHostPremium ? "Organizer Premium Member" : "Upgrade to Organizer Premium",
                   sublabel: isHostPremium ? null : "Priority placement, view analytics & more",
                   path: "/host/premium",
                   highlight: true,

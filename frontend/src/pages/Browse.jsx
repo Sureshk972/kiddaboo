@@ -479,7 +479,7 @@ export default function Browse() {
                   onClick={() => navigate("/host/create")}
                   className="bg-sage text-white font-medium text-sm rounded-2xl px-6 py-3 cursor-pointer border-none hover:bg-sage-dark transition-colors"
                 >
-                  Host a Playgroup
+                  Organize a Playgroup
                 </button>
               </>
             )}

@@ -238,7 +238,7 @@ export default function HostInsights() {
             onClick={() => navigate("/host/create")}
             className="bg-sage text-white font-medium rounded-2xl px-6 py-3 cursor-pointer border-none"
           >
-            Host a Playgroup
+            Organize a Playgroup
           </button>
         </div>
       </div>
