@@ -128,36 +128,33 @@ Database identifiers (`host_premium`, `role = 'creator'`, `joiner`) stay unchang
 
 ### D10 — Existing users migration
 
-A single SQL migration adds:
+The app has no production users yet — only a handful of tester accounts (Suresh's `rooblix2000+kN@gmail.com` aliases and any invited testers). That collapses the migration story to a one-time manual cleanup.
 
 ```sql
 ALTER TABLE profiles ADD COLUMN account_type TEXT
-  CHECK (account_type IN ('parent', 'organizer'));
+  CHECK (account_type IN ('parent', 'organizer')) NOT NULL DEFAULT 'parent';
 
-ALTER TABLE profiles ADD COLUMN account_type_confirmed_at TIMESTAMPTZ;
 ALTER TABLE profiles ADD COLUMN phone_number TEXT;
 ALTER TABLE profiles ADD COLUMN phone_verified_at TIMESTAMPTZ;
 
+-- Tester cleanup: tag anyone who has ever created a playgroup as organizer.
 UPDATE profiles p SET account_type = 'organizer'
   WHERE EXISTS (
     SELECT 1 FROM memberships m
     WHERE m.user_id = p.id AND m.role = 'creator'
   );
 
-UPDATE profiles SET account_type = 'parent'
-  WHERE account_type IS NULL;
-
-ALTER TABLE profiles ALTER COLUMN account_type SET NOT NULL;
+-- Drop the default after backfill so new signups MUST pick a role explicitly.
+ALTER TABLE profiles ALTER COLUMN account_type DROP DEFAULT;
 ```
 
-Plus a one-time "Is this you?" modal that renders after login if `profiles.account_type_confirmed_at IS NULL` — user taps "Yes" (sets timestamp) or "I'm actually the other role" (updates `account_type`, sets timestamp).
+No confirm modal, no `account_type_confirmed_at` column, no phased rollout. Any tester who ends up in the wrong mode can be fixed with a single `UPDATE` by hand. New signups after this lands are forced through the path picker and can't avoid declaring a role.
 
 ## Architecture
 
 ### Data model changes
 
-- `profiles.account_type` — new NOT NULL TEXT column, enum `parent` | `organizer`
-- `profiles.account_type_confirmed_at` — TIMESTAMPTZ, null until user confirms post-migration
+- `profiles.account_type` — new NOT NULL TEXT column, enum `parent` | `organizer`; no default after initial backfill
 - `profiles.phone_number` — TEXT, nullable, stores hashed value
 - `profiles.phone_verified_at` — TIMESTAMPTZ, nullable
 
@@ -207,7 +204,6 @@ src/
 
 ## Error handling
 
-- **Account type null after migration:** the one-time confirm modal is mandatory before any other navigation works.
 - **Phone OTP send failure (Twilio down):** user sees a retry button and an offer to skip for now ("verify later from settings"). Skipped users can't send join requests but can browse.
 - **Phone OTP code mismatch:** up to 3 attempts; after 3, the challenge is invalidated and the user must request a new code.
 - **User tries to access wrong-role route:** soft redirect (not a 403) to the correct role's home, with a toast "That page is for Organizers only."
@@ -223,7 +219,7 @@ src/
 
 This spec is one design but three implementation plans, executed in order:
 
-1. **Role identity core** — migration + `account_type` column + layout wrappers + signup path picker + copy renames + one-time confirm modal. Ships the perceptual separation.
+1. **Role identity core** — migration + `account_type` column + layout wrappers + signup path picker + copy renames. Ships the perceptual separation.
 2. **Phone OTP verification** — new `phone_otp_challenges` table, `send-otp` + `verify-otp` edge functions, Twilio integration, onboarding phone step, verified badge rendering.
 3. **Profile panel trust redesign** — restructured `ProfilePanel` with the v1 trust signals, `VerifiedBadge` and `RoleBadge` components, updated playgroup detail member list.
 
