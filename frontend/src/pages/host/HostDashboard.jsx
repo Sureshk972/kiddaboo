@@ -27,7 +27,7 @@ function timeAgo(dateStr) {
 }
 
 export default function HostDashboard() {
-  useDocumentTitle("Host Dashboard"); // #50
+  useDocumentTitle("Organizer Dashboard"); // #50
   const navigate = useNavigate();
   const { user, profile } = useAuth();
 

@@ -22,7 +22,7 @@ function dayLabel(date) {
 }
 
 export default function HostInsights() {
-  useDocumentTitle("Host Insights"); // #50
+  useDocumentTitle("Organizer Insights"); // #50
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isHostPremium } = useSubscription();

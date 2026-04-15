@@ -221,7 +221,7 @@ export default function Browse() {
               </h1>
               {profile?.first_name && (
                 <span className="text-sm font-medium text-taupe truncate">
-                  Hi, {profile.first_name}{isHost ? " (Host)" : ""}
+                  Hi, {profile.first_name}{isHost ? " (Organizer)" : ""}
                 </span>
               )}
             </div>

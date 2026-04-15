@@ -118,7 +118,7 @@ export default function SubscriptionsTab({ subscriptions }) {
       {/* Revenue metric cards */}
       <div className="grid grid-cols-2 gap-3">
         <StatCard label="Active Joiner Subs" value={activeJoiners} icon="👤" />
-        <StatCard label="Active Host Subs" value={activeHosts} icon="🏠" />
+        <StatCard label="Active Organizer Subs" value={activeHosts} icon="🏠" />
         <StatCard label="MRR ($)" value={`$${mrrDollars}`} icon="💰" />
         <StatCard label="Total Subscribers" value={subscriptions.length} icon="📊" />
       </div>
