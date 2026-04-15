@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import OnboardingLayout from "../components/layout/OnboardingLayout";
 import Input from "../components/ui/Input";
@@ -20,6 +20,19 @@ export default function PhoneVerification() {
   const [checkEmail, setCheckEmail] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
+
+  // Stash the role chosen on /choose-role so it survives the email-
+  // confirmation round-trip and is available to CreateProfile after
+  // signup. Only accept the two valid values — never trust whatever
+  // else someone puts in the query string. Don't overwrite an
+  // existing stash if the param is absent (preserves the value if
+  // the user navigates back and forth).
+  useEffect(() => {
+    const role = searchParams.get("role");
+    if (role === "parent" || role === "organizer") {
+      sessionStorage.setItem("kiddaboo.pendingAccountType", role);
+    }
+  }, [searchParams]);
 
   const handleSubmit = async () => {
     setError("");

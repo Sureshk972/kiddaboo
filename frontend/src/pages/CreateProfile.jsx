@@ -33,6 +33,16 @@ export default function CreateProfile() {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
+      // Fail closed: if ChooseRole wasn't visited (no stashed role),
+      // send the user back to pick one. The ChooseRole page is the
+      // only authorized entry into signup, so we should never get
+      // here without it — but guard anyway.
+      const pendingAccountType = sessionStorage.getItem("kiddaboo.pendingAccountType");
+      if (pendingAccountType !== "parent" && pendingAccountType !== "organizer") {
+        navigate("/choose-role");
+        return;
+      }
+
       setSaving(true);
 
       // Upload profile photo if selected
@@ -58,6 +68,7 @@ export default function CreateProfile() {
         bio: data.bio.trim(),
         philosophy_tags: data.philosophyTags,
         zip_code: data.zipCode.trim() || null,
+        account_type: pendingAccountType,
       };
       if (photoUrl) profileData.photo_url = photoUrl;
 
@@ -71,7 +82,8 @@ export default function CreateProfile() {
         return;
       }
 
-      navigate("/children");
+      sessionStorage.removeItem("kiddaboo.pendingAccountType");
+      navigate(pendingAccountType === "organizer" ? "/host/create" : "/children");
     }
   };
 
