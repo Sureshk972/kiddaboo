@@ -17,14 +17,26 @@ export default function PhoneVerify() {
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
 
+  // The send-otp edge function regex rejects anything except `+` and
+  // digits. Users will naturally type spaces/dashes/parens (and our
+  // placeholder even shows a formatted example) — strip them client-
+  // side so the user doesn't have to think about E.164 formatting.
+  function normalizePhone(raw) {
+    const trimmed = (raw || "").trim();
+    // Keep leading +, strip everything else that isn't a digit.
+    const hasPlus = trimmed.startsWith("+");
+    const digits = trimmed.replace(/\D/g, "");
+    return hasPlus ? `+${digits}` : digits;
+  }
+
   async function onSend(e) {
     e.preventDefault();
-    await sendCode(phone);
+    await sendCode(normalizePhone(phone));
   }
 
   async function onVerify(e) {
     e.preventDefault();
-    const { error: err } = await verifyCode(phone, code);
+    const { error: err } = await verifyCode(normalizePhone(phone), code);
     if (!err) {
       const role = sessionStorage.getItem("kiddaboo.pendingAccountType");
       navigate(role === "organizer" ? "/host/create" : "/children");
@@ -78,7 +90,7 @@ export default function PhoneVerify() {
             </Button>
             <button
               type="button"
-              onClick={() => sendCode(phone)}
+              onClick={() => sendCode(normalizePhone(phone))}
               className="text-xs text-sage underline"
             >
               Resend code
