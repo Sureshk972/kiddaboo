@@ -38,6 +38,7 @@ import ParentLayout from "./layouts/ParentLayout";
 import OrganizerLayout from "./layouts/OrganizerLayout";
 import RequireRole from "./components/auth/RequireRole";
 import ChooseRole from "./pages/onboarding/ChooseRole";
+import PhoneVerify from "./pages/onboarding/PhoneVerify";
 
 export default function App() {
   return (
@@ -59,6 +60,7 @@ export default function App() {
                 because these routes are destructive on submit (wipe
                 profile / delete all children). */}
             <Route path="/profile" element={<OnboardingOnly><CreateProfile /></OnboardingOnly>} />
+            <Route path="/verify-phone" element={<RequireAuth><PhoneVerify /></RequireAuth>} />
             <Route path="/children" element={<OnboardingOnly><AddChildren /></OnboardingOnly>} />
             <Route path="/success" element={<RequireAuth><BrowseSuccess /></RequireAuth>} />
 

@@ -66,6 +66,7 @@ export default function BrowseSuccess() {
   // the saved profile.
   useEffect(() => {
     sessionStorage.removeItem("kiddaboo.onboardingActive");
+    sessionStorage.removeItem("kiddaboo.pendingAccountType");
   }, []);
 
   useEffect(() => {

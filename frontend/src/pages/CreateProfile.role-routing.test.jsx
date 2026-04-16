@@ -34,24 +34,26 @@ beforeEach(() => {
   sessionStorage.clear();
 });
 
-test("routes parent to /children after save and writes account_type=parent", async () => {
+test("routes parent to /verify-phone after save and writes account_type=parent", async () => {
   sessionStorage.setItem("kiddaboo.pendingAccountType", "parent");
   render(<MemoryRouter><CreateProfile /></MemoryRouter>);
   fireEvent.click(screen.getByRole("button", { name: /continue/i }));
   await waitFor(() => expect(updateProfile).toHaveBeenCalled());
   expect(updateProfile.mock.calls[0][0].account_type).toBe("parent");
-  expect(navigate).toHaveBeenCalledWith("/children");
-  expect(sessionStorage.getItem("kiddaboo.pendingAccountType")).toBeNull();
+  expect(navigate).toHaveBeenCalledWith("/verify-phone");
+  // pendingAccountType preserved for PhoneVerify to read
+  expect(sessionStorage.getItem("kiddaboo.pendingAccountType")).toBe("parent");
 });
 
-test("routes organizer to /host/create after save and writes account_type=organizer", async () => {
+test("routes organizer to /verify-phone after save and writes account_type=organizer", async () => {
   sessionStorage.setItem("kiddaboo.pendingAccountType", "organizer");
   render(<MemoryRouter><CreateProfile /></MemoryRouter>);
   fireEvent.click(screen.getByRole("button", { name: /continue/i }));
   await waitFor(() => expect(updateProfile).toHaveBeenCalled());
   expect(updateProfile.mock.calls[0][0].account_type).toBe("organizer");
-  expect(navigate).toHaveBeenCalledWith("/host/create");
-  expect(sessionStorage.getItem("kiddaboo.pendingAccountType")).toBeNull();
+  expect(navigate).toHaveBeenCalledWith("/verify-phone");
+  // pendingAccountType preserved for PhoneVerify to read
+  expect(sessionStorage.getItem("kiddaboo.pendingAccountType")).toBe("organizer");
 });
 
 test("bounces back to /choose-role if no stashed role", async () => {
