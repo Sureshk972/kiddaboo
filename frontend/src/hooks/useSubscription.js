@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 const FREE_JOIN_LIMIT = 1;
 
 export function useSubscription() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [joinerSub, setJoinerSub] = useState(null);
   const [hostSub, setHostSub] = useState(null);
   const [usage, setUsage] = useState(null);
@@ -95,7 +95,7 @@ export function useSubscription() {
 
   const joinRequestsUsed = usage?.request_count || 0;
   const joinRequestsRemaining = isPremium ? Infinity : Math.max(0, FREE_JOIN_LIMIT - joinRequestsUsed);
-  const canSendJoinRequest = isPremium || joinRequestsRemaining > 0;
+  const canSendJoinRequest = (isPremium || joinRequestsRemaining > 0) && !!profile?.phone_verified_at;
 
   return {
     // Joiner

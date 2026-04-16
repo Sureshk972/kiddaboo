@@ -89,10 +89,10 @@ export default function CreateProfile() {
         return;
       }
 
-      sessionStorage.removeItem("kiddaboo.pendingAccountType");
-      navigate(
-        pendingAccountType === "organizer" ? "/host/create" : "/children"
-      );
+      // Don't clear pendingAccountType yet — PhoneVerify reads it to
+      // decide where to go next (/children vs /host/create). The flag
+      // gets cleared at the end of the flow (BrowseSuccess / HostSuccess).
+      navigate("/verify-phone");
     }
   };
 

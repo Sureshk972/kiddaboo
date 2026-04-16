@@ -26,6 +26,7 @@ export default function HostSuccess() {
   // /profile visits to /my-profile.
   useEffect(() => {
     sessionStorage.removeItem("kiddaboo.onboardingActive");
+    sessionStorage.removeItem("kiddaboo.pendingAccountType");
   }, []);
 
   // Save playgroup to Supabase when this page loads
