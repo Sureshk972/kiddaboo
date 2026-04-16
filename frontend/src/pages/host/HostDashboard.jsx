@@ -27,7 +27,7 @@ function timeAgo(dateStr) {
 }
 
 export default function HostDashboard() {
-  useDocumentTitle("Host Dashboard"); // #50
+  useDocumentTitle("Organizer Dashboard"); // #50
   const navigate = useNavigate();
   const { user, profile } = useAuth();
 
@@ -395,7 +395,7 @@ export default function HostDashboard() {
             onClick={() => navigate("/host/create")}
             className="bg-sage text-white font-medium rounded-2xl px-6 py-3 cursor-pointer border-none"
           >
-            Host a Playgroup
+            Organize a Playgroup
           </button>
         </div>
       </div>
@@ -556,7 +556,7 @@ export default function HostDashboard() {
                 </svg>
               </div>
               <div className="flex-1">
-                <p className="text-sm font-bold text-charcoal">Go Host Premium</p>
+                <p className="text-sm font-bold text-charcoal">Go Organizer Premium</p>
                 <p className="text-xs text-taupe leading-relaxed">
                   Get a Premium badge, priority placement, and see who's viewing your group.
                 </p>

@@ -55,7 +55,7 @@ const FEATURES = [
 ];
 
 export default function HostPremium() {
-  useDocumentTitle("Host Premium"); // #50
+  useDocumentTitle("Organizer Premium"); // #50
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -72,7 +72,7 @@ export default function HostPremium() {
   // Handle return from Stripe Checkout
   useEffect(() => {
     if (searchParams.get("success") === "true") {
-      setSuccessMessage("You're now a Host Premium member!");
+      setSuccessMessage("You're now an Organizer Premium member!");
       refresh();
     } else if (searchParams.get("cancelled") === "true") {
       setCancelMessage("Checkout cancelled — no charges were made.");
@@ -127,7 +127,7 @@ export default function HostPremium() {
             </svg>
           </button>
           <h1 className="font-bold text-base tracking-tight" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
-            Host Premium
+            Organizer Premium
           </h1>
         </div>
       </div>
@@ -165,7 +165,7 @@ export default function HostPremium() {
                 </svg>
               </div>
               <h2 className="font-heading font-bold text-charcoal text-xl mb-1">
-                You're Host Premium!
+                You're Organizer Premium!
               </h2>
               <p className="text-sm text-taupe mb-3">
                 {hostSubscription.plan === "host_annual" ? "Annual" : "Monthly"} plan
@@ -177,7 +177,7 @@ export default function HostPremium() {
 
             <div className="bg-white rounded-2xl border border-cream-dark p-5">
               <h3 className="font-heading font-semibold text-charcoal text-sm mb-3">
-                Your Host Premium benefits
+                Your Organizer Premium benefits
               </h3>
               <div className="space-y-4">
                 {FEATURES.map((f, i) => (

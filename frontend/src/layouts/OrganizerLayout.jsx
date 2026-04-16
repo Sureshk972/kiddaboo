@@ -1,0 +1,24 @@
+import TabBar from "../components/layout/TabBar";
+
+/**
+ * Organizer-mode wrapper. Terracotta accent, "ORGANIZER" label, and
+ * warmer background so the mode feels visually different from Parent.
+ * We scope the accent with data-mode="organizer" so individual pages
+ * can opt into mode-aware styling via CSS attribute selectors if they
+ * want (e.g., buttons that read from [data-mode=organizer] .btn).
+ */
+export default function OrganizerLayout({ children }) {
+  return (
+    <div className="min-h-screen bg-[#F9F4ED] flex flex-col" data-mode="organizer">
+      <div className="max-w-md mx-auto w-full flex-1 flex flex-col">
+        <div className="px-5 pt-3">
+          <span className="text-[10px] font-bold tracking-[1.5px] text-terracotta uppercase">
+            Organizer
+          </span>
+        </div>
+        <div className="flex-1">{children}</div>
+        <TabBar />
+      </div>
+    </div>
+  );
+}
