@@ -60,6 +60,14 @@ export default function BrowseSuccess() {
   const { data } = useOnboarding();
   const [playgroups, setPlaygroups] = useState([]);
 
+  // Terminal state for the parent signup flow — clear the onboarding
+  // flag so OnboardingOnly will correctly bounce future /profile or
+  // /children visits to /my-profile instead of letting them destroy
+  // the saved profile.
+  useEffect(() => {
+    sessionStorage.removeItem("kiddaboo.onboardingActive");
+  }, []);
+
   useEffect(() => {
     const fetchPlaygroups = async () => {
       const { data: pgs } = await supabase

@@ -34,6 +34,10 @@ import NotFound from "./pages/NotFound";
 import RequireAuth from "./components/auth/RequireAuth";
 import RequireAdmin from "./components/auth/RequireAdmin";
 import OnboardingOnly from "./components/auth/OnboardingOnly";
+import ParentLayout from "./layouts/ParentLayout";
+import OrganizerLayout from "./layouts/OrganizerLayout";
+import RequireRole from "./components/auth/RequireRole";
+import ChooseRole from "./pages/onboarding/ChooseRole";
 
 export default function App() {
   return (
@@ -43,6 +47,7 @@ export default function App() {
         <HostProvider>
           <Routes>
             {/* Public routes — no auth required */}
+            <Route path="/choose-role" element={<ChooseRole />} />
             <Route path="/" element={<Welcome />} />
             <Route path="/verify" element={<PhoneVerification />} />
             <Route path="/reset-password" element={<ResetPassword />} />
@@ -74,12 +79,12 @@ export default function App() {
             <Route path="/premium" element={<RequireAuth><Premium /></RequireAuth>} />
 
             {/* App pages — requires auth, with tab bar */}
-            <Route path="/browse" element={<RequireAuth><AppLayout><Browse /></AppLayout></RequireAuth>} />
-            <Route path="/my-groups" element={<RequireAuth><AppLayout><MyGroups /></AppLayout></RequireAuth>} />
+            <Route path="/browse" element={<RequireAuth><RequireRole role="parent"><ParentLayout><Browse /></ParentLayout></RequireRole></RequireAuth>} />
+            <Route path="/my-groups" element={<RequireAuth><RequireRole role="parent"><ParentLayout><MyGroups /></ParentLayout></RequireRole></RequireAuth>} />
             <Route path="/messages" element={<RequireAuth><AppLayout><Messages /></AppLayout></RequireAuth>} />
             <Route path="/my-profile" element={<RequireAuth><AppLayout><MyProfile /></AppLayout></RequireAuth>} />
-            <Route path="/host/dashboard" element={<RequireAuth><AppLayout><HostDashboard /></AppLayout></RequireAuth>} />
-            <Route path="/host/insights" element={<RequireAuth><AppLayout><HostInsights /></AppLayout></RequireAuth>} />
+            <Route path="/host/dashboard" element={<RequireAuth><RequireRole role="organizer"><OrganizerLayout><HostDashboard /></OrganizerLayout></RequireRole></RequireAuth>} />
+            <Route path="/host/insights" element={<RequireAuth><RequireRole role="organizer"><OrganizerLayout><HostInsights /></OrganizerLayout></RequireRole></RequireAuth>} />
 
             {/* Admin — requires auth + admin role, no tab bar */}
             <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />

@@ -5,20 +5,20 @@ import { useAuth } from "../context/AuthContext";
 
 export default function Welcome() {
   const navigate = useNavigate();
-  const { user, profile, loading, isHost } = useAuth();
+  const { user, profile, loading } = useAuth();
 
   // If already logged in, check profile completeness and route by role
   useEffect(() => {
     if (!loading && user) {
       if (!profile?.first_name) {
         navigate("/profile");
-      } else if (isHost) {
+      } else if (profile.account_type === "organizer") {
         navigate("/host/dashboard");
       } else {
         navigate("/browse");
       }
     }
-  }, [user, profile, loading, isHost, navigate]);
+  }, [user, profile, loading, navigate]);
 
   if (loading) {
     return (
@@ -79,11 +79,8 @@ export default function Welcome() {
            the hierarchy is: one primary action → one secondary → one
            text link for returning users. */}
       <div className="w-full max-w-xs flex flex-col gap-4">
-        <Button fullWidth onClick={() => navigate("/verify")}>
+        <Button fullWidth onClick={() => navigate("/choose-role")}>
           Get Started
-        </Button>
-        <Button variant="secondary" fullWidth onClick={() => navigate("/host/create")}>
-          Host a Playgroup
         </Button>
         <button
           onClick={() => navigate("/verify?mode=signin")}

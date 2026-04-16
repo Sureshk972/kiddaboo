@@ -221,7 +221,7 @@ export default function Browse() {
               </h1>
               {profile?.first_name && (
                 <span className="text-sm font-medium text-taupe truncate">
-                  Hi, {profile.first_name}{isHost ? " (Host)" : ""}
+                  Hi, {profile.first_name}{isHost ? " (Organizer)" : ""}
                 </span>
               )}
             </div>
@@ -479,7 +479,7 @@ export default function Browse() {
                   onClick={() => navigate("/host/create")}
                   className="bg-sage text-white font-medium text-sm rounded-2xl px-6 py-3 cursor-pointer border-none hover:bg-sage-dark transition-colors"
                 >
-                  Host a Playgroup
+                  Organize a Playgroup
                 </button>
               </>
             )}

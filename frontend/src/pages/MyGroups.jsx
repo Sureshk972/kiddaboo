@@ -257,7 +257,7 @@ export default function MyGroups() {
                 </div>
                 <div className="text-left">
                   <h3 className="font-heading font-bold text-charcoal text-sm">
-                    Host a Playgroup
+                    Organize a Playgroup
                   </h3>
                   <p className="text-xs text-taupe mt-0.5">
                     Create your own curated group for families in your area

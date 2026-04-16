@@ -21,6 +21,13 @@ export default function HostSuccess() {
   const [errorMsg, setErrorMsg] = useState("");
   const hasSaved = useRef(false);
 
+  // Terminal state for the organizer signup flow — clear the
+  // onboarding flag so OnboardingOnly correctly bounces future
+  // /profile visits to /my-profile.
+  useEffect(() => {
+    sessionStorage.removeItem("kiddaboo.onboardingActive");
+  }, []);
+
   // Save playgroup to Supabase when this page loads
   useEffect(() => {
     if (!user || hasSaved.current) return;

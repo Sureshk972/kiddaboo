@@ -184,7 +184,7 @@ describe("Public Pages", () => {
     it("renders all CTA buttons", () => {
       renderWithRouter(<Welcome />);
       expect(screen.getByText("Find Your Playgroup")).toBeInTheDocument();
-      expect(screen.getByText("Host a Playgroup")).toBeInTheDocument();
+      expect(screen.getByText("Organize a Playgroup")).toBeInTheDocument();
     });
 
     it("renders sign in and create account links", () => {

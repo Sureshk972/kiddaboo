@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import OnboardingLayout from "../components/layout/OnboardingLayout";
 import Input from "../components/ui/Input";
@@ -20,6 +20,23 @@ export default function PhoneVerification() {
   const [checkEmail, setCheckEmail] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
+
+  // Stash the role chosen on /choose-role so it survives the email-
+  // confirmation round-trip and is available to CreateProfile after
+  // signup. Only accept the two valid values — never trust whatever
+  // else someone puts in the query string. Don't overwrite an
+  // existing stash if the param is absent (preserves the value if
+  // the user navigates back and forth).
+  useEffect(() => {
+    const role = searchParams.get("role");
+    if (role === "parent" || role === "organizer") {
+      sessionStorage.setItem("kiddaboo.pendingAccountType", role);
+      // Mark the onboarding flow as active so OnboardingOnly lets the
+      // user finish the multi-step signup even after setProfile() has
+      // populated first_name. Cleared at the terminal success page.
+      sessionStorage.setItem("kiddaboo.onboardingActive", "1");
+    }
+  }, [searchParams]);
 
   const handleSubmit = async () => {
     setError("");
@@ -72,6 +89,14 @@ export default function PhoneVerification() {
             .eq("role", "creator")
             .limit(1),
         ]);
+
+        // Returning-user sign-in is a terminal state for the onboarding
+        // flag: if it was set by a stray /verify?role=X visit before the
+        // user toggled to Sign In, don't let it leak into OnboardingOnly
+        // and let them destroy their saved profile later.
+        if (prof?.first_name) {
+          sessionStorage.removeItem("kiddaboo.onboardingActive");
+        }
 
         if (!prof?.first_name) {
           navigate("/profile");

@@ -9,8 +9,16 @@ import { useAuth } from "../../context/AuthContext";
  * child. That's intentional for first-time onboarding, but devastating
  * if a logged-in user with a completed profile hits the route directly.
  *
- * This wrapper sends anyone who already has a `first_name` on their
- * profile to /my-profile, which is the supported edit surface.
+ * Returning users (first_name already set) are sent to /my-profile —
+ * the supported edit surface.
+ *
+ * In-flight signup has a race: after CreateProfile saves, setProfile()
+ * flushes first_name into context, and OnboardingOnly may re-render at
+ * /profile before the navigate() to /children lands. To survive that
+ * window we gate on a sessionStorage flag set at the very start of the
+ * flow (PhoneVerification) and cleared only at the terminal success
+ * pages (BrowseSuccess, HostSuccess). Nav-state doesn't work here
+ * because it only applies to the destination route, not the source.
  */
 export default function OnboardingOnly({ children }) {
   const { user, profile, loading } = useAuth();
@@ -25,6 +33,14 @@ export default function OnboardingOnly({ children }) {
 
   if (!user) {
     return <Navigate to="/" replace />;
+  }
+
+  // In-flight signup: let through until the flow completes.
+  const onboardingActive =
+    typeof window !== "undefined" &&
+    sessionStorage.getItem("kiddaboo.onboardingActive") === "1";
+  if (onboardingActive) {
+    return children;
   }
 
   if (profile?.first_name) {
