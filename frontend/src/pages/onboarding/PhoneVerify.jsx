@@ -21,12 +21,20 @@ export default function PhoneVerify() {
   // digits. Users will naturally type spaces/dashes/parens (and our
   // placeholder even shows a formatted example) — strip them client-
   // side so the user doesn't have to think about E.164 formatting.
+  //
+  // Also handle country code: Kiddaboo is US-focused, so bare 10-digit
+  // numbers get +1 prepended; 11-digit numbers starting with 1 get +
+  // added. Users who want a non-US number can explicitly type the +
+  // prefix and we leave it alone.
   function normalizePhone(raw) {
     const trimmed = (raw || "").trim();
-    // Keep leading +, strip everything else that isn't a digit.
-    const hasPlus = trimmed.startsWith("+");
+    if (trimmed.startsWith("+")) {
+      return `+${trimmed.replace(/\D/g, "")}`;
+    }
     const digits = trimmed.replace(/\D/g, "");
-    return hasPlus ? `+${digits}` : digits;
+    if (digits.length === 10) return `+1${digits}`;
+    if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
+    return `+${digits}`;
   }
 
   async function onSend(e) {
