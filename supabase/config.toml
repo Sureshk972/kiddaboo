@@ -416,11 +416,16 @@ verify_jwt = false
 [functions.stripe-webhook]
 verify_jwt = false
 
+# send-otp and verify-otp: same ES256/HS256 gateway mismatch as the
+# other functions above — verify_jwt = true causes the gateway to
+# reject valid user JWTs with {"code":401,"Invalid JWT"} before the
+# handler runs. Both functions call admin.auth.getUser(token) in-body,
+# so security is identical with gateway verification off.
 [functions.send-otp]
-verify_jwt = true
+verify_jwt = false
 
 [functions.verify-otp]
-verify_jwt = true
+verify_jwt = false
 
 [analytics]
 enabled = true
