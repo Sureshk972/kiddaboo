@@ -1,6 +1,6 @@
 # Kiddaboo Regression Test Script
 
-Last updated: 2026-04-07
+Last updated: 2026-04-16
 
 ## How to Use
 
@@ -34,8 +34,14 @@ Run all tests against the live site (https://kiddaboo.com) in a mobile viewport 
 | ONB-01 | Create Profile page | After signup, land on `/profile` | Shows photo upload, first/last name, bio (200 char limit), philosophy tags (max 4) | |
 | ONB-02 | Profile photo upload | Click "Add photo" > select image | Photo preview appears in avatar circle | |
 | ONB-03 | Philosophy tags max | Select 4 tags, try to select a 5th | 5th tag is not selectable or shows shake animation | |
-| ONB-04 | Profile submit | Fill required fields > click Continue | Navigates to `/children` | |
-| ONB-05 | Add Children page | Land on `/children` | Shows child form (name, age range, personality tags) | |
+| ONB-04 | Profile submit | Fill required fields > click Continue | Navigates to `/verify-phone` (PhoneVerify step) | |
+| PHN-01 | PhoneVerify page loads | Land on `/verify-phone` | Shows phone-number input, "Send code" button, and flow copy | |
+| PHN-02 | Send OTP (bare US number) | Enter `4155551212` > tap Send | Edge function auto-prepends `+1`, returns success, code-entry state appears | |
+| PHN-03 | Verify correct OTP | Enter the 6-digit code sent via SMS > tap Verify | `phone_verified_at` set on profile, navigates to `/children` (parent) or `/host/create` (organizer) | |
+| PHN-04 | Verify wrong OTP | Enter wrong 6-digit code > tap Verify | Shows "Code doesn't match" error, attempt counter increments, does not navigate | |
+| PHN-05 | Resend OTP | On code-entry state, tap "Resend" | New SMS sent, prior code invalidated | |
+| PHN-06 | Unverified gate on join | As unverified user, attempt to send a join request | Blocked with a verify-phone prompt; request is NOT created | |
+| ONB-05 | Add Children page | Land on `/children` after phone verification | Shows child form (name, age range, personality tags) | |
 | ONB-06 | Add multiple children | Add first child > click "Add another child" | Second child form appears | |
 | ONB-07 | Remove child | Click remove on a child card | Child is removed from the list | |
 | ONB-08 | Children submit | Fill child info > click Continue | Navigates to `/success` (BrowseSuccess) | |
@@ -49,7 +55,8 @@ Run all tests against the live site (https://kiddaboo.com) in a mobile viewport 
 | BRW-02 | Wordmark branding | Check header | "Kiddaboo" in ChunkFive font, sage-dark (#5C6B52) color | |
 | BRW-03 | Search filter | Type a playgroup name in search | Results filter in real-time (300ms debounce) | |
 | BRW-04 | Search clear | Click X button in search bar | Search clears, all results return | |
-| BRW-05 | Sort chips | Tap "Most Reviewed" | Results re-sort, chip becomes active (sage background) | |
+| BRW-05 | Sort by Rated | Tap "Rated" | Results re-sort by rating, chip becomes active (sage-light background) | |
+| BRW-05a | Sort by Spots | Tap "Spots" | Results re-sort by spots-available, chip becomes active | |
 | BRW-06 | Sort chip feedback | Press and release a sort chip | Chip scales down briefly (active:scale-95) | |
 | BRW-07 | Nearest sort | Tap "Nearest" | Browser requests location permission, results sort by distance | |
 | BRW-08 | Location error | Deny location permission > tap "Nearest" | Error message appears below sort row | |
@@ -59,16 +66,10 @@ Run all tests against the live site (https://kiddaboo.com) in a mobile viewport 
 | BRW-12 | Playgroup card display | View a card in list | Shows photo (or placeholder), tags on photo with gradient overlay, name, rating, location, distance (if available), host avatar/name, verified badge, age range, spots remaining, next session, access badge | |
 | BRW-13 | Card photo gradient | View card with photo | Tags at bottom of photo strip are readable over dark images (gradient overlay) | |
 | BRW-14 | Card tap | Tap a playgroup card | Navigates to `/playgroup/:id` | |
-| BRW-15 | Map view toggle | Tap map icon (top right) | Switches to map view with Leaflet map | |
-| BRW-16 | Map pins location | View map with playgroups | Pins appear at correct US locations (not Europe/other) | |
-| BRW-17 | Map auto-fit | View map with multiple playgroups | Map zooms/pans to fit all pins with padding | |
-| BRW-18 | Map pin popup | Tap a map pin | Popup shows mini playgroup card | |
-| BRW-19 | Map to detail | Tap playgroup in map popup | Navigates to playgroup detail | |
-| BRW-20 | List view toggle | Switch to map > tap list icon | Returns to list view | |
 | BRW-21 | Skeleton loading | Hard refresh Browse page, observe load | Shows 3 skeleton card placeholders (pulse animation) before data loads | |
 | BRW-22 | Empty state (no results) | Search for nonexistent name | Shows "No playgroups found" with "Clear all filters" link | |
 | BRW-23 | Empty state (no playgroups) | Remove all playgroups from DB | Shows "No playgroups yet" with "Host a Playgroup" CTA | |
-| BRW-24 | Few results prompt | Have <=3 playgroups, no active search | Shows "Know a great playgroup spot?" hosting prompt below cards | |
+| BRW-24 | Few results hosting prompt | Have <=3 playgroups, no active search | Shows "Share Your Space, Grow Your Community." card with "Become a Host" CTA below the list | |
 | BRW-25 | Result count | View results | Shows "N playgroup(s) found" text | |
 | BRW-26 | Page transition | Navigate to Browse from another tab | Page fades up smoothly (page-transition animation) | |
 
@@ -221,6 +222,8 @@ Run all tests against the live site (https://kiddaboo.com) in a mobile viewport 
 | SEC-16 | Rate limit: join requests (free) | As free user, send 3 join requests > attempt 4th | Blocked with upgrade prompt, not silently accepted | |
 | SEC-17 | Deleted account tokens invalid | Delete account > attempt to use old auth token | All API calls return 401 | |
 | SEC-18 | Block prevents messaging | Block a user > check group chat | Blocked user's messages hidden, cannot send to blocker | |
+| SEC-19 | OTP attempt counter not bypassable | Via console, attempt to reset `attempts` on `phone_otp_challenges` row | Update blocked by RLS; verify-otp still enforces attempt limit via optimistic locking | |
+| SEC-20 | send-otp rate limit | Call send-otp more than the configured rate in quick succession | Returns 429 / rate-limit error; does not send additional SMS via Twilio | |
 
 ## 12. Vouching & Trust
 
@@ -243,8 +246,8 @@ Run all tests against the live site (https://kiddaboo.com) in a mobile viewport 
 | Section | Test Count |
 |---------|-----------|
 | Authentication | 8 |
-| Onboarding | 9 |
-| Browse | 26 |
+| Onboarding | 15 |
+| Browse | 21 |
 | Playgroup Detail | 20 |
 | My Groups | 7 |
 | Messages | 11 |
@@ -252,9 +255,9 @@ Run all tests against the live site (https://kiddaboo.com) in a mobile viewport 
 | Premium & Payments | 10 |
 | Host Flow | 15 |
 | Cross-Cutting | 13 |
-| Security & Data Protection | 18 |
+| Security & Data Protection | 20 |
 | Vouching & Trust | 9 |
-| **Total** | **162** |
+| **Total** | **165** |
 
 ---
 
@@ -265,5 +268,7 @@ Run all tests against the live site (https://kiddaboo.com) in a mobile viewport 
 - For Stripe tests (PAY-05, PAY-06), use Stripe test mode card `4242 4242 4242 4242`
 - For realtime tests (MSG-07, XCT-10), use two browser sessions
 - Geocoding tests (HST-08, HST-09) verify the Nominatim US-restriction fix
-- Security tests (SEC-11 through SEC-13) require browser console access to test RLS policies directly
+- Security tests (SEC-11 through SEC-13, SEC-19) require browser console access to test RLS policies directly
 - Trust/vouching tests depend on having review data in the database
+- PhoneVerify tests (PHN-01 through PHN-06) require a real phone that can receive SMS unless the `send-otp` edge function is run in stub mode (`OTP_STUB=1`), which logs the code instead of dispatching via Twilio
+- As of 2026-04-09 the Browse page no longer has a map view — BRW-15 through BRW-20 were removed in commit `4ff661b` ("Map removal from Browse")
