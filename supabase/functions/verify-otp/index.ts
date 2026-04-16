@@ -1,14 +1,21 @@
 // supabase/functions/verify-otp/index.ts
 //
-// Consumes a phone_otp_challenges row: checks code hash, attempts,
-// expiry. On success, sets profiles.phone_verified_at + phone_number.
+// Delegates OTP validation to Twilio Verify's VerificationCheck
+// endpoint. Twilio owns the code, its expiry, and its attempt counter;
+// we just ask them "is this code valid for this phone?" and, on
+// approval, set profiles.phone_number + phone_verified_at.
+//
+// The gateway-level verify_jwt is off (see config.toml) so we
+// revalidate the user's token here against a service-role client.
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const MAX_ATTEMPTS = 3;
+const TWILIO_SID = Deno.env.get("TWILIO_ACCOUNT_SID")!;
+const TWILIO_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN")!;
+const TWILIO_VERIFY_SERVICE_SID = Deno.env.get("TWILIO_VERIFY_SERVICE_SID")!;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,19 +30,25 @@ function json(body: unknown, status = 200) {
   });
 }
 
-async function hashCode(code: string): Promise<string> {
-  const buf = new TextEncoder().encode(code + "|kiddaboo-otp-v1");
-  const digest = await crypto.subtle.digest("SHA-256", buf);
-  return Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+async function twilioCheckVerification(phone: string, code: string) {
+  const url = `https://verify.twilio.com/v2/Services/${TWILIO_VERIFY_SERVICE_SID}/VerificationCheck`;
+  const params = new URLSearchParams({ To: phone, Code: code });
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: "Basic " + btoa(`${TWILIO_SID}:${TWILIO_TOKEN}`),
+      "content-type": "application/x-www-form-urlencoded",
+    },
+    body: params,
+  });
+  const body = await res.json().catch(() => ({}));
+  return { ok: res.ok, status: res.status, body };
 }
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
-
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
 
   const authHeader = req.headers.get("authorization") || "";
@@ -53,74 +66,32 @@ serve(async (req) => {
   } catch {
     return json({ error: "bad_json" }, 400);
   }
-  if (!phone || !/^\d{6}$/.test(code || "")) {
+  if (!/^\+[1-9]\d{6,14}$/.test(phone || "") || !/^\d{6}$/.test(code || "")) {
     return json({ error: "invalid_input" }, 400);
   }
 
-  // Grab the latest unexpired, unconsumed challenge for this user+phone.
-  const { data: challenges, error: selErr } = await admin
-    .from("phone_otp_challenges")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("phone_number", phone)
-    .is("consumed_at", null)
-    .gte("expires_at", new Date().toISOString())
-    .order("created_at", { ascending: false })
-    .limit(1);
-  if (selErr) return json({ error: "db_error", detail: selErr.message }, 500);
-  const challenge = challenges?.[0];
-  if (!challenge) return json({ error: "no_active_challenge" }, 410);
-  if (challenge.attempts >= MAX_ATTEMPTS) {
-    return json({ error: "too_many_attempts" }, 429);
-  }
-
-  const codeHash = await hashCode(code);
-  if (codeHash !== challenge.code_hash) {
-    // Optimistic lock on attempts: only increment if the row still has
-    // the same attempts count we read. Without this, 3 parallel bad
-    // submissions all read attempts=0 and all write attempts=1, letting
-    // the user burn through more than MAX_ATTEMPTS guesses. If another
-    // request already bumped the counter, we select again and re-check
-    // the ceiling — that path leads to too_many_attempts.
-    const { data: updated, error: updErr } = await admin
-      .from("phone_otp_challenges")
-      .update({ attempts: challenge.attempts + 1 })
-      .eq("id", challenge.id)
-      .eq("attempts", challenge.attempts)
-      .select("attempts");
-    if (updErr) return json({ error: "db_error", detail: updErr.message }, 500);
-    if (!updated || updated.length === 0) {
-      // Concurrent request bumped attempts first. Re-read the row.
-      const { data: refetched } = await admin
-        .from("phone_otp_challenges")
-        .select("attempts")
-        .eq("id", challenge.id)
-        .single();
-      const currentAttempts = refetched?.attempts ?? MAX_ATTEMPTS;
-      if (currentAttempts >= MAX_ATTEMPTS) {
-        return json({ error: "too_many_attempts" }, 429);
-      }
-      return json({ error: "code_mismatch", attempts_left: MAX_ATTEMPTS - currentAttempts }, 400);
+  // Twilio Verify returns status:
+  //   "approved" — code matched, verification consumed
+  //   "pending"  — code didn't match (or already consumed)
+  //   HTTP 404   — no active verification for this phone (stale/expired)
+  const result = await twilioCheckVerification(phone, code);
+  if (!result.ok) {
+    // 404 means there's no verification record on Twilio's side — either
+    // expired, already consumed, or never started. Treat as "no active
+    // challenge" so the UI can prompt a resend.
+    if (result.status === 404) {
+      return json({ error: "no_active_challenge" }, 410);
     }
-    return json({ error: "code_mismatch", attempts_left: MAX_ATTEMPTS - challenge.attempts - 1 }, 400);
+    console.error("twilio verify check failed:", result.status, result.body);
+    return json({ error: "verify_failed", detail: result.body }, 502);
   }
 
-  // Claim consume-slot with an optimistic lock on consumed_at — if a
-  // concurrent request already consumed this challenge (impossible in
-  // the success path here given code_hash match uniqueness, but belt
-  // and suspenders), we bail rather than double-set phone_verified_at.
+  const status = (result.body as { status?: string })?.status;
+  if (status !== "approved") {
+    return json({ error: "code_mismatch" }, 400);
+  }
+
   const now = new Date().toISOString();
-  const { data: consumed, error: consumeErr } = await admin
-    .from("phone_otp_challenges")
-    .update({ consumed_at: now })
-    .eq("id", challenge.id)
-    .is("consumed_at", null)
-    .select("id");
-  if (consumeErr) return json({ error: "db_error", detail: consumeErr.message }, 500);
-  if (!consumed || consumed.length === 0) {
-    return json({ error: "already_consumed" }, 410);
-  }
-
   const { error: profErr } = await admin
     .from("profiles")
     .update({ phone_number: phone, phone_verified_at: now })
