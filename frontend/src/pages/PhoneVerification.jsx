@@ -90,6 +90,14 @@ export default function PhoneVerification() {
             .limit(1),
         ]);
 
+        // Returning-user sign-in is a terminal state for the onboarding
+        // flag: if it was set by a stray /verify?role=X visit before the
+        // user toggled to Sign In, don't let it leak into OnboardingOnly
+        // and let them destroy their saved profile later.
+        if (prof?.first_name) {
+          sessionStorage.removeItem("kiddaboo.onboardingActive");
+        }
+
         if (!prof?.first_name) {
           navigate("/profile");
         } else if (hostMemberships && hostMemberships.length > 0) {
