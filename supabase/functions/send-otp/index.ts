@@ -13,10 +13,20 @@ const TWILIO_SID = Deno.env.get("TWILIO_ACCOUNT_SID")!;
 const TWILIO_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN")!;
 const TWILIO_FROM = Deno.env.get("TWILIO_FROM_NUMBER")!;
 
+// Matches the CORS pattern used by create-checkout, delete-account, and
+// admin-delete-user. The browser calls this via supabase.functions.invoke,
+// which triggers a preflight — without these headers the preflight fails
+// and the real POST never runs.
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { "content-type": "application/json" },
+    headers: { ...corsHeaders, "content-type": "application/json" },
   });
 }
 
@@ -51,6 +61,9 @@ async function sendSms(to: string, body: string) {
 }
 
 serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
 
   const authHeader = req.headers.get("authorization") || "";
