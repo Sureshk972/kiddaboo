@@ -416,6 +416,12 @@ verify_jwt = false
 [functions.stripe-webhook]
 verify_jwt = false
 
+[functions.send-otp]
+verify_jwt = true
+
+[functions.verify-otp]
+verify_jwt = true
+
 [analytics]
 enabled = true
 port = 54327
