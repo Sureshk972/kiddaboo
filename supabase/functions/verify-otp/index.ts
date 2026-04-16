@@ -76,19 +76,50 @@ serve(async (req) => {
 
   const codeHash = await hashCode(code);
   if (codeHash !== challenge.code_hash) {
-    await admin
+    // Optimistic lock on attempts: only increment if the row still has
+    // the same attempts count we read. Without this, 3 parallel bad
+    // submissions all read attempts=0 and all write attempts=1, letting
+    // the user burn through more than MAX_ATTEMPTS guesses. If another
+    // request already bumped the counter, we select again and re-check
+    // the ceiling — that path leads to too_many_attempts.
+    const { data: updated, error: updErr } = await admin
       .from("phone_otp_challenges")
       .update({ attempts: challenge.attempts + 1 })
-      .eq("id", challenge.id);
+      .eq("id", challenge.id)
+      .eq("attempts", challenge.attempts)
+      .select("attempts");
+    if (updErr) return json({ error: "db_error", detail: updErr.message }, 500);
+    if (!updated || updated.length === 0) {
+      // Concurrent request bumped attempts first. Re-read the row.
+      const { data: refetched } = await admin
+        .from("phone_otp_challenges")
+        .select("attempts")
+        .eq("id", challenge.id)
+        .single();
+      const currentAttempts = refetched?.attempts ?? MAX_ATTEMPTS;
+      if (currentAttempts >= MAX_ATTEMPTS) {
+        return json({ error: "too_many_attempts" }, 429);
+      }
+      return json({ error: "code_mismatch", attempts_left: MAX_ATTEMPTS - currentAttempts }, 400);
+    }
     return json({ error: "code_mismatch", attempts_left: MAX_ATTEMPTS - challenge.attempts - 1 }, 400);
   }
 
+  // Claim consume-slot with an optimistic lock on consumed_at — if a
+  // concurrent request already consumed this challenge (impossible in
+  // the success path here given code_hash match uniqueness, but belt
+  // and suspenders), we bail rather than double-set phone_verified_at.
   const now = new Date().toISOString();
-  const { error: consumeErr } = await admin
+  const { data: consumed, error: consumeErr } = await admin
     .from("phone_otp_challenges")
     .update({ consumed_at: now })
-    .eq("id", challenge.id);
+    .eq("id", challenge.id)
+    .is("consumed_at", null)
+    .select("id");
   if (consumeErr) return json({ error: "db_error", detail: consumeErr.message }, 500);
+  if (!consumed || consumed.length === 0) {
+    return json({ error: "already_consumed" }, 410);
+  }
 
   const { error: profErr } = await admin
     .from("profiles")
