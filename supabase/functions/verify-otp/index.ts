@@ -13,8 +13,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const TWILIO_SID = Deno.env.get("TWILIO_ACCOUNT_SID")!;
-const TWILIO_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN")!;
+// Twilio auth via a Verify-scoped Restricted API Key — see send-otp
+// for the rationale.
+const TWILIO_KEY_SID = Deno.env.get("TWILIO_API_KEY_SID")!;
+const TWILIO_KEY_SECRET = Deno.env.get("TWILIO_API_KEY_SECRET")!;
 const TWILIO_VERIFY_SERVICE_SID = Deno.env.get("TWILIO_VERIFY_SERVICE_SID")!;
 
 const corsHeaders = {
@@ -36,7 +38,7 @@ async function twilioCheckVerification(phone: string, code: string) {
   const res = await fetch(url, {
     method: "POST",
     headers: {
-      Authorization: "Basic " + btoa(`${TWILIO_SID}:${TWILIO_TOKEN}`),
+      Authorization: "Basic " + btoa(`${TWILIO_KEY_SID}:${TWILIO_KEY_SECRET}`),
       "content-type": "application/x-www-form-urlencoded",
     },
     body: params,
