@@ -41,3 +41,13 @@ test("verifyCode surfaces mismatch error", async () => {
   expect(result.current.error).toBe("code_mismatch");
   expect(result.current.status).toBe("error");
 });
+
+test("verifyCode surfaces phone_in_use from ok:false body", async () => {
+  supabase.functions.invoke.mockResolvedValue({ data: { ok: false, error: "phone_in_use" }, error: null });
+  const { result } = renderHook(() => usePhoneVerification());
+  await act(async () => {
+    await result.current.verifyCode("+15551234567", "123456");
+  });
+  expect(result.current.error).toBe("phone_in_use");
+  expect(result.current.status).toBe("error");
+});

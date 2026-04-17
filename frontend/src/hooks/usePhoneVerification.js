@@ -29,8 +29,8 @@ export function usePhoneVerification() {
     const { data, error } = await supabase.functions.invoke("verify-otp", { body: { phone, code } });
     if (error || !data?.ok) {
       setStatus("error");
-      setError(error?.message || "verify_failed");
-      return { error: error ?? new Error("verify_failed") };
+      setError(data?.error || error?.message || "verify_failed");
+      return { error: error ?? new Error(data?.error || "verify_failed") };
     }
     setStatus("verified");
     return { data, error: null };
