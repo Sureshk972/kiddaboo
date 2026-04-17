@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import PhotoCarousel from "../components/playgroup/PhotoCarousel";
-import HostCard from "../components/playgroup/HostCard";
 import EnvironmentChecklist from "../components/playgroup/EnvironmentChecklist";
 import RatingBreakdown from "../components/playgroup/RatingBreakdown";
 import ReviewCard from "../components/playgroup/ReviewCard";
-import MemberAvatars from "../components/playgroup/MemberAvatars";
+import RoleBadge from "../components/profile/RoleBadge";
+import ProfilePanel from "../components/profile/ProfilePanel";
 import JoinRequestSheet from "../components/playgroup/JoinRequestSheet";
 import Button from "../components/ui/Button";
 import SessionCard from "../components/playgroup/SessionCard";
@@ -36,6 +36,8 @@ function transformRealPlaygroup(pg) {
     .filter((m) => m.role === "member" || m.role === "creator")
     .map((m) => ({
       id: m.user_id,
+      first_name: m.profiles?.first_name,
+      last_name: m.profiles?.last_name,
       name: m.profiles?.first_name
         ? `${m.profiles.first_name} ${m.profiles.last_name || ""}`.trim()
         : "Member",
@@ -43,6 +45,13 @@ function transformRealPlaygroup(pg) {
         (m.profiles?.first_name?.[0] || "M").toUpperCase() +
         (m.profiles?.last_name?.[0] || "").toUpperCase(),
       isHost: m.role === "creator",
+      membership_role: m.role,
+      phone_verified_at: m.profiles?.phone_verified_at,
+      account_type: m.profiles?.account_type,
+      zip_code: m.profiles?.zip_code,
+      bio: m.profiles?.bio,
+      philosophy_tags: m.profiles?.philosophy_tags,
+      photo_url: m.profiles?.photo_url,
     }));
 
   return {
@@ -99,6 +108,7 @@ export default function PlaygroupDetail() {
   // changed silently with no banner, and errors were swallowed.
   const [joinMessage, setJoinMessage] = useState("");
   const [joinError, setJoinError] = useState("");
+  const [activeProfile, setActiveProfile] = useState(null);
 
   const { blockUser, submitReport } = useBlocks(user?.id);
   const { canSendJoinRequest, joinRequestsRemaining, joinRequestLimit, isPremium, incrementUsage } = useSubscription();
@@ -123,7 +133,7 @@ export default function PlaygroupDetail() {
         .select(`
           *,
           profiles:creator_id ( first_name, last_name, bio, philosophy_tags, is_verified, trust_score ),
-          memberships ( user_id, role, profiles:user_id ( first_name, last_name ) )
+          memberships ( user_id, role, profiles:user_id ( first_name, last_name, phone_verified_at, bio, philosophy_tags, account_type, zip_code, photo_url ) )
         `)
         .eq("id", id)
         .single();
@@ -373,17 +383,6 @@ export default function PlaygroupDetail() {
           </p>
         </div>
 
-        {/* Divider */}
-        <div className="h-px bg-cream-dark mb-6" />
-
-        {/* Host */}
-        <div className="mb-6">
-          <h3 className="font-heading font-bold text-charcoal mb-3">
-            Your Host
-          </h3>
-          <HostCard host={group.host} />
-        </div>
-
         {/* Environment checklist — only rendered when host configured it */}
         {group.environment && (
           <>
@@ -538,15 +537,60 @@ export default function PlaygroupDetail() {
         {/* Divider */}
         <div className="h-px bg-cream-dark mb-6" />
 
-        {/* Members */}
+        {/* Members (unified, Organizer-first) */}
         <div className="mb-6">
-          <MemberAvatars
-            members={group.members}
-            maxFamilies={group.maxFamilies}
-            ageRange={group.ageRange}
-          />
+          <h3 className="font-heading font-bold text-charcoal mb-3">
+            Members
+          </h3>
+          <div className="flex flex-col gap-2">
+            {[...group.members]
+              .sort((a, b) => {
+                if (a.membership_role === "creator" && b.membership_role !== "creator") return -1;
+                if (a.membership_role !== "creator" && b.membership_role === "creator") return 1;
+                return (a.first_name ?? "").localeCompare(b.first_name ?? "");
+              })
+              .map((m) => {
+                const isOrganizer = m.membership_role === "creator";
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => setActiveProfile(m)}
+                    className="bg-white rounded-xl border border-cream-dark p-3 flex gap-3 items-center text-left cursor-pointer"
+                  >
+                    <div
+                      className={`w-10 h-10 rounded-full bg-sage-light flex-shrink-0 ${
+                        isOrganizer ? "border-[3px] border-terracotta" : ""
+                      }`}
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <div className="font-bold text-sm text-charcoal">
+                          {m.first_name} {m.last_name}
+                        </div>
+                        <RoleBadge role={isOrganizer ? "organizer" : "parent"} />
+                      </div>
+                      <div className="text-[11px] text-taupe">
+                        {isOrganizer ? "Runs the group" : ""}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+          </div>
         </div>
       </div>
+
+      {/* Profile panel sheet */}
+      {activeProfile && (
+        <div
+          onClick={() => setActiveProfile(null)}
+          className="fixed inset-0 bg-black/40 flex items-end z-50"
+        >
+          <div onClick={(e) => e.stopPropagation()} className="w-full">
+            <ProfilePanel profile={activeProfile} onMessage={() => { /* TODO: route to messages */ }} />
+          </div>
+        </div>
+      )}
 
       {/* Sticky bottom CTA */}
       <div className="fixed bottom-0 left-0 right-0 bg-cream/90 backdrop-blur-md border-t border-cream-dark px-6 py-4 z-30">
