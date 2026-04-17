@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Button from "../../components/ui/Button";
 import { usePhoneVerification } from "../../hooks/usePhoneVerification";
 
@@ -92,7 +92,16 @@ export default function PhoneVerify() {
               className="border border-cream-dark rounded-xl px-4 py-3 text-center text-2xl tracking-widest"
               required
             />
-            {error && <p className="text-xs text-terracotta">{error === "code_mismatch" ? "Code doesn't match. Try again." : "Something went wrong. Try again."}</p>}
+            {error === "phone_in_use" ? (
+              <p className="text-xs text-terracotta">
+                This phone is already linked to another account.{" "}
+                <Link to="/login" className="underline">Sign in instead?</Link>
+              </p>
+            ) : error ? (
+              <p className="text-xs text-terracotta">
+                {error === "code_mismatch" ? "Code doesn't match. Try again." : "Something went wrong. Try again."}
+              </p>
+            ) : null}
             <Button type="submit" disabled={status === "verifying"}>
               {status === "verifying" ? "Verifying…" : "Verify"}
             </Button>

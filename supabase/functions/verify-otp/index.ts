@@ -98,7 +98,18 @@ serve(async (req) => {
     .from("profiles")
     .update({ phone_number: phone, phone_verified_at: now })
     .eq("id", userId);
-  if (profErr) return json({ error: "db_error", detail: profErr.message }, 500);
+  if (profErr) {
+    // Unique violation on profiles.phone_number means the phone is
+    // already linked to a different account. Surface a dedicated
+    // error so the client can offer sign-in instead of the generic
+    // "something went wrong". supabase-js swallows non-2xx bodies, so
+    // we return 200 with ok:false to keep the code reachable on the
+    // client side.
+    if ((profErr as { code?: string }).code === "23505") {
+      return json({ ok: false, error: "phone_in_use" });
+    }
+    return json({ error: "db_error", detail: profErr.message }, 500);
+  }
 
   return json({ ok: true, verified_at: now });
 });
