@@ -4,7 +4,11 @@ import { supabase } from "../lib/supabase";
 /**
  * Drives the OTP UI. Status machine:
  *   idle → sending → code_sent → verifying → verified
- *                                        ↘ error
+ *              ↘ send_error              ↘ verify_error
+ *
+ * send_error and verify_error are split so the UI can keep the user
+ * on the correct form: send failures must NOT drop them onto the
+ * code-entry screen, because no code was ever sent.
  */
 export function usePhoneVerification() {
   const [status, setStatus] = useState("idle");
@@ -13,11 +17,11 @@ export function usePhoneVerification() {
   async function sendCode(phone) {
     setStatus("sending");
     setError(null);
-    const { error } = await supabase.functions.invoke("send-otp", { body: { phone } });
-    if (error) {
-      setStatus("error");
-      setError(error.message || "send_failed");
-      return { error };
+    const { data, error } = await supabase.functions.invoke("send-otp", { body: { phone } });
+    if (error || !data?.ok) {
+      setStatus("send_error");
+      setError(data?.error || error?.message || "send_failed");
+      return { error: error ?? new Error(data?.error || "send_failed") };
     }
     setStatus("code_sent");
     return { error: null };
@@ -28,7 +32,7 @@ export function usePhoneVerification() {
     setError(null);
     const { data, error } = await supabase.functions.invoke("verify-otp", { body: { phone, code } });
     if (error || !data?.ok) {
-      setStatus("error");
+      setStatus("verify_error");
       setError(data?.error || error?.message || "verify_failed");
       return { error: error ?? new Error(data?.error || "verify_failed") };
     }

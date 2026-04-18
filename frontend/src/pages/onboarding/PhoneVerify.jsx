@@ -3,6 +3,19 @@ import { Link, useNavigate } from "react-router-dom";
 import Button from "../../components/ui/Button";
 import { usePhoneVerification } from "../../hooks/usePhoneVerification";
 
+// User-friendly copy per error code. Keys match codes returned by
+// send-otp and verify-otp edge functions.
+const SEND_ERROR_COPY = {
+  invalid_phone: "That doesn't look like a valid phone number. Check it and try again.",
+  sms_failed: "We couldn't text that number. Check that it's correct and can receive SMS, or try another number.",
+  rate_limited: "Too many code requests for that number. Wait a few minutes and try again.",
+};
+const VERIFY_ERROR_COPY = {
+  code_mismatch: "Code doesn't match. Try again.",
+  no_active_challenge: "That code expired. Tap Resend to get a new one.",
+  phone_in_use: null, // handled inline as JSX (link to /login)
+};
+
 /**
  * OTP step. Two stages:
  *   1. Ask for E.164 phone → "Send code"
@@ -51,7 +64,10 @@ export default function PhoneVerify() {
     }
   }
 
-  const showCodeStep = status === "code_sent" || status === "verifying" || status === "error";
+  // Code-entry form only appears once a code has actually been sent.
+  // send_error keeps us on the phone form so the user can fix the
+  // number; verify_error keeps us on the code form.
+  const showCodeStep = status === "code_sent" || status === "verifying" || status === "verify_error";
 
   return (
     <div className="min-h-screen bg-cream px-6 py-10 flex flex-col">
@@ -73,6 +89,11 @@ export default function PhoneVerify() {
               className="border border-cream-dark rounded-xl px-4 py-3"
               required
             />
+            {status === "send_error" && (
+              <p className="text-xs text-terracotta">
+                {SEND_ERROR_COPY[error] || "Something went wrong. Try again."}
+              </p>
+            )}
             <Button type="submit" disabled={status === "sending"}>
               {status === "sending" ? "Sending…" : "Send code"}
             </Button>
@@ -99,7 +120,7 @@ export default function PhoneVerify() {
               </p>
             ) : error ? (
               <p className="text-xs text-terracotta">
-                {error === "code_mismatch" ? "Code doesn't match. Try again." : "Something went wrong. Try again."}
+                {VERIFY_ERROR_COPY[error] || "Something went wrong. Try again."}
               </p>
             ) : null}
             <Button type="submit" disabled={status === "verifying"}>
