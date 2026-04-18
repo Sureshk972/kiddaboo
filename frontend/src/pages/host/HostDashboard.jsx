@@ -189,6 +189,7 @@ export default function HostDashboard() {
     sessions,
     nextSession,
     createSession,
+    updateSession,
     cancelSession,
     countRsvps,
   } = useSessions(realPlaygroup?.id);
@@ -197,6 +198,9 @@ export default function HostDashboard() {
   // the date label and RSVP count without re-querying on every render.
   const [cancelTarget, setCancelTarget] = useState(null);
   const [cancelRsvpCount, setCancelRsvpCount] = useState(0);
+
+  // Edit sheet state — when set, ScheduleSessionSheet opens in edit mode.
+  const [editTarget, setEditTarget] = useState(null);
 
   const openCancelSheet = async (session) => {
     const count = await countRsvps(session.id);
@@ -608,6 +612,17 @@ export default function HostDashboard() {
               </h3>
               <div className="flex items-center gap-3">
                 <button
+                  onClick={() => setEditTarget(nextSession)}
+                  className="text-taupe/50 hover:text-sage-dark transition-colors bg-transparent border-none cursor-pointer p-0.5"
+                  title="Edit session"
+                  aria-label="Edit session"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 20h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                <button
                   onClick={() => openCancelSheet(nextSession)}
                   className="text-taupe/50 hover:text-terracotta transition-colors bg-transparent border-none cursor-pointer p-0.5"
                   title="Cancel session"
@@ -702,15 +717,29 @@ export default function HostDashboard() {
                         </p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => openCancelSheet(session)}
-                      className="text-taupe/40 hover:text-terracotta transition-colors bg-transparent border-none cursor-pointer p-1"
-                      title="Cancel session"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                      </svg>
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setEditTarget(session)}
+                        className="text-taupe/40 hover:text-sage-dark transition-colors bg-transparent border-none cursor-pointer p-1"
+                        title="Edit session"
+                        aria-label="Edit session"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                          <path d="M12 20h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                          <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => openCancelSheet(session)}
+                        className="text-taupe/40 hover:text-terracotta transition-colors bg-transparent border-none cursor-pointer p-1"
+                        title="Cancel session"
+                        aria-label="Cancel session"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                   <RsvpCount sessionId={session.id} />
                 </div>
@@ -975,6 +1004,43 @@ export default function HostDashboard() {
             created_by: user.id,
           });
           return result;
+        }}
+      />
+
+      {/* Edit session bottom sheet — reuses ScheduleSessionSheet in edit
+          mode. Separate instance from the schedule sheet so open/close
+          state is independent. */}
+      <ScheduleSessionSheet
+        isOpen={!!editTarget}
+        onClose={() => setEditTarget(null)}
+        defaultLocation={realPlaygroup?.location_name || ""}
+        playgroupName={realPlaygroup?.name || ""}
+        existingSession={editTarget}
+        onUpdate={async (updates, prev) => {
+          const parts = [];
+          if (updates.scheduled_at !== prev.scheduled_at) {
+            parts.push(
+              `Now ${friendlyDate(updates.scheduled_at)} at ${formatSessionTime(updates.scheduled_at)}.`
+            );
+          }
+          if (updates.duration_minutes !== prev.duration_minutes) {
+            parts.push(`Duration ${formatDuration(updates.duration_minutes)}.`);
+          }
+          if ((updates.location_name || "") !== (prev.location_name || "")) {
+            parts.push(
+              updates.location_name
+                ? `Location: ${updates.location_name}.`
+                : `Location cleared.`
+            );
+          }
+          if ((updates.notes || "") !== (prev.notes || "")) {
+            parts.push(`Notes updated.`);
+          }
+          const rsvpCount = await countRsvps(prev.id);
+          return updateSession(prev.id, updates, {
+            hostUserId: user.id,
+            changeSummary: rsvpCount > 0 && parts.length > 0 ? parts.join(" ") : null,
+          });
         }}
       />
 
