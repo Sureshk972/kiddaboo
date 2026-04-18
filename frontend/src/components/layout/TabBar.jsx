@@ -11,7 +11,7 @@ const BrowseIcon = (active) => (
       stroke="currentColor"
       strokeWidth="1.5"
       fill={active ? "currentColor" : "none"}
-      fillOpacity={active ? 0.15 : 0}
+      fillOpacity={active ? 0.3 : 0}
     />
     <path d="M16 16L21 21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
   </svg>
@@ -32,7 +32,7 @@ const GroupsIcon = (active) => (
       stroke="currentColor"
       strokeWidth="1.5"
       fill={active ? "currentColor" : "none"}
-      fillOpacity={active ? 0.15 : 0}
+      fillOpacity={active ? 0.3 : 0}
     />
     <path
       d="M22 21V19C22 17.36 21.04 15.93 19.62 15.35"
@@ -60,7 +60,7 @@ const DashboardIcon = (active) => (
       stroke="currentColor"
       strokeWidth="1.5"
       fill={active ? "currentColor" : "none"}
-      fillOpacity={active ? 0.15 : 0}
+      fillOpacity={active ? 0.3 : 0}
     />
     <rect
       x="14"
@@ -71,7 +71,7 @@ const DashboardIcon = (active) => (
       stroke="currentColor"
       strokeWidth="1.5"
       fill={active ? "currentColor" : "none"}
-      fillOpacity={active ? 0.15 : 0}
+      fillOpacity={active ? 0.3 : 0}
     />
     <rect
       x="14"
@@ -82,7 +82,7 @@ const DashboardIcon = (active) => (
       stroke="currentColor"
       strokeWidth="1.5"
       fill={active ? "currentColor" : "none"}
-      fillOpacity={active ? 0.15 : 0}
+      fillOpacity={active ? 0.3 : 0}
     />
     <rect
       x="3"
@@ -93,7 +93,7 @@ const DashboardIcon = (active) => (
       stroke="currentColor"
       strokeWidth="1.5"
       fill={active ? "currentColor" : "none"}
-      fillOpacity={active ? 0.15 : 0}
+      fillOpacity={active ? 0.3 : 0}
     />
   </svg>
 );
@@ -114,7 +114,7 @@ const InsightsIcon = (active) => (
       strokeLinecap="round"
       strokeLinejoin="round"
       fill={active ? "currentColor" : "none"}
-      fillOpacity={active ? 0.15 : 0}
+      fillOpacity={active ? 0.3 : 0}
     />
     <circle
       cx="20"
@@ -135,7 +135,7 @@ const MessagesIcon = (active) => (
       strokeLinecap="round"
       strokeLinejoin="round"
       fill={active ? "currentColor" : "none"}
-      fillOpacity={active ? 0.15 : 0}
+      fillOpacity={active ? 0.3 : 0}
     />
   </svg>
 );
@@ -149,7 +149,7 @@ const ProfileIcon = (active) => (
       stroke="currentColor"
       strokeWidth="1.5"
       fill={active ? "currentColor" : "none"}
-      fillOpacity={active ? 0.15 : 0}
+      fillOpacity={active ? 0.3 : 0}
     />
     <path
       d="M20 21C20 17.13 16.42 14 12 14C7.58 14 4 17.13 4 21"
@@ -207,10 +207,12 @@ export default function TabBar({ badges = {} }) {
               aria-label={tab.label}
               aria-current={isActive ? "page" : undefined}
               className={`
-                flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl
+                flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl
                 transition-colors duration-150 cursor-pointer
-                bg-transparent border-none min-w-[60px] relative
-                ${isActive ? "text-sage-dark" : "text-taupe hover:text-taupe-dark"}
+                border-none min-w-[60px] relative
+                ${isActive
+                  ? "text-sage-dark bg-sage-light"
+                  : "bg-transparent text-taupe hover:text-taupe-dark"}
               `}
             >
               <div className="relative">
