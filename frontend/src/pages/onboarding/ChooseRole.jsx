@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 /**
  * First screen a new user sees. Picks their account_type before any
@@ -41,6 +41,11 @@ export default function ChooseRole() {
       </div>
 
       <p className="text-xs text-taupe/60 mt-6">You can add the other role later.</p>
+
+      <p className="text-sm text-taupe mt-8">
+        Already have an account?{" "}
+        <Link to="/login" className="underline underline-offset-4 text-charcoal">Sign in</Link>
+      </p>
     </div>
   );
 }
