@@ -63,18 +63,25 @@ export default function ProfilePanel({ profile, onMessage }) {
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-2 text-center bg-white rounded-xl border border-cream-dark py-3 mb-4">
-        <div>
-          <div className="text-base font-bold text-charcoal">{profile.children?.length ?? 0}</div>
-          <div className="text-[9px] uppercase text-taupe">Kids</div>
-        </div>
-        <div className="border-l border-cream-dark">
-          <div className="text-base font-bold text-charcoal">{profile.groups_joined_count ?? 0}</div>
-          <div className="text-[9px] uppercase text-taupe">Groups</div>
-        </div>
-      </div>
+      {/* Kids/Groups only make sense for parent profiles. Organizers
+          use the Organizer pill + zip as their at-a-glance info; a
+          "0 kids" on a host profile is misleading, not informative. */}
+      {profile.account_type !== "organizer" && (
+        <>
+          <div className="grid grid-cols-2 gap-2 text-center bg-white rounded-xl border border-cream-dark py-3 mb-4">
+            <div>
+              <div className="text-base font-bold text-charcoal">{profile.children?.length ?? 0}</div>
+              <div className="text-[9px] uppercase text-taupe">Kids</div>
+            </div>
+            <div className="border-l border-cream-dark">
+              <div className="text-base font-bold text-charcoal">{profile.groups_joined_count ?? 0}</div>
+              <div className="text-[9px] uppercase text-taupe">Groups</div>
+            </div>
+          </div>
 
-      <ChildrenCard children={profile.children} />
+          <ChildrenCard children={profile.children} />
+        </>
+      )}
 
       {profile.bio && (
         <div className="mb-4">
