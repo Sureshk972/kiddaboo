@@ -320,18 +320,13 @@ export default function HostDashboard() {
   const header = (
     <div className="sticky top-0 z-20 bg-cream/95 backdrop-blur-sm border-b border-cream-dark">
       <div className="max-w-md mx-auto px-5 pt-4 pb-3">
-        {/* Brand row */}
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <div className="flex items-baseline gap-2 min-w-0">
-            <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
-              Kiddaboo
-            </h1>
-            {profile?.first_name && (
-              <span className="text-sm font-medium text-taupe truncate">
-                Hi, {profile.first_name} (Host)
-              </span>
-            )}
-          </div>
+        {/* Brand row — greeting moved below so the Premium pill can't
+            crowd the host's name on narrow screens. "(Host)" was
+            redundant here: they're already on the host dashboard. */}
+        <div className="flex items-center justify-between gap-2">
+          <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
+            Kiddaboo
+          </h1>
           <div className="flex items-center gap-2 flex-shrink-0">
             {isHostPremium ? (
               <span className="flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1">
@@ -375,6 +370,11 @@ export default function HostDashboard() {
             )}
           </div>
         </div>
+        {profile?.first_name && (
+          <p className="text-sm font-medium text-taupe mt-1 mb-3">
+            Hi, {profile.first_name}
+          </p>
+        )}
         {/* Playgroup name */}
         <div>
           <p className="text-[11px] text-taupe uppercase tracking-wide">Your playgroup</p>
