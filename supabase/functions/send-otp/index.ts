@@ -74,7 +74,7 @@ serve(async (req) => {
     return json({ error: "bad_json" }, 400);
   }
   if (!/^\+[1-9]\d{6,14}$/.test(phone || "")) {
-    return json({ error: "invalid_phone" }, 400);
+    return json({ ok: false, error: "invalid_phone" });
   }
 
   // Twilio Verify handles code generation, expiry, delivery, and the
@@ -82,14 +82,17 @@ serve(async (req) => {
   const result = await twilioStartVerification(phone);
   if (!result.ok) {
     console.error("twilio verify start failed:", result.status, result.body);
-    // Twilio's 60212 (max send attempts reached) is our rate-limit case;
-    // surface that to the UI so the copy can be accurate. Everything
-    // else is a generic send failure.
+    // Surface user-actionable errors as ok:false bodies (supabase-js
+    // swallows non-2xx bodies, so the 200-with-ok:false pattern is
+    // how we get the error code to the UI). Twilio's 60212 is the
+    // rate-limit case; 60200 / 60203 / 60410 are "this number can't
+    // receive SMS", which from a trial account also covers the
+    // "unverified caller ID" case.
     const twilioCode = (result.body as { code?: number })?.code;
     if (twilioCode === 60212) {
-      return json({ error: "rate_limited" }, 429);
+      return json({ ok: false, error: "rate_limited" });
     }
-    return json({ error: "sms_failed", detail: result.body }, 502);
+    return json({ ok: false, error: "sms_failed", detail: result.body });
   }
 
   return json({ ok: true });

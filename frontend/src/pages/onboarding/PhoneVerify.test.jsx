@@ -20,8 +20,24 @@ test("full flow: enter phone, send code, enter code, verified", async () => {
   await waitFor(() => expect(sendCode).toHaveBeenCalledWith("+15551234567"));
 });
 
-test("phone_in_use error shows sign-in CTA", () => {
-  status = "error";
+test("send_error keeps the user on the phone form with helpful copy", () => {
+  status = "send_error";
+  error = "sms_failed";
+  render(<MemoryRouter><PhoneVerify /></MemoryRouter>);
+  expect(screen.getByLabelText(/phone number/i)).toBeInTheDocument();
+  expect(screen.queryByLabelText(/6-digit code/i)).not.toBeInTheDocument();
+  expect(screen.getByText(/couldn't text that number/i)).toBeInTheDocument();
+});
+
+test("send_error shows rate-limit copy when relevant", () => {
+  status = "send_error";
+  error = "rate_limited";
+  render(<MemoryRouter><PhoneVerify /></MemoryRouter>);
+  expect(screen.getByText(/too many code requests/i)).toBeInTheDocument();
+});
+
+test("phone_in_use error shows sign-in CTA on code form", () => {
+  status = "verify_error";
   error = "phone_in_use";
   render(<MemoryRouter><PhoneVerify /></MemoryRouter>);
   expect(screen.getByText(/already linked to another account/i)).toBeInTheDocument();
