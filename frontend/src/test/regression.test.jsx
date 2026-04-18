@@ -181,16 +181,15 @@ describe("Public Pages", () => {
       expect(screen.getByText(/Find your people/)).toBeInTheDocument();
     });
 
-    it("renders all CTA buttons", () => {
+    it("renders primary CTA", () => {
       renderWithRouter(<Welcome />);
-      expect(screen.getByText("Find Your Playgroup")).toBeInTheDocument();
-      expect(screen.getByText("Organize a Playgroup")).toBeInTheDocument();
+      expect(screen.getByText("Get Started")).toBeInTheDocument();
     });
 
-    it("renders sign in and create account links", () => {
+    it("renders sign in link for returning users", () => {
       renderWithRouter(<Welcome />);
+      expect(screen.getByText(/Already have an account/)).toBeInTheDocument();
       expect(screen.getByText("Sign in")).toBeInTheDocument();
-      expect(screen.getByText("Create an account")).toBeInTheDocument();
     });
 
     it("renders legal links", () => {
@@ -445,7 +444,7 @@ describe("Authenticated Pages", () => {
     it("renders filter buttons", () => {
       renderWithRouter(<Browse />);
       expect(screen.getByText("Filters")).toBeInTheDocument();
-      expect(screen.getByText("Top Rated")).toBeInTheDocument();
+      expect(screen.getByText("Rated")).toBeInTheDocument();
     });
   });
 
@@ -599,7 +598,7 @@ describe("Route Protection Integration", () => {
     authValue = createAuthValue({ user: null, profile: null, loading: false });
     renderWithRouter(<Welcome />);
     expect(screen.getByText("Kiddaboo")).toBeInTheDocument();
-    expect(screen.getByText("Find Your Playgroup")).toBeInTheDocument();
+    expect(screen.getByText("Get Started")).toBeInTheDocument();
   });
 
   it("authenticated user accessing / redirects to /browse or /profile", () => {
@@ -663,9 +662,9 @@ describe("Regression Tests", () => {
     expect(screen.getByLabelText("Sign out")).toBeInTheDocument();
   });
 
-  it("Welcome page has Create an account link", () => {
+  it("Welcome page has Get Started CTA", () => {
     authValue = createAuthValue({ user: null, loading: false });
     renderWithRouter(<Welcome />);
-    expect(screen.getByText("Create an account")).toBeInTheDocument();
+    expect(screen.getByText("Get Started")).toBeInTheDocument();
   });
 });
