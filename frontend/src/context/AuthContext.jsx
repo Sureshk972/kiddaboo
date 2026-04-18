@@ -43,7 +43,7 @@ export function AuthProvider({ children }) {
   const fetchProfile = async (userId) => {
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, created_at, updated_at, notification_prefs, role, account_type")
+      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, phone_verified_at, created_at, updated_at, notification_prefs, role, account_type")
       .eq("id", userId)
       .single();
 
@@ -108,7 +108,7 @@ export function AuthProvider({ children }) {
       .from("profiles")
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq("id", user.id)
-      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, created_at, updated_at, notification_prefs, role, account_type")
+      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, phone_verified_at, created_at, updated_at, notification_prefs, role, account_type")
       .single();
 
     if (error) {
