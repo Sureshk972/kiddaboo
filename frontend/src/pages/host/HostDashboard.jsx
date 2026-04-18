@@ -6,6 +6,7 @@ import { supabase } from "../../lib/supabase";
 import { useSubscription } from "../../hooks/useSubscription";
 import RequestCard from "../../components/host/RequestCard";
 import ScheduleSessionSheet from "../../components/host/ScheduleSessionSheet";
+import CancelSessionSheet from "../../components/playgroup/CancelSessionSheet";
 import useSessions from "../../hooks/useSessions";
 import useReviews from "../../hooks/useReviews";
 import RsvpCount from "../../components/host/RsvpCount";
@@ -188,8 +189,20 @@ export default function HostDashboard() {
     sessions,
     nextSession,
     createSession,
-    deleteSession,
+    cancelSession,
+    countRsvps,
   } = useSessions(realPlaygroup?.id);
+
+  // Cancel sheet state — keep the target session so the sheet can show
+  // the date label and RSVP count without re-querying on every render.
+  const [cancelTarget, setCancelTarget] = useState(null);
+  const [cancelRsvpCount, setCancelRsvpCount] = useState(0);
+
+  const openCancelSheet = async (session) => {
+    const count = await countRsvps(session.id);
+    setCancelRsvpCount(count);
+    setCancelTarget(session);
+  };
 
   // Reviews
   const { reviews, ratings } = useReviews(realPlaygroup?.id);
@@ -595,11 +608,7 @@ export default function HostDashboard() {
               </h3>
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => {
-                    if (confirm("Cancel this session? This cannot be undone.")) {
-                      deleteSession(nextSession.id);
-                    }
-                  }}
+                  onClick={() => openCancelSheet(nextSession)}
                   className="text-taupe/50 hover:text-terracotta transition-colors bg-transparent border-none cursor-pointer p-0.5"
                   title="Cancel session"
                   aria-label="Cancel session"
@@ -694,7 +703,7 @@ export default function HostDashboard() {
                       </div>
                     </div>
                     <button
-                      onClick={() => deleteSession(session.id)}
+                      onClick={() => openCancelSheet(session)}
                       className="text-taupe/40 hover:text-terracotta transition-colors bg-transparent border-none cursor-pointer p-1"
                       title="Cancel session"
                     >
@@ -967,6 +976,22 @@ export default function HostDashboard() {
           });
           return result;
         }}
+      />
+
+      <CancelSessionSheet
+        isOpen={!!cancelTarget}
+        onClose={() => setCancelTarget(null)}
+        rsvpCount={cancelRsvpCount}
+        sessionDateLabel={
+          cancelTarget ? friendlyDate(cancelTarget.scheduled_at) : ""
+        }
+        onConfirm={(reason) =>
+          cancelSession(cancelTarget.id, {
+            reason,
+            hostUserId: user.id,
+            sessionDateLabel: friendlyDate(cancelTarget.scheduled_at),
+          })
+        }
       />
     </div>
   );
