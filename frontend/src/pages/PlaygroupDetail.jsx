@@ -558,10 +558,18 @@ export default function PlaygroupDetail() {
                     className="bg-white rounded-xl border border-cream-dark p-3 flex gap-3 items-center text-left cursor-pointer"
                   >
                     <div
-                      className={`w-10 h-10 rounded-full bg-sage-light flex-shrink-0 ${
+                      className={`w-10 h-10 rounded-full bg-sage-light flex-shrink-0 flex items-center justify-center overflow-hidden ${
                         isOrganizer ? "border-[3px] border-terracotta" : ""
                       }`}
-                    />
+                    >
+                      {m.photo_url ? (
+                        <img src={m.photo_url} alt={`${m.first_name || "member"}'s photo`} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-sm font-heading font-bold text-sage-dark">
+                          {m.initials}
+                        </span>
+                      )}
+                    </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <div className="font-bold text-sm text-charcoal">
