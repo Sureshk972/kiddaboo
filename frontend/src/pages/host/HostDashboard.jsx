@@ -566,6 +566,26 @@ export default function HostDashboard() {
           </div>
         )}
 
+        {/* Prominent CTA — hosts often miss the tiny "+ Add" inside the
+            Next Session card header. Matches the visual weight of "Join
+            Group" on PlaygroupDetail so adding sessions reads as the
+            primary host action. Only shown when a session already exists
+            — the empty state below already has its own full-width CTA. */}
+        {nextSession && (
+          <button
+            onClick={() => setShowScheduleSheet(true)}
+            className="w-full bg-sage-dark text-white font-bold text-sm rounded-2xl px-4 py-3 cursor-pointer border-none hover:bg-sage transition-colors flex items-center justify-center gap-2"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M3 10H21" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M8 2V6M16 2V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M12 14V18M10 16H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+            Add a Session
+          </button>
+        )}
+
         {/* Next session card */}
         {nextSession ? (
           <div className="bg-sage-light/30 rounded-2xl p-4 border border-sage-light">
@@ -574,12 +594,6 @@ export default function HostDashboard() {
                 Next Session
               </h3>
               <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setShowScheduleSheet(true)}
-                  className="text-[11px] text-sage-dark font-medium bg-transparent border-none cursor-pointer underline underline-offset-2"
-                >
-                  + Add
-                </button>
                 <button
                   onClick={() => {
                     if (confirm("Cancel this session? This cannot be undone.")) {
