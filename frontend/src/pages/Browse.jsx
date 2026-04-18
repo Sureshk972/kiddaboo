@@ -62,9 +62,13 @@ export default function Browse() {
   // Real playgroups from Supabase
   const [realPlaygroups, setRealPlaygroups] = useState([]);
   const [loadingReal, setLoadingReal] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
+  const [refetchKey, setRefetchKey] = useState(0);
 
   useEffect(() => {
     const fetchPlaygroups = async () => {
+      setFetchError(false);
+      setLoadingReal(true);
       // Fetch playgroups and premium host IDs in parallel
       const [pgResult, premiumResult] = await Promise.all([
         supabase
@@ -90,8 +94,8 @@ export default function Browse() {
 
       if (pgResult.error) {
         console.error("Failed to fetch playgroups:", pgResult.error);
-      }
-      if (!pgResult.error && pgResult.data) {
+        setFetchError(true);
+      } else if (pgResult.data) {
         setRealPlaygroups(
           pgResult.data.map((pg, i) => ({
             ...transformPlaygroup(pg, i),
@@ -102,7 +106,7 @@ export default function Browse() {
       setLoadingReal(false);
     };
     fetchPlaygroups();
-  }, []);
+  }, [refetchKey]);
 
   const allPlaygroups = useMemo(() => realPlaygroups, [realPlaygroups]);
 
@@ -357,6 +361,26 @@ export default function Browse() {
 
       {/* Results */}
       <div className="max-w-6xl mx-auto px-5 py-4">
+        {/* Fetch error banner — shown instead of the skeleton/grid
+            when the initial playgroup query fails. Gives the user a
+            retry path instead of a silent empty state. */}
+        {!loadingReal && fetchError && (
+          <div className="bg-terracotta-light/40 border border-terracotta/30 rounded-2xl p-5 text-center">
+            <p className="font-heading font-bold text-charcoal text-sm mb-1">
+              Couldn't load playgroups
+            </p>
+            <p className="text-xs text-taupe mb-4">
+              Check your connection and try again.
+            </p>
+            <button
+              onClick={() => setRefetchKey((k) => k + 1)}
+              className="bg-sage hover:bg-sage-dark text-white text-sm font-medium rounded-xl px-5 py-2 cursor-pointer border-none transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
         {/* Loading skeleton */}
         {loadingReal && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -385,7 +409,7 @@ export default function Browse() {
         )}
 
         {/* Result count */}
-        {!loadingReal && (
+        {!loadingReal && !fetchError && (
           <div className="flex items-end justify-between mb-6">
             <div>
               <p className="text-xs text-taupe">
@@ -396,7 +420,7 @@ export default function Browse() {
         )}
 
         {/* Playgroup grid */}
-        {!loadingReal && results.length > 0 ? (
+        {!loadingReal && !fetchError && results.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {results.map((group, i) => (
@@ -440,7 +464,7 @@ export default function Browse() {
               </div>
             )}
           </>
-        ) : !loadingReal ? (
+        ) : !loadingReal && !fetchError ? (
           /* Empty state */
           <div className="text-center py-16 min-h-[60vh] flex flex-col items-center justify-center">
             <div className="w-16 h-16 bg-cream-dark rounded-full flex items-center justify-center mx-auto mb-4">
