@@ -74,6 +74,42 @@ export default function useSessions(playgroupId) {
     [playgroupId]
   );
 
+  // Update an existing session. Mirrors cancelSession in shape: the
+  // caller can pass hostUserId + sessionDateLabel so we post a system
+  // message in the group chat when RSVP'd parents are affected by the
+  // change. "What changed" is summarized by the caller, since it knows
+  // which fields they edited.
+  const updateSession = useCallback(
+    async (sessionId, updates, { hostUserId, changeSummary } = {}) => {
+      const { data, error } = await supabase
+        .from("sessions")
+        .update(updates)
+        .eq("id", sessionId)
+        .select()
+        .single();
+
+      if (error) return { error };
+
+      setSessions((prev) => {
+        const next = prev.map((s) => (s.id === sessionId ? data : s));
+        return next.sort(
+          (a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at)
+        );
+      });
+
+      if (playgroupId && hostUserId && changeSummary) {
+        await supabase.from("messages").insert({
+          sender_id: hostUserId,
+          playgroup_id: playgroupId,
+          content: `📅 Session updated. ${changeSummary}`,
+        });
+      }
+
+      return { data, error: null };
+    },
+    [playgroupId]
+  );
+
   // Count RSVPs on a session so the host can see who will be affected
   // before confirming a cancellation. "going" matches useRsvps — we
   // don't surface "maybe" / "can't" in the count because cancellation
@@ -132,6 +168,7 @@ export default function useSessions(playgroupId) {
     nextSession,
     loading,
     createSession,
+    updateSession,
     cancelSession,
     countRsvps,
     refetch: fetchSessions,

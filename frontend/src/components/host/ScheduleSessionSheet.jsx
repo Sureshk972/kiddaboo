@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "../ui/Button";
 import { todayDateString } from "../../lib/dateUtils";
 
@@ -9,13 +9,33 @@ const DURATION_OPTIONS = [
   { label: "3 hrs", value: 180 },
 ];
 
+// Splits a scheduled_at ISO string into local date (YYYY-MM-DD) and
+// time (HH:MM) parts for the form inputs. Using the raw substring of
+// the ISO would be wrong because scheduled_at is UTC and inputs are
+// local — a 10 AM EST session comes back as 14:00Z and would prefill
+// the time as 14:00.
+function splitLocal(iso) {
+  const d = new Date(iso);
+  const pad = (n) => String(n).padStart(2, "0");
+  return {
+    date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
+    time: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
+  };
+}
+
 export default function ScheduleSessionSheet({
   isOpen,
   onClose,
   defaultLocation = "",
   playgroupName = "",
   onSchedule,
+  // When provided, the sheet switches to edit mode: prefills from the
+  // existing session and routes submit through onUpdate instead of
+  // onSchedule. Copy and button labels shift accordingly.
+  existingSession = null,
+  onUpdate,
 }) {
+  const isEdit = !!existingSession;
   const [date, setDate] = useState("");
   const [time, setTime] = useState("10:00");
   const [duration, setDuration] = useState(120);
@@ -24,6 +44,19 @@ export default function ScheduleSessionSheet({
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [confirmOvernight, setConfirmOvernight] = useState(false);
+
+  // Prefill when opening in edit mode. Guarded on isOpen so the form
+  // resets to the current session's values every time the sheet is
+  // re-opened — not the last edit state.
+  useEffect(() => {
+    if (!isOpen || !existingSession) return;
+    const { date: d, time: t } = splitLocal(existingSession.scheduled_at);
+    setDate(d);
+    setTime(t);
+    setDuration(existingSession.duration_minutes || 120);
+    setLocation(existingSession.location_name || "");
+    setNotes(existingSession.notes || "");
+  }, [isOpen, existingSession]);
 
   const canSubmit = date && time && !saving;
 
@@ -45,22 +78,20 @@ export default function ScheduleSessionSheet({
   const submit = async () => {
     setSaving(true);
 
-    // Combine date + time into ISO string
     const scheduledAt = new Date(`${date}T${time}:00`).toISOString();
-
-    const result = await onSchedule?.({
-      title: playgroupName || "Playdate",
+    const payload = {
       scheduled_at: scheduledAt,
       duration_minutes: duration,
       location_name: location || null,
       notes: notes || null,
-    });
+    };
+
+    const result = isEdit
+      ? await onUpdate?.(payload, existingSession)
+      : await onSchedule?.({ title: playgroupName || "Playdate", ...payload });
 
     setSaving(false);
-
-    if (!result?.error) {
-      setSuccess(true);
-    }
+    if (!result?.error) setSuccess(true);
   };
 
   const handleSchedule = async () => {
@@ -157,10 +188,12 @@ export default function ScheduleSessionSheet({
                 </svg>
               </div>
               <h3 className="text-xl font-heading font-bold text-charcoal mb-2">
-                Session scheduled!
+                {isEdit ? "Session updated!" : "Session scheduled!"}
               </h3>
               <p className="text-sm text-taupe leading-relaxed mb-6">
-                Your group members will be able to see this on the playgroup page.
+                {isEdit
+                  ? "Anyone who RSVP'd will get a message in the group chat."
+                  : "Your group members will be able to see this on the playgroup page."}
               </p>
               <Button variant="secondary" onClick={handleClose}>
                 Done
@@ -170,10 +203,12 @@ export default function ScheduleSessionSheet({
             /* Schedule form */
             <>
               <h3 className="text-xl font-heading font-bold text-charcoal mb-1">
-                Schedule a session
+                {isEdit ? "Edit session" : "Schedule a session"}
               </h3>
               <p className="text-sm text-taupe mb-6">
-                Pick a date and time for your next playdate.
+                {isEdit
+                  ? "Update the details below. RSVP'd families will be notified."
+                  : "Pick a date and time for your next playdate."}
               </p>
 
               {/* Date */}
@@ -286,7 +321,7 @@ export default function ScheduleSessionSheet({
                 disabled={!canSubmit}
                 loading={saving}
               >
-                Schedule Session
+                {isEdit ? "Save changes" : "Schedule Session"}
               </Button>
             </>
           )}
