@@ -1,8 +1,26 @@
 import { useState } from "react";
 import useRsvps from "../../hooks/useRsvps";
 import { friendlyDate, formatSessionTime, formatDuration } from "../../lib/dateUtils";
+import { downloadIcs } from "../../lib/icsExport";
 
-function RsvpButtons({ sessionId }) {
+function AddToCalendarButton({ session, playgroupName }) {
+  return (
+    <button
+      onClick={() => downloadIcs({ session, playgroupName })}
+      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer border bg-white text-taupe-dark border-cream-dark hover:border-sage"
+      title="Add to your phone's calendar"
+    >
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="2" />
+        <path d="M3 9H21M8 3V7M16 3V7M12 13V17M10 15H14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+      Add to calendar
+    </button>
+  );
+}
+
+function RsvpButtons({ session, playgroupName }) {
+  const sessionId = session.id;
   const { myRsvp, goingCount, upsertRsvp, deleteRsvp } = useRsvps(sessionId);
   const [saving, setSaving] = useState(false);
 
@@ -61,6 +79,8 @@ function RsvpButtons({ sessionId }) {
         </svg>
         Can't make it
       </button>
+
+      {isGoing && <AddToCalendarButton session={session} playgroupName={playgroupName} />}
     </div>
   );
 }
@@ -72,6 +92,7 @@ export default function SessionCard({
   ageRange,
   showRsvp = false,
   variant = "featured",
+  playgroupName,
 }) {
   if (variant === "compact") {
     return (
@@ -93,7 +114,7 @@ export default function SessionCard({
             </p>
           </div>
         </div>
-        {showRsvp && <RsvpButtons sessionId={session.id} />}
+        {showRsvp && <RsvpButtons session={session} playgroupName={playgroupName} />}
       </div>
     );
   }
@@ -127,7 +148,7 @@ export default function SessionCard({
         </p>
       )}
 
-      {showRsvp && <RsvpButtons sessionId={session.id} />}
+      {showRsvp && <RsvpButtons session={session} playgroupName={playgroupName} />}
 
       <div className="mt-3 pt-3 border-t border-cream-dark">
         <p className="text-xs text-taupe">

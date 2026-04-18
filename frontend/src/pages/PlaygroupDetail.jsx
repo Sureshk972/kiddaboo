@@ -427,6 +427,7 @@ export default function PlaygroupDetail() {
                 ageRange={group.ageRange}
                 showRsvp={joinStatus === "member"}
                 variant="featured"
+                playgroupName={group.name}
               />
 
               {/* Additional upcoming sessions */}
@@ -439,6 +440,7 @@ export default function PlaygroupDetail() {
                   ageRange={group.ageRange}
                   showRsvp={joinStatus === "member"}
                   variant="compact"
+                  playgroupName={group.name}
                 />
               ))}
             </div>
