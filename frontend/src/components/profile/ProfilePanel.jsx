@@ -39,7 +39,15 @@ export default function ProfilePanel({ profile, onMessage }) {
     <div className="bg-cream rounded-t-2xl p-5 max-w-md mx-auto">
       <div className="flex flex-col items-center text-center mb-3">
         <div className="relative inline-block">
-          <div className="w-20 h-20 rounded-full bg-sage-light border-[3px] border-white shadow" />
+          <div className="w-20 h-20 rounded-full bg-sage-light border-[3px] border-white shadow flex items-center justify-center overflow-hidden">
+            {profile.photo_url ? (
+              <img src={profile.photo_url} alt={`${fullName || "user"}'s photo`} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-2xl font-heading font-bold text-sage-dark">
+                {(profile.first_name?.[0] || "") + (profile.last_name?.[0] || "")}
+              </span>
+            )}
+          </div>
           <div className="absolute bottom-0 right-0">
             <VerifiedBadge verified={verified} />
           </div>
