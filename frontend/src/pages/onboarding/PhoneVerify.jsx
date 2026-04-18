@@ -116,7 +116,7 @@ export default function PhoneVerify() {
             {error === "phone_in_use" ? (
               <p className="text-xs text-terracotta">
                 This phone is already linked to another account.{" "}
-                <Link to="/login" className="underline">Sign in instead?</Link>
+                <Link to="/verify?mode=signin" className="underline">Sign in instead?</Link>
               </p>
             ) : error ? (
               <p className="text-xs text-terracotta">

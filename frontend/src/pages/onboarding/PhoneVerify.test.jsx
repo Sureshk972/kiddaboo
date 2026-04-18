@@ -42,5 +42,5 @@ test("phone_in_use error shows sign-in CTA on code form", () => {
   render(<MemoryRouter><PhoneVerify /></MemoryRouter>);
   expect(screen.getByText(/already linked to another account/i)).toBeInTheDocument();
   const link = screen.getByRole("link", { name: /sign in instead/i });
-  expect(link).toHaveAttribute("href", "/login");
+  expect(link).toHaveAttribute("href", "/verify?mode=signin");
 });

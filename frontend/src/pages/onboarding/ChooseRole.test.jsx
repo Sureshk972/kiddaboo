@@ -31,5 +31,5 @@ test("renders footer note about adding the other role later", () => {
 test("offers a sign-in link for returning users", () => {
   render(<MemoryRouter><ChooseRole /></MemoryRouter>);
   const link = screen.getByRole("link", { name: /sign in/i });
-  expect(link).toHaveAttribute("href", "/login");
+  expect(link).toHaveAttribute("href", "/verify?mode=signin");
 });
