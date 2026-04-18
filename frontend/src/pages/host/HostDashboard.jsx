@@ -7,6 +7,7 @@ import { useSubscription } from "../../hooks/useSubscription";
 import RequestCard from "../../components/host/RequestCard";
 import ScheduleSessionSheet from "../../components/host/ScheduleSessionSheet";
 import CancelSessionSheet from "../../components/playgroup/CancelSessionSheet";
+import InviteFamiliesSheet from "../../components/host/InviteFamiliesSheet";
 import useSessions from "../../hooks/useSessions";
 import useReviews from "../../hooks/useReviews";
 import RsvpCount from "../../components/host/RsvpCount";
@@ -156,6 +157,7 @@ export default function HostDashboard() {
   const [expandedRequest, setExpandedRequest] = useState(null);
   const [actionedIds, setActionedIds] = useState({});
   const [showScheduleSheet, setShowScheduleSheet] = useState(false);
+  const [showInviteSheet, setShowInviteSheet] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
   const { isHostPremium } = useSubscription();
   const [viewStats, setViewStats] = useState({ thisWeek: 0, recentViewers: [] });
@@ -948,8 +950,8 @@ export default function HostDashboard() {
                   </svg>
                 ),
                 label: "Invite Families",
-                disabled: true,
-                onClick: () => {},
+                disabled: !realPlaygroup,
+                onClick: () => realPlaygroup && setShowInviteSheet(true),
               },
               {
                 icon: (
@@ -991,6 +993,14 @@ export default function HostDashboard() {
           onClose={() => setSelectedMember(null)}
         />
       )}
+
+      {/* Invite families bottom sheet */}
+      <InviteFamiliesSheet
+        isOpen={showInviteSheet}
+        onClose={() => setShowInviteSheet(false)}
+        playgroupId={realPlaygroup?.id}
+        playgroupName={realPlaygroup?.name}
+      />
 
       {/* Schedule session bottom sheet */}
       <ScheduleSessionSheet
