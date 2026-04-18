@@ -276,7 +276,22 @@ export default function PlaygroupDetail() {
         <h2 className="font-heading font-bold text-charcoal text-sm truncate flex-1">
           {group.name}
         </h2>
-        {user && joinStatus !== "creator" && (
+        {user && group.host?.userId === user.id && previewMode ? (
+          // Host previewing their own group: show a muted, non-clickable
+          // version so they can see what parents see without risking an
+          // accidental Report on themselves.
+          <div
+            className="w-8 h-8 rounded-full bg-cream border border-cream-dark flex items-center justify-center flex-shrink-0 opacity-50"
+            title="Parents see this — they can Report or Block from here"
+            aria-label="Parents can report or block from here"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="5" r="1.5" fill="#6B5E54"/>
+              <circle cx="12" cy="12" r="1.5" fill="#6B5E54"/>
+              <circle cx="12" cy="19" r="1.5" fill="#6B5E54"/>
+            </svg>
+          </div>
+        ) : user && group.host?.userId !== user.id && joinStatus !== "creator" && (
           <button
             onClick={() =>
               setReportTarget({
