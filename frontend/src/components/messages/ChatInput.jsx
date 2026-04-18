@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 export default function ChatInput({ onSend, disabled }) {
   const [text, setText] = useState("");
   const [sendError, setSendError] = useState("");
+  const [sending, setSending] = useState(false);
   const inputRef = useRef(null);
 
   // #24: handleSend used to clear the input synchronously *before* the
@@ -11,9 +12,11 @@ export default function ChatInput({ onSend, disabled }) {
   // only clear on success; on failure we keep the text in the field
   // and show a retry-friendly error line under the input.
   const handleSend = async () => {
-    if (!text.trim() || disabled) return;
+    if (!text.trim() || disabled || sending) return;
     setSendError("");
+    setSending(true);
     const ok = await onSend(text);
+    setSending(false);
     if (ok === false) {
       setSendError("Couldn't send — tap again to retry.");
       return;
@@ -66,33 +69,38 @@ export default function ChatInput({ onSend, disabled }) {
 
         <button
           onClick={handleSend}
-          disabled={!text.trim() || disabled}
+          disabled={!text.trim() || disabled || sending}
+          aria-label={sending ? "Sending message" : "Send message"}
           className={`
             w-11 h-11 rounded-full flex items-center justify-center shrink-0
             transition-all duration-150 cursor-pointer border-none
             ${
-              text.trim() && !disabled
+              text.trim() && !disabled && !sending
                 ? "bg-sage text-white shadow-sm active:scale-95"
                 : "bg-cream-dark text-taupe/30"
             }
           `}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M22 2L11 13"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M22 2L15 22L11 13L2 9L22 2Z"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          {sending ? (
+            <div className="w-4 h-4 border-2 border-taupe/40 border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M22 2L11 13"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M22 2L15 22L11 13L2 9L22 2Z"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
         </button>
       </div>
     </div>

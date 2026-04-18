@@ -203,8 +203,6 @@ export default function PlaygroupDetail() {
       return;
     }
 
-    // is_suspended check temporarily disabled — PostgREST schema cache issue
-
     // Check join request limit for free users
     if (!canSendJoinRequest) {
       setShowUpgradePrompt(true);
@@ -612,7 +610,16 @@ export default function PlaygroupDetail() {
           className="fixed inset-0 bg-black/40 flex items-end z-50"
         >
           <div onClick={(e) => e.stopPropagation()} className="w-full">
-            <ProfilePanel profile={activeProfile} onMessage={() => { /* TODO: route to messages */ }} />
+            <ProfilePanel
+              profile={activeProfile}
+              onMessage={() => {
+                // No 1:1 DMs yet — the only shared comm channel with
+                // another group member is the group chat. Route there
+                // and close the profile sheet.
+                setActiveProfile(null);
+                navigate(`/messages/${id}`);
+              }}
+            />
           </div>
         </div>
       )}
