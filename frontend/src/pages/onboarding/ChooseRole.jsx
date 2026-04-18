@@ -44,7 +44,7 @@ export default function ChooseRole() {
 
       <p className="text-sm text-taupe mt-8">
         Already have an account?{" "}
-        <Link to="/login" className="underline underline-offset-4 text-charcoal">Sign in</Link>
+        <Link to="/verify?mode=signin" className="underline underline-offset-4 text-charcoal">Sign in</Link>
       </p>
     </div>
   );
