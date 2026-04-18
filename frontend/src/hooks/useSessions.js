@@ -12,6 +12,7 @@ export default function useSessions(playgroupId) {
       .from("sessions")
       .select("*")
       .eq("playgroup_id", playgroupId)
+      .is("cancelled_at", null)
       .gte("scheduled_at", new Date().toISOString())
       .order("scheduled_at", { ascending: true });
 
@@ -73,19 +74,55 @@ export default function useSessions(playgroupId) {
     [playgroupId]
   );
 
-  // Delete a session
-  const deleteSession = useCallback(async (sessionId) => {
-    const { error } = await supabase
-      .from("sessions")
-      .delete()
-      .eq("id", sessionId);
-
-    if (!error) {
-      setSessions((prev) => prev.filter((s) => s.id !== sessionId));
-    }
-
-    return { error };
+  // Count RSVPs on a session so the host can see who will be affected
+  // before confirming a cancellation. "going" matches useRsvps — we
+  // don't surface "maybe" / "can't" in the count because cancellation
+  // only disrupts people who committed.
+  const countRsvps = useCallback(async (sessionId) => {
+    const { count } = await supabase
+      .from("rsvps")
+      .select("id", { count: "exact", head: true })
+      .eq("session_id", sessionId)
+      .eq("status", "going");
+    return count || 0;
   }, []);
+
+  // Soft-cancel a session. Keeps the row + RSVPs (audit trail, future
+  // review surfaces), and posts a system message in the group chat so
+  // RSVP'd parents see the cancellation and any reason the host typed.
+  // The chat message uses the host as sender — we don't have a system
+  // identity and messages.sender_id is non-null, so attributing it to
+  // the host is both accurate and the minimal schema change.
+  const cancelSession = useCallback(
+    async (sessionId, { reason, hostUserId, sessionDateLabel } = {}) => {
+      const { error } = await supabase
+        .from("sessions")
+        .update({
+          cancelled_at: new Date().toISOString(),
+          cancel_reason: reason?.trim() || null,
+        })
+        .eq("id", sessionId);
+
+      if (error) return { error };
+
+      setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+
+      if (playgroupId && hostUserId) {
+        const trimmed = reason?.trim();
+        const body = trimmed
+          ? `🚫 The ${sessionDateLabel || "upcoming"} session was cancelled. ${trimmed}`
+          : `🚫 The ${sessionDateLabel || "upcoming"} session was cancelled.`;
+        await supabase.from("messages").insert({
+          sender_id: hostUserId,
+          playgroup_id: playgroupId,
+          content: body,
+        });
+      }
+
+      return { error: null };
+    },
+    [playgroupId]
+  );
 
   // The next upcoming session (first in the sorted list)
   const nextSession = sessions.length > 0 ? sessions[0] : null;
@@ -95,7 +132,8 @@ export default function useSessions(playgroupId) {
     nextSession,
     loading,
     createSession,
-    deleteSession,
+    cancelSession,
+    countRsvps,
     refetch: fetchSessions,
   };
 }
