@@ -41,7 +41,7 @@ function ChipGroup({ label, options, selected, onToggle }) {
   );
 }
 
-export default function FilterSheet({ open, onClose, filters, onChange }) {
+export default function FilterSheet({ open, onClose, filters, onChange, isPremium = false, onUpgrade }) {
   if (!open) return null;
 
   const toggle = (key, value) => {
@@ -60,6 +60,20 @@ export default function FilterSheet({ open, onClose, filters, onChange }) {
   const clearAll = () => {
     onChange({ vibeTags: [], ageRange: [], setting: [], accessType: [] });
   };
+
+  const PremiumLock = () => (
+    <button
+      type="button"
+      onClick={onUpgrade}
+      className="w-full flex items-center justify-between gap-3 bg-amber-50 border border-amber-200 hover:border-amber-300 rounded-xl px-3 py-2.5 text-left cursor-pointer transition-colors"
+    >
+      <span className="flex items-center gap-2 text-xs text-charcoal">
+        <span>🔒</span>
+        <span><span className="font-bold">Premium filter.</span> <span className="text-taupe">Tap to unlock.</span></span>
+      </span>
+      <span className="text-xs font-bold text-amber-700">→</span>
+    </button>
+  );
 
   return createPortal(
     <>
@@ -101,21 +115,35 @@ export default function FilterSheet({ open, onClose, filters, onChange }) {
               onToggle={(v) => toggle("vibeTags", v)}
             />
 
-            {/* Age range */}
-            <ChipGroup
-              label="Age range"
-              options={AGE_RANGES}
-              selected={filters.ageRange}
-              onToggle={(v) => toggle("ageRange", v)}
-            />
+            {/* Age range — premium gated */}
+            {isPremium ? (
+              <ChipGroup
+                label="Age range"
+                options={AGE_RANGES}
+                selected={filters.ageRange}
+                onToggle={(v) => toggle("ageRange", v)}
+              />
+            ) : (
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-charcoal">Age range</label>
+                <PremiumLock />
+              </div>
+            )}
 
-            {/* Setting */}
-            <ChipGroup
-              label="Setting"
-              options={SETTINGS}
-              selected={filters.setting}
-              onToggle={(v) => toggle("setting", v)}
-            />
+            {/* Setting — premium gated */}
+            {isPremium ? (
+              <ChipGroup
+                label="Setting"
+                options={SETTINGS}
+                selected={filters.setting}
+                onToggle={(v) => toggle("setting", v)}
+              />
+            ) : (
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-charcoal">Setting</label>
+                <PremiumLock />
+              </div>
+            )}
 
             {/* Access type */}
             <ChipGroup

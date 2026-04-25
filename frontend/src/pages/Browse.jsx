@@ -586,6 +586,8 @@ export default function Browse() {
         onClose={() => setShowFilters(false)}
         filters={filters}
         onChange={setFilters}
+        isPremium={isPremium}
+        onUpgrade={() => navigate("/premium")}
       />
     </div>
   );
