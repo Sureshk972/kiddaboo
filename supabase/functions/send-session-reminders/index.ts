@@ -63,13 +63,26 @@ async function findDueReminders(kind: "24h" | "2h"): Promise<Reminder[]> {
   const sessionIds = sessions.map((s) => s.id);
   const sessionById = new Map(sessions.map((s) => [s.id, s]));
 
-  // RSVPs going for those sessions.
-  const { data: rsvps, error: rsvpErr } = await admin
-    .from("rsvps")
-    .select("session_id, user_id")
-    .in("session_id", sessionIds)
-    .eq("status", "going");
-  if (rsvpErr || !rsvps) return [];
+  // RSVPs going for those sessions. Paginate — supabase-js caps a single
+  // .select() at 1000 rows by default, and a viral session window can
+  // realistically blow past that across all due sessions combined.
+  const PAGE = 1000;
+  const rsvps: { session_id: string; user_id: string }[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error: rsvpErr } = await admin
+      .from("rsvps")
+      .select("session_id, user_id")
+      .in("session_id", sessionIds)
+      .eq("status", "going")
+      .range(from, from + PAGE - 1);
+    if (rsvpErr) {
+      console.error("findDueReminders rsvps query failed:", rsvpErr);
+      return [];
+    }
+    if (!data || data.length === 0) break;
+    rsvps.push(...(data as { session_id: string; user_id: string }[]));
+    if (data.length < PAGE) break;
+  }
 
   return rsvps.map((r) => {
     const s = sessionById.get(r.session_id) as {
@@ -218,37 +231,52 @@ async function sendReminder(r: Reminder): Promise<boolean> {
 }
 
 serve(async (_req) => {
-  const allReminders = [
-    ...(await findDueReminders("24h")),
-    ...(await findDueReminders("2h")),
-  ];
-  const premium = await filterPremiumOnly(allReminders);
+  try {
+    // The 24h and 2h windows are independent queries — fetch them in
+    // parallel so a slow round-trip on one doesn't push the other past
+    // the cron tick budget.
+    const [r24, r2] = await Promise.all([
+      findDueReminders("24h"),
+      findDueReminders("2h"),
+    ]);
+    const allReminders = [...r24, ...r2];
+    const premium = await filterPremiumOnly(allReminders);
 
-  let sent = 0;
-  let skipped = 0;
-  let failed = 0;
-  for (const r of premium) {
-    if (await alreadySent(r)) {
-      skipped++;
-      continue;
+    let sent = 0;
+    let skipped = 0;
+    let failed = 0;
+    for (const r of premium) {
+      if (await alreadySent(r)) {
+        skipped++;
+        continue;
+      }
+      const ok = await sendReminder(r);
+      if (ok) {
+        await markSent(r);
+        sent++;
+      } else {
+        failed++;
+      }
     }
-    const ok = await sendReminder(r);
-    if (ok) {
-      await markSent(r);
-      sent++;
-    } else {
-      failed++;
-    }
+
+    return new Response(
+      JSON.stringify({
+        candidates: allReminders.length,
+        premium: premium.length,
+        sent,
+        skipped,
+        failed,
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  } catch (err) {
+    // Top-level guard so an unexpected throw (bad TZ string, network
+    // hiccup mid-loop, malformed row) doesn't 502 the cron — the next
+    // tick can recover the missed window since dedupe is per-(session,user,kind).
+    console.error("send-session-reminders top-level error:", err);
+    return new Response(
+      JSON.stringify({ error: String(err) }),
+      { status: 500, headers: { "Content-Type": "application/json" } },
+    );
   }
-
-  return new Response(
-    JSON.stringify({
-      candidates: allReminders.length,
-      premium: premium.length,
-      sent,
-      skipped,
-      failed,
-    }),
-    { status: 200, headers: { "Content-Type": "application/json" } },
-  );
 });

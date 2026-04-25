@@ -235,7 +235,15 @@ serve(async (req: Request) => {
           month: "short",
           day: "numeric",
         });
-        const reason = (record.cancel_reason as string | null)?.trim();
+        // Cap the reason at ~150 chars so a host pasting an essay doesn't
+        // produce a multi-screen push body — most browsers truncate long
+        // notification bodies anyway, and we'd rather control the cut.
+        const REASON_MAX = 150;
+        const rawReason = (record.cancel_reason as string | null)?.trim();
+        const reason =
+          rawReason && rawReason.length > REASON_MAX
+            ? rawReason.slice(0, REASON_MAX - 1) + "…"
+            : rawReason;
         const body = reason
           ? `${dayStr} — ${reason}`
           : `${dayStr} session has been cancelled`;
