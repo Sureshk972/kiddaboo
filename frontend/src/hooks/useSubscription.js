@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../context/AuthContext";
 
+// Mirror of FREE_JOIN_LIMIT in supabase/functions/submit-join-request/index.ts.
+// The server is authoritative — this constant only drives the UI's
+// "X requests left" copy. If you change one, change the other.
 const FREE_JOIN_LIMIT = 1;
 
 export function useSubscription() {
