@@ -231,6 +231,16 @@ async function sendReminder(r: Reminder): Promise<boolean> {
 }
 
 serve(async (_req) => {
+  // Open a cron_run_log row up front so even a hard crash mid-run leaves
+  // a started_at marker — drift detection just looks for stale rows
+  // with completed_at IS NULL or a too-old most-recent started_at.
+  const { data: logRow } = await admin
+    .from("cron_run_log")
+    .insert({ function_name: "send-session-reminders" })
+    .select("id")
+    .single();
+  const runId = logRow?.id as number | undefined;
+
   try {
     // The 24h and 2h windows are independent queries — fetch them in
     // parallel so a slow round-trip on one doesn't push the other past
@@ -259,6 +269,20 @@ serve(async (_req) => {
       }
     }
 
+    if (runId) {
+      await admin
+        .from("cron_run_log")
+        .update({
+          completed_at: new Date().toISOString(),
+          candidates: allReminders.length,
+          premium: premium.length,
+          sent,
+          skipped,
+          failed,
+        })
+        .eq("id", runId);
+    }
+
     return new Response(
       JSON.stringify({
         candidates: allReminders.length,
@@ -274,6 +298,15 @@ serve(async (_req) => {
     // hiccup mid-loop, malformed row) doesn't 502 the cron — the next
     // tick can recover the missed window since dedupe is per-(session,user,kind).
     console.error("send-session-reminders top-level error:", err);
+    if (runId) {
+      await admin
+        .from("cron_run_log")
+        .update({
+          completed_at: new Date().toISOString(),
+          error: String(err).slice(0, 500),
+        })
+        .eq("id", runId);
+    }
     return new Response(
       JSON.stringify({ error: String(err) }),
       { status: 500, headers: { "Content-Type": "application/json" } },
