@@ -118,15 +118,29 @@ export default function PlaygroupCard({ group, onClick, featured = false, premiu
                   <span className="text-sm font-bold text-charcoal">{group.rating}</span>
                 </div>
               </div>
-              <div className={`w-full text-center py-3 rounded-xl text-sm font-bold transition-colors ${
-                spotsLeft > 0
-                  ? "bg-sage text-white group-hover:bg-sage-dark"
-                  : "bg-cream-dark text-taupe"
-              }`}>
-                {spotsLeft > 0
-                  ? group.accessType === "open" ? "Join Group" : "Request to Join"
-                  : "Waitlist"}
-              </div>
+              {group.joinStatus === "member" || group.joinStatus === "creator" ? (
+                <div className="w-full text-center py-3 rounded-xl text-sm font-bold bg-sage-light text-sage-dark">
+                  Joined
+                </div>
+              ) : group.joinStatus === "pending" ? (
+                <div className="w-full text-center py-3 rounded-xl text-sm font-bold bg-cream-dark text-taupe">
+                  Request Pending
+                </div>
+              ) : group.joinStatus === "waitlisted" ? (
+                <div className="w-full text-center py-3 rounded-xl text-sm font-bold bg-cream-dark text-taupe">
+                  On Waitlist
+                </div>
+              ) : (
+                <div className={`w-full text-center py-3 rounded-xl text-sm font-bold transition-colors ${
+                  spotsLeft > 0
+                    ? "bg-sage text-white group-hover:bg-sage-dark"
+                    : "bg-cream-dark text-taupe"
+                }`}>
+                  {spotsLeft > 0
+                    ? group.accessType === "open" ? "Join Group" : "Request to Join"
+                    : "Waitlist"}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -238,6 +252,18 @@ export default function PlaygroupCard({ group, onClick, featured = false, premiu
         {group.isOwnGroup ? (
           <div className="w-full text-center py-2.5 rounded-xl text-sm font-bold bg-cream-dark text-taupe">
             Your Group
+          </div>
+        ) : group.joinStatus === "member" || group.joinStatus === "creator" ? (
+          <div className="w-full text-center py-2.5 rounded-xl text-sm font-bold bg-sage-light text-sage-dark">
+            Joined
+          </div>
+        ) : group.joinStatus === "pending" ? (
+          <div className="w-full text-center py-2.5 rounded-xl text-sm font-bold bg-cream-dark text-taupe">
+            Request Pending
+          </div>
+        ) : group.joinStatus === "waitlisted" ? (
+          <div className="w-full text-center py-2.5 rounded-xl text-sm font-bold bg-cream-dark text-taupe">
+            On Waitlist
           </div>
         ) : (
           <div className={`w-full text-center py-2.5 rounded-xl text-sm font-bold transition-colors ${
