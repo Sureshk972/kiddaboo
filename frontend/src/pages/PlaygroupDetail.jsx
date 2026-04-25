@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import PhotoCarousel from "../components/playgroup/PhotoCarousel";
 import EnvironmentChecklist from "../components/playgroup/EnvironmentChecklist";
@@ -109,6 +109,22 @@ export default function PlaygroupDetail() {
   const [joinMessage, setJoinMessage] = useState("");
   const [joinError, setJoinError] = useState("");
   const [activeProfile, setActiveProfile] = useState(null);
+  const [titleScrolledOut, setTitleScrolledOut] = useState(false);
+  const inPageTitleRef = useRef(null);
+
+  // Show the title in the sticky top bar only after the in-page heading
+  // has scrolled out of view, so we don't show two copies of the same
+  // title at once on initial load.
+  useEffect(() => {
+    const el = inPageTitleRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setTitleScrolledOut(!entry.isIntersecting),
+      { rootMargin: "-60px 0px 0px 0px", threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [realGroup, previewMode]);
 
   const { blockUser, submitReport } = useBlocks(user?.id);
   const { canSendJoinRequest, joinRequestsRemaining, joinRequestLimit, isPremium, incrementUsage } = useSubscription();
@@ -274,7 +290,12 @@ export default function PlaygroupDetail() {
             />
           </svg>
         </button>
-        <h2 className="font-heading font-bold text-charcoal text-sm truncate flex-1">
+        <h2
+          className={`font-heading font-bold text-charcoal text-sm truncate flex-1 transition-opacity duration-200 ${
+            titleScrolledOut ? "opacity-100" : "opacity-0"
+          }`}
+          aria-hidden={!titleScrolledOut}
+        >
           {group.name}
         </h2>
         {user && group.host?.userId === user.id && previewMode ? (
@@ -356,7 +377,10 @@ export default function PlaygroupDetail() {
         {/* Title + access badge + location */}
         <div className="mb-6">
           <div className="flex items-start justify-between gap-3 mb-2">
-            <h1 className="text-2xl font-heading font-bold text-charcoal">
+            <h1
+              ref={inPageTitleRef}
+              className="text-2xl font-heading font-bold text-charcoal"
+            >
               {group.name}
             </h1>
             <span
