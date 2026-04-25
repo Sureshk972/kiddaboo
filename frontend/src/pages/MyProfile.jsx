@@ -59,14 +59,24 @@ export default function MyProfile() {
           <h2 className="text-lg font-heading font-bold text-charcoal">
             {firstName} {lastName}
           </h2>
-          {profile?.phone_verified_at && (
-            <span className="inline-flex items-center gap-1 mt-1.5 text-[11px] text-sage-dark bg-sage-light px-2 py-0.5 rounded-full">
-              <svg width="10" height="10" viewBox="0 0 20 20" fill="none">
-                <path d="M5 10l3 3 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              Phone verified
-            </span>
-          )}
+          <div className="flex flex-wrap justify-center gap-1.5 mt-1.5">
+            {profile?.phone_verified_at && (
+              <span className="inline-flex items-center gap-1 text-[11px] text-sage-dark bg-sage-light px-2 py-0.5 rounded-full">
+                <svg width="10" height="10" viewBox="0 0 20 20" fill="none">
+                  <path d="M5 10l3 3 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Phone verified
+              </span>
+            )}
+            {(isPremium || isHostPremium) && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-white bg-amber-400 px-2 py-0.5 rounded-full">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                Premium
+              </span>
+            )}
+          </div>
           {user?.email && (
             <p className="text-xs text-taupe mt-1">{user.email}</p>
           )}
