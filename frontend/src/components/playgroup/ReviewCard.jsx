@@ -4,6 +4,7 @@ export default function ReviewCard({ review, isOwn, onEdit, onReport }) {
   // Support both old shape (mock) and new shape (real)
   const name = review.reviewer_name || review.reviewer || "User";
   const initials = review.reviewer_initials || review.initials || "U";
+  const avatarUrl = review.reviewer_avatar_url || review.avatar_url || null;
   const overall = review.rating_environment
     ? Math.round(
         (review.rating_environment +
@@ -26,9 +27,17 @@ export default function ReviewCard({ review, isOwn, onEdit, onReport }) {
     <div className="bg-white rounded-2xl p-4 border border-cream-dark">
       <div className="flex items-center gap-3 mb-3">
         {/* Avatar */}
-        <div className="w-9 h-9 rounded-full bg-terracotta-light flex items-center justify-center flex-shrink-0">
-          <span className="text-terracotta text-xs font-bold">{initials}</span>
-        </div>
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt={name}
+            className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+          />
+        ) : (
+          <div className="w-9 h-9 rounded-full bg-terracotta-light flex items-center justify-center flex-shrink-0">
+            <span className="text-terracotta text-xs font-bold">{initials}</span>
+          </div>
+        )}
 
         {/* Name + date */}
         <div className="flex-1">
