@@ -173,9 +173,47 @@ export default function useConversations(userId) {
           table: "messages",
           filter: `playgroup_id=in.(${pgIdsKey})`,
         },
-        () => {
-          // Refetch conversations to update last message preview
-          fetchConversations();
+        async (payload) => {
+          // Patch the affected conversation in place rather than
+          // refetching every membership + per-group last-message +
+          // per-group member count. The previous approach issued
+          // 1 + 2N queries on every inbound message.
+          const msg = payload.new;
+          let senderFirstName = null;
+          if (msg.sender_id && msg.sender_id !== userId) {
+            const { data: prof } = await supabase
+              .from("profiles")
+              .select("first_name")
+              .eq("id", msg.sender_id)
+              .maybeSingle();
+            senderFirstName = prof?.first_name || null;
+          }
+
+          setConversations((prev) => {
+            const idx = prev.findIndex((c) => c.playgroupId === msg.playgroup_id);
+            if (idx === -1) return prev;
+
+            const updated = {
+              ...prev[idx],
+              lastMessage: msg.content,
+              lastSender: senderFirstName,
+              lastMessageAt: msg.created_at,
+              unreadCount:
+                msg.sender_id !== userId
+                  ? (prev[idx].unreadCount || 0) + 1
+                  : prev[idx].unreadCount || 0,
+            };
+
+            const next = [...prev];
+            next[idx] = updated;
+            next.sort((a, b) => {
+              if (!a.lastMessageAt && !b.lastMessageAt) return 0;
+              if (!a.lastMessageAt) return 1;
+              if (!b.lastMessageAt) return -1;
+              return new Date(b.lastMessageAt) - new Date(a.lastMessageAt);
+            });
+            return next;
+          });
         }
       )
       .subscribe();

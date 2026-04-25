@@ -15,7 +15,11 @@ export default function PhoneVerification() {
   const [mode, setMode] = useState(searchParams.get("mode") === "signin" ? "signin" : "signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  // Field-scoped errors — previously a single `error` was attached
+  // only to Password, so a forgot-password "enter your email above"
+  // message rendered under the wrong input.
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [loading, setLoading] = useState(false);
   const [checkEmail, setCheckEmail] = useState(false);
   const [resetSent, setResetSent] = useState(false);
@@ -39,7 +43,8 @@ export default function PhoneVerification() {
   }, [searchParams]);
 
   const handleSubmit = async () => {
-    setError("");
+    setEmailError("");
+    setPasswordError("");
     setLoading(true);
 
     if (mode === "signup") {
@@ -49,7 +54,7 @@ export default function PhoneVerification() {
       if (err) {
         // #55: parent-voice error instead of raw Supabase string
         const friendly = friendlyAuthError(err.message);
-        setError(friendly.message);
+        setPasswordError(friendly.message);
         if (friendly.action === "switch_to_signin") {
           setMode("signin");
         }
@@ -70,25 +75,21 @@ export default function PhoneVerification() {
 
       if (err) {
         // #55: parent-voice error instead of raw Supabase string
-        setError(friendlyAuthError(err.message).message);
+        setPasswordError(friendlyAuthError(err.message).message);
         return;
       }
 
-      // Check if profile is complete and host status, redirect accordingly
+      // Check if profile is complete and host status, redirect
+      // accordingly. Route by account_type — not just by membership
+      // count — so an organizer who hasn't created their first group
+      // yet still lands on /host/dashboard (which has the empty-state
+      // "Create your first playgroup" CTA), not on /browse.
       if (data?.user) {
-        const [{ data: prof }, { data: hostMemberships }] = await Promise.all([
-          supabase
-            .from("profiles")
-            .select("first_name")
-            .eq("id", data.user.id)
-            .single(),
-          supabase
-            .from("memberships")
-            .select("id")
-            .eq("user_id", data.user.id)
-            .eq("role", "creator")
-            .limit(1),
-        ]);
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("first_name, account_type")
+          .eq("id", data.user.id)
+          .single();
 
         // Returning-user sign-in is a terminal state for the onboarding
         // flag: if it was set by a stray /verify?role=X visit before the
@@ -100,7 +101,7 @@ export default function PhoneVerification() {
 
         if (!prof?.first_name) {
           navigate("/profile");
-        } else if (hostMemberships && hostMemberships.length > 0) {
+        } else if (prof?.account_type === "organizer") {
           navigate("/host/dashboard");
         } else {
           navigate("/browse");
@@ -111,10 +112,11 @@ export default function PhoneVerification() {
 
   const handleForgotPassword = async () => {
     if (!email.includes("@")) {
-      setError("Enter your email above, then tap Forgot password.");
+      setEmailError("Enter your email above, then tap Forgot password.");
       return;
     }
-    setError("");
+    setEmailError("");
+    setPasswordError("");
     setResetLoading(true);
 
     const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
@@ -124,8 +126,9 @@ export default function PhoneVerification() {
     setResetLoading(false);
 
     if (err) {
-      // #55: parent-voice error
-      setError(friendlyAuthError(err.message).message);
+      // #55: parent-voice error — surface under the email field since
+      // the reset flow is keyed off the email address.
+      setEmailError(friendlyAuthError(err.message).message);
       return;
     }
 
@@ -228,6 +231,7 @@ export default function PhoneVerification() {
           onChange={setEmail}
           placeholder="you@email.com"
           type="email"
+          error={emailError}
         />
 
         <div>
@@ -237,7 +241,7 @@ export default function PhoneVerification() {
             onChange={setPassword}
             placeholder={mode === "signup" ? "At least 6 characters" : "Your password"}
             type="password"
-            error={error}
+            error={passwordError}
           />
           {mode === "signin" && (
             <button
@@ -265,7 +269,8 @@ export default function PhoneVerification() {
         <button
           onClick={() => {
             setMode(mode === "signup" ? "signin" : "signup");
-            setError("");
+            setEmailError("");
+            setPasswordError("");
           }}
           className="text-sm text-sage hover:text-sage-dark transition-colors cursor-pointer bg-transparent border-none"
         >
