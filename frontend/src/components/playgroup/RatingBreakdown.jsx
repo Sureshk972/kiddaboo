@@ -20,6 +20,20 @@ function RatingBar({ label, value, max = 5 }) {
 export default function RatingBreakdown({ ratings }) {
   if (!ratings) return null;
 
+  // Brand-new groups have no reviews yet. Showing "0.0" with empty
+  // bars reads as "rated zero out of five" rather than "unrated", so
+  // render a neutral placeholder instead.
+  if (!ratings.count) {
+    return (
+      <div className="bg-cream-dark/30 border border-cream-dark rounded-2xl px-4 py-5 text-center">
+        <p className="text-sm font-medium text-charcoal">No reviews yet</p>
+        <p className="text-xs text-taupe mt-0.5">
+          Be the first to share your experience after a session.
+        </p>
+      </div>
+    );
+  }
+
   const overall =
     (ratings.environment +
       ratings.organization +
