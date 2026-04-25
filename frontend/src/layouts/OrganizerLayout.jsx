@@ -10,6 +10,9 @@ import TabBar from "../components/layout/TabBar";
 export default function OrganizerLayout({ children }) {
   return (
     <div className="min-h-screen bg-[#F9F4ED] flex flex-col" data-mode="organizer">
+      <div className="hidden md:block bg-terracotta-light/40 text-center py-2 text-xs text-terracotta border-b border-cream-dark">
+        Kiddaboo is designed for mobile — open this on your phone for the best experience.
+      </div>
       <div className="max-w-md mx-auto w-full flex-1 flex flex-col">
         <div className="px-5 pt-3">
           <span className="text-[10px] font-bold tracking-[1.5px] text-terracotta uppercase">
