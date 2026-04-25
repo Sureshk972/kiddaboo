@@ -4,25 +4,31 @@ import OnboardingLayout from "../components/layout/OnboardingLayout";
 import Input from "../components/ui/Input";
 import Button from "../components/ui/Button";
 import { supabase } from "../lib/supabase";
+import { useAuth } from "../context/AuthContext";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [error, setError] = useState("");
+  // Track which field the error belongs to so we don't render the
+  // "password too short" message under the Confirm input.
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmError, setConfirmError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
   const handleReset = async () => {
-    setError("");
+    setPasswordError("");
+    setConfirmError("");
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+      setPasswordError("Password must be at least 6 characters.");
       return;
     }
 
     if (password !== confirm) {
-      setError("Passwords don't match.");
+      setConfirmError("Passwords don't match.");
       return;
     }
 
@@ -35,12 +41,17 @@ export default function ResetPassword() {
     setLoading(false);
 
     if (err) {
-      setError(err.message);
+      setPasswordError(err.message);
       return;
     }
 
     setSuccess(true);
   };
+
+  // Send the user back to the right home for their role. /browse is
+  // the parent home; organizers belong on /host/dashboard.
+  const homePath =
+    profile?.account_type === "organizer" ? "/host/dashboard" : "/browse";
 
   if (success) {
     return (
@@ -65,7 +76,7 @@ export default function ResetPassword() {
               Your password has been changed successfully.
             </p>
           </div>
-          <Button fullWidth onClick={() => navigate("/browse")}>
+          <Button fullWidth onClick={() => navigate(homePath)}>
             Continue to Kiddaboo
           </Button>
         </div>
@@ -91,6 +102,7 @@ export default function ResetPassword() {
           onChange={setPassword}
           placeholder="At least 6 characters"
           type="password"
+          error={passwordError}
         />
 
         <Input
@@ -99,7 +111,7 @@ export default function ResetPassword() {
           onChange={setConfirm}
           placeholder="Re-enter your password"
           type="password"
-          error={error}
+          error={confirmError}
         />
 
         <Button
