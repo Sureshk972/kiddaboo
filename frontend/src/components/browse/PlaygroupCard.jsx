@@ -28,7 +28,7 @@ export default function PlaygroupCard({ group, onClick, featured = false, premiu
                 style={{ backgroundColor: group.photoColor + "40" }}
               />
             )}
-            <div className="absolute top-4 left-4 flex gap-2">
+            <div className="absolute top-4 left-4 right-4 flex flex-wrap gap-2">
               <span className="px-3 py-1 bg-amber-400/90 backdrop-blur-md rounded-full text-[10px] font-bold tracking-widest uppercase text-white">
                 Premium
               </span>
@@ -158,7 +158,7 @@ export default function PlaygroupCard({ group, onClick, featured = false, premiu
             style={{ backgroundColor: group.photoColor + "40" }}
           />
         )}
-        <div className="absolute top-3 left-3 flex gap-1.5">
+        <div className="absolute top-3 left-3 right-3 flex flex-wrap gap-1.5">
           {premium && (
             <span className="px-3 py-1 bg-amber-400/90 backdrop-blur-md rounded-full text-[10px] font-bold tracking-widest uppercase text-white">
               Premium

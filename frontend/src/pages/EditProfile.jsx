@@ -171,6 +171,18 @@ export default function EditProfile() {
       return;
     }
 
+    const trimmedBio = bio.trim();
+    if (trimmedBio) {
+      if (trimmedBio.length < 10) {
+        setError("Tell hosts a little more about your family — at least 10 characters.");
+        return;
+      }
+      if (/^(.)\1+$/i.test(trimmedBio.replace(/\s/g, ""))) {
+        setError("Please write a real bio — repeated characters won't help hosts get to know you.");
+        return;
+      }
+    }
+
     setSaving(true);
     setError("");
     setSaved(false);

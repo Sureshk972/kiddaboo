@@ -117,7 +117,6 @@ export default function MyProfile() {
             { icon: "\ud83d\udd14", label: "Notifications", path: "/notifications" },
             { icon: "\ud83d\udcdc", label: "Terms of Service", path: "/terms" },
             { icon: "\ud83d\udee1\ufe0f", label: "Privacy Policy", path: "/privacy" },
-            { icon: "\u2753", label: "Help & Support", comingSoon: true },
           ].map((item, i, arr) => (
             <button
               key={item.label}
