@@ -81,16 +81,20 @@ serve(async (req) => {
     // 404 means there's no verification record on Twilio's side — either
     // expired, already consumed, or never started. Treat as "no active
     // challenge" so the UI can prompt a resend.
+    //
+    // supabase-js swallows non-2xx response bodies, so user-actionable
+    // errors must come back as 200 + {ok:false, error} to be readable
+    // by the client (matching send-otp's pattern).
     if (result.status === 404) {
-      return json({ error: "no_active_challenge" }, 410);
+      return json({ ok: false, error: "no_active_challenge" });
     }
     console.error("twilio verify check failed:", result.status, result.body);
-    return json({ error: "verify_failed", detail: result.body }, 502);
+    return json({ ok: false, error: "verify_failed", detail: result.body });
   }
 
   const status = (result.body as { status?: string })?.status;
   if (status !== "approved") {
-    return json({ error: "code_mismatch" }, 400);
+    return json({ ok: false, error: "code_mismatch" });
   }
 
   const now = new Date().toISOString();
