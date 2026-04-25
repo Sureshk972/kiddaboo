@@ -33,6 +33,22 @@ serve(async (req: Request) => {
 
     // ── Handle different event types ──
 
+    // Manual push pathway used by other edge functions (e.g.
+    // send-session-reminders) that need to reuse the VAPID/Web Push
+    // helpers below without duplicating them. The caller passes a
+    // synthesized "webhook" payload of the form
+    //   { type:"INSERT", table:"manual_push", record:{user_id,title,body,url,tag} }
+    // and we route it straight through.
+    if (table === "manual_push" && record.user_id && record.title) {
+      notifications.push({
+        userId: record.user_id as string,
+        title: record.title as string,
+        body: (record.body as string) || "",
+        url: (record.url as string) || "/",
+        tag: (record.tag as string) || `manual-${Date.now()}`,
+      });
+    }
+
     if (table === "memberships" && type === "INSERT" && record.role === "pending") {
       // New join request → notify the host
       const { data: pg } = await supabase
