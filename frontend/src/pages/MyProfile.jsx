@@ -5,6 +5,72 @@ import { supabase } from "../lib/supabase";
 import { useSubscription } from "../hooks/useSubscription";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
+function SettingsIcon({ name }) {
+  const common = {
+    width: 16,
+    height: 16,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.6,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+  };
+  switch (name) {
+    case "star":
+      return (
+        <svg {...common}>
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+      );
+    case "search":
+      return (
+        <svg {...common}>
+          <circle cx="11" cy="11" r="7" />
+          <path d="M20 20l-3.5-3.5" />
+        </svg>
+      );
+    case "user":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="8" r="4" />
+          <path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" />
+        </svg>
+      );
+    case "child":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="7" r="3" />
+          <path d="M6 21v-2a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v2" />
+          <path d="M10 11.5h.01M14 11.5h.01" />
+        </svg>
+      );
+    case "bell":
+      return (
+        <svg {...common}>
+          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8" />
+          <path d="M10 21a2 2 0 0 0 4 0" />
+        </svg>
+      );
+    case "doc":
+      return (
+        <svg {...common}>
+          <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+          <path d="M14 3v6h6M8 13h8M8 17h6" />
+        </svg>
+      );
+    case "shield":
+      return (
+        <svg {...common}>
+          <path d="M12 2l8 3v7c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V5l8-3z" />
+          <path d="M9 12l2 2 4-4" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
 export default function MyProfile() {
   useDocumentTitle("My Profile"); // #50
   const navigate = useNavigate();
@@ -97,14 +163,14 @@ export default function MyProfile() {
           {[
             isHost
               ? {
-                  icon: "\u2b50",
+                  icon: "star",
                   label: isHostPremium ? "Organizer Premium Member" : "Upgrade to Organizer Premium",
                   sublabel: isHostPremium ? null : "Priority placement, view analytics & more",
                   path: "/host/premium",
                   highlight: true,
                 }
               : {
-                  icon: "\u2b50",
+                  icon: "star",
                   label: isPremium ? "Premium Member" : "Upgrade to Premium",
                   sublabel: isPremium ? null : "Unlimited join requests & more",
                   path: "/premium",
@@ -112,19 +178,19 @@ export default function MyProfile() {
                 },
             ...(isHost
               ? [{
-                  icon: "\ud83d\udd0d",
+                  icon: "search",
                   label: "Discover other playgroups",
                   sublabel: "Browse playgroups as a parent",
                   path: "/browse",
                 }]
               : []),
-            { icon: "\ud83d\udc64", label: "Edit Profile", path: "/edit-profile" },
+            { icon: "user", label: "Edit Profile", path: "/edit-profile" },
             ...(isHost
               ? []
-              : [{ icon: "\ud83d\udc76", label: "Manage Children", path: "/edit-profile#children" }]),
-            { icon: "\ud83d\udd14", label: "Notifications", path: "/notifications" },
-            { icon: "\ud83d\udcdc", label: "Terms of Service", path: "/terms" },
-            { icon: "\ud83d\udee1\ufe0f", label: "Privacy Policy", path: "/privacy" },
+              : [{ icon: "child", label: "Manage Children", path: "/edit-profile#children" }]),
+            { icon: "bell", label: "Notifications", path: "/notifications" },
+            { icon: "doc", label: "Terms of Service", path: "/terms" },
+            { icon: "shield", label: "Privacy Policy", path: "/privacy" },
           ].map((item, i, arr) => (
             <button
               key={item.label}
@@ -133,7 +199,13 @@ export default function MyProfile() {
                 i < arr.length - 1 ? "border-b border-cream-dark" : ""
               } ${item.comingSoon ? "opacity-50 cursor-default" : "cursor-pointer hover:bg-cream-dark/50"}`}
             >
-              <span className="text-base">{item.icon}</span>
+              <span
+                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                  item.highlight ? "bg-sage-light text-sage-dark" : "bg-cream-dark/50 text-taupe-dark"
+                }`}
+              >
+                <SettingsIcon name={item.icon} />
+              </span>
               <div className="flex-1 flex flex-col">
                 <span className={`text-sm font-medium ${item.highlight ? "text-sage-dark" : "text-charcoal"}`}>
                   {item.label}
