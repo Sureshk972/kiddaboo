@@ -61,5 +61,6 @@ export function transformPlaygroup(pg, index = 0, overrides = {}) {
     photos: pg.photos || [],
     latitude: pg.latitude || null,
     longitude: pg.longitude || null,
+    createdAt: pg.created_at || null,
   };
 }
