@@ -16,6 +16,7 @@ export default function GroupChat() {
   const { user } = useAuth();
 
   const [groupName, setGroupName] = useState("");
+  const [groupPhoto, setGroupPhoto] = useState(null);
   // #50: show the group name in the tab once it's loaded so users
   // can tell multiple open chats apart.
   useDocumentTitle(groupName ? `${groupName} chat` : "Chat");
@@ -37,14 +38,17 @@ export default function GroupChat() {
     if (!playgroupId || !user) return;
 
     const fetchGroupInfo = async () => {
-      // Get playgroup name
+      // Get playgroup name + first photo for the header avatar
       const { data: pg } = await supabase
         .from("playgroups")
-        .select("name")
+        .select("name, photos")
         .eq("id", playgroupId)
         .single();
 
-      if (pg) setGroupName(pg.name);
+      if (pg) {
+        setGroupName(pg.name);
+        setGroupPhoto(pg.photos?.[0] || null);
+      }
 
       // Check user is a member/creator. maybeSingle() — non-member users
       // legitimately return 0 rows here; .single() would 406.
@@ -176,14 +180,29 @@ export default function GroupChat() {
             </svg>
           </button>
 
-          <div className="flex-1 min-w-0">
-            <h1 className="font-heading font-bold text-charcoal text-base truncate">
-              {groupName}
-            </h1>
-            <p className="text-[10px] text-taupe">
-              {memberCount} {memberCount === 1 ? "member" : "members"}
-            </p>
-          </div>
+          <button
+            onClick={() => navigate(`/playgroup/${playgroupId}`)}
+            aria-label={`Open ${groupName || "playgroup"} details`}
+            className="flex-1 min-w-0 flex items-center gap-3 bg-transparent border-none p-0 text-left cursor-pointer"
+          >
+            <div className="w-9 h-9 rounded-full bg-sage-light flex items-center justify-center overflow-hidden shrink-0">
+              {groupPhoto ? (
+                <img src={groupPhoto} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-xs font-heading font-bold text-sage-dark">
+                  {(groupName?.[0] || "?").toUpperCase()}
+                </span>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h1 className="font-heading font-bold text-charcoal text-base truncate">
+                {groupName}
+              </h1>
+              <p className="text-[10px] text-taupe">
+                {memberCount} {memberCount === 1 ? "member" : "members"} · View details
+              </p>
+            </div>
+          </button>
         </div>
       </div>
 
