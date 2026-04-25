@@ -10,6 +10,7 @@ import PlaygroupsTab from "./admin/PlaygroupsTab";
 import ReportsTab from "./admin/ReportsTab";
 import ReviewsTab from "./admin/ReviewsTab";
 import RequestsTab from "./admin/RequestsTab";
+import VerificationsTab from "./admin/VerificationsTab";
 import SubscriptionsTab from "./admin/SubscriptionsTab";
 import AnalyticsTab from "./admin/AnalyticsTab";
 import AuditLogTab from "./admin/AuditLogTab";
@@ -52,6 +53,10 @@ export default function Admin() {
   // this at the start and sets it on failure so the admin sees ground
   // truth instead of an optimistic-then-silent no-op.
   const [adminError, setAdminError] = useState("");
+  // Sidebar badge count for the Verifications tab. Owned here so the
+  // count survives across tab switches; VerificationsTab refreshes it
+  // after each approve/reject.
+  const [pendingVerifications, setPendingVerifications] = useState(0);
 
   useEffect(() => {
     if (authLoading) return;
@@ -73,6 +78,7 @@ export default function Admin() {
         fetchSubscriptions(),
         fetchAuditLog(),
         fetchAdminStats(),
+        fetchPendingVerificationCount(),
       ]);
     } catch (err) {
       console.error("Admin fetch error:", err);
@@ -187,6 +193,14 @@ export default function Admin() {
     if (!error && data) {
       setSubscriptions(data);
     }
+  }
+
+  async function fetchPendingVerificationCount() {
+    const { count } = await supabase
+      .from("verification_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending");
+    setPendingVerifications(count || 0);
   }
 
   async function fetchAuditLog() {
@@ -580,6 +594,7 @@ export default function Admin() {
     { key: "reports", label: "Reports", icon: "flag", badge: stats.openReports },
     { key: "reviews", label: "Reviews", icon: "rate_review" },
     { key: "requests", label: "Requests", icon: "pending_actions" },
+    { key: "verifications", label: "Verifications", icon: "verified", badge: pendingVerifications },
     { key: "subscriptions", label: "Subscriptions", icon: "payments" },
     { key: "analytics", label: "Analytics", icon: "analytics" },
     { key: "audit", label: "Audit Log", icon: "history" },
@@ -946,6 +961,10 @@ export default function Admin() {
 
           {!loading && activeSection === "requests" && (
             <RequestsTab recentRequests={recentRequests} />
+          )}
+
+          {!loading && activeSection === "verifications" && (
+            <VerificationsTab onPendingCountChange={setPendingVerifications} />
           )}
 
           {!loading && activeSection === "subscriptions" && (

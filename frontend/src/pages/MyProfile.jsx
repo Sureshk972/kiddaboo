@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 import { useSubscription } from "../hooks/useSubscription";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import HostVerificationCard from "../components/profile/HostVerificationCard";
 
 export default function MyProfile() {
   useDocumentTitle("My Profile"); // #50
@@ -101,6 +102,13 @@ export default function MyProfile() {
             </div>
           )}
         </div>
+
+        {isHost && (
+          <HostVerificationCard
+            userId={user?.id}
+            isVerified={!!profile?.is_verified}
+          />
+        )}
 
         {/* Settings list */}
         <div className="bg-white rounded-2xl border border-cream-dark overflow-hidden">
