@@ -34,6 +34,10 @@ type Reminder = {
   scheduled_at: string;
   playgroup_id: string;
   playgroup_name: string;
+  // IANA timezone synced from the user's browser. Defaults to "UTC"
+  // when missing so toLocaleString won't throw on the server side,
+  // though the rendered time will be off until the client syncs.
+  user_tz: string;
 };
 
 async function findDueReminders(kind: "24h" | "2h"): Promise<Reminder[]> {
@@ -81,6 +85,8 @@ async function findDueReminders(kind: "24h" | "2h"): Promise<Reminder[]> {
       scheduled_at: s.scheduled_at,
       playgroup_id: s.playgroup_id,
       playgroup_name: s.playgroups?.name || "your playgroup",
+      // Real value attached in filterPremiumOnly once we look up profiles.
+      user_tz: "UTC",
     };
   });
 }
@@ -99,20 +105,24 @@ async function filterPremiumOnly(reminders: Reminder[]): Promise<Reminder[]> {
 
   // Honor the per-user opt-out from NotificationSettings. Default
   // is on — only filter out users who explicitly set the toggle
-  // to false.
+  // to false. Also fetch each user's IANA timezone so we can format
+  // session times in their local TZ instead of UTC.
   const { data: profiles } = await admin
     .from("profiles")
-    .select("id, notification_prefs")
+    .select("id, notification_prefs, timezone")
     .in("id", userIds);
   const optedOut = new Set(
     (profiles || [])
       .filter((p) => p.notification_prefs?.session_reminders === false)
       .map((p) => p.id),
   );
-
-  return reminders.filter(
-    (r) => premiumIds.has(r.user_id) && !optedOut.has(r.user_id),
+  const tzByUser = new Map<string, string>(
+    (profiles || []).map((p) => [p.id as string, (p.timezone as string) || "UTC"]),
   );
+
+  return reminders
+    .filter((r) => premiumIds.has(r.user_id) && !optedOut.has(r.user_id))
+    .map((r) => ({ ...r, user_tz: tzByUser.get(r.user_id) || "UTC" }));
 }
 
 async function alreadySent(r: Reminder): Promise<boolean> {
@@ -150,15 +160,30 @@ async function markSent(r: Reminder): Promise<void> {
 
 async function sendReminder(r: Reminder): Promise<boolean> {
   const start = new Date(r.scheduled_at);
-  const timeStr = start.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-  });
-  const dayStr = start.toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "short",
-    day: "numeric",
-  });
+  // Wrap in try/catch — an invalid TZ string from the DB would otherwise
+  // throw a RangeError. Fall back to UTC formatting in that case.
+  let timeStr: string;
+  let dayStr: string;
+  try {
+    timeStr = start.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      timeZone: r.user_tz,
+    });
+    dayStr = start.toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "short",
+      day: "numeric",
+      timeZone: r.user_tz,
+    });
+  } catch {
+    timeStr = start.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    dayStr = start.toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "short",
+      day: "numeric",
+    });
+  }
 
   const title =
     r.kind === "24h"
