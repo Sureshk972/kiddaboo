@@ -95,7 +95,7 @@ export function useSubscription() {
 
   const joinRequestsUsed = usage?.request_count || 0;
   const joinRequestsRemaining = isPremium ? Infinity : Math.max(0, FREE_JOIN_LIMIT - joinRequestsUsed);
-  const canSendJoinRequest = (isPremium || joinRequestsRemaining > 0) && !!profile?.phone_verified_at;
+  const canSendJoinRequest = (isPremium || joinRequestsRemaining > 0) && !!profile?.is_phone_verified;
 
   return {
     // Joiner

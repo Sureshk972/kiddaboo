@@ -67,7 +67,7 @@ function transformRealPlaygroup(pg) {
         (m.profiles?.last_name?.[0] || "").toUpperCase(),
       isHost: m.role === "creator",
       membership_role: m.role,
-      phone_verified_at: m.profiles?.phone_verified_at,
+      is_phone_verified: m.profiles?.is_phone_verified,
       account_type: m.profiles?.account_type,
       zip_code: m.profiles?.zip_code,
       bio: m.profiles?.bio,
@@ -169,7 +169,7 @@ export default function PlaygroupDetail() {
       .select(`
         *,
         profiles:creator_id ( first_name, last_name, bio, philosophy_tags, is_verified, trust_score ),
-        memberships ( user_id, role, profiles:user_id ( first_name, last_name, phone_verified_at, bio, philosophy_tags, account_type, zip_code, photo_url ) )
+        memberships ( user_id, role, profiles:user_id ( first_name, last_name, is_phone_verified, bio, philosophy_tags, account_type, zip_code, photo_url ) )
       `)
       .eq("id", id)
       .single();

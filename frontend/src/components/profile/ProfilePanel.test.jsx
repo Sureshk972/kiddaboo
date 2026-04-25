@@ -6,7 +6,7 @@ const organizerSample = {
   first_name: "Priya",
   last_name: "Sharma",
   photo_url: null,
-  phone_verified_at: "2026-03-01T00:00:00Z",
+  is_phone_verified: true,
   account_type: "organizer",
   zip_code: "11530",
   bio: "First-time mom.",

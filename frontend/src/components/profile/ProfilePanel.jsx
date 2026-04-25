@@ -32,7 +32,7 @@ function ChildrenCard({ children }) {
 // unreliable on a brand-new network. Gate behind a prop when v2 lands.
 export default function ProfilePanel({ profile, onMessage }) {
   if (!profile) return null;
-  const verified = !!profile.phone_verified_at;
+  const verified = !!profile.is_phone_verified;
   const fullName = `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim();
 
   return (
