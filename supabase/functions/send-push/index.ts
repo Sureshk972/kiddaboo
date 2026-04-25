@@ -168,43 +168,64 @@ serve(async (req: Request) => {
       }
     }
 
-    if (table === "rsvps" && type === "INSERT") {
-      // RSVP → notify the host
-      // Look up session → playgroup → host
-      const { data: session } = await supabase
-        .from("sessions")
-        .select("playgroup_id, scheduled_at")
-        .eq("id", record.session_id)
-        .single();
+    if (table === "rsvps" && (type === "INSERT" || type === "UPDATE" || type === "DELETE")) {
+      // RSVP → notify the host on every state change so the roster is
+      // accurate. UPDATE only fires when the status actually flipped
+      // (e.g. "going" → "not_going"). DELETE fires when the parent
+      // retracts their RSVP. INSERT covers the first RSVP.
+      const eventRecord = type === "DELETE" ? old_record : record;
+      const previousStatus = old_record?.status;
 
-      if (session) {
-        const { data: pg } = await supabase
-          .from("playgroups")
-          .select("creator_id, name")
-          .eq("id", session.playgroup_id)
+      // For UPDATE, suppress noise when nothing meaningful changed.
+      const statusChanged =
+        type !== "UPDATE" || previousStatus !== eventRecord?.status;
+
+      if (eventRecord && statusChanged) {
+        const { data: session } = await supabase
+          .from("sessions")
+          .select("playgroup_id, scheduled_at")
+          .eq("id", eventRecord.session_id)
           .single();
 
-        const { data: rsvpUser } = await supabase
-          .from("profiles")
-          .select("first_name")
-          .eq("id", record.user_id)
-          .single();
+        if (session) {
+          const { data: pg } = await supabase
+            .from("playgroups")
+            .select("creator_id, name")
+            .eq("id", session.playgroup_id)
+            .single();
 
-        const scheduledDate = new Date(session.scheduled_at).toLocaleDateString("en-US", {
-          weekday: "short",
-          month: "short",
-          day: "numeric",
-        });
+          const { data: rsvpUser } = await supabase
+            .from("profiles")
+            .select("first_name")
+            .eq("id", eventRecord.user_id)
+            .single();
 
-        if (pg && pg.creator_id !== record.user_id) {
-          const statusText = record.status === "going" ? "is going to" : "can't make";
-          notifications.push({
-            userId: pg.creator_id as string,
-            title: "Session RSVP",
-            body: `${rsvpUser?.first_name || "Someone"} ${statusText} the ${scheduledDate} session`,
-            url: "/host/dashboard",
-            tag: `rsvp-${record.id}`,
+          const scheduledDate = new Date(session.scheduled_at).toLocaleDateString("en-US", {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
           });
+
+          if (pg && pg.creator_id !== eventRecord.user_id) {
+            let body: string;
+            if (type === "DELETE") {
+              body = `${rsvpUser?.first_name || "Someone"} retracted their RSVP for the ${scheduledDate} session`;
+            } else if (type === "UPDATE") {
+              const newStatusText = eventRecord.status === "going" ? "going to" : "can't make";
+              body = `${rsvpUser?.first_name || "Someone"} changed their RSVP — now ${newStatusText} the ${scheduledDate} session`;
+            } else {
+              const statusText = eventRecord.status === "going" ? "is going to" : "can't make";
+              body = `${rsvpUser?.first_name || "Someone"} ${statusText} the ${scheduledDate} session`;
+            }
+
+            notifications.push({
+              userId: pg.creator_id as string,
+              title: "Session RSVP",
+              body,
+              url: "/host/dashboard",
+              tag: `rsvp-${eventRecord.id}`,
+            });
+          }
         }
       }
     }
