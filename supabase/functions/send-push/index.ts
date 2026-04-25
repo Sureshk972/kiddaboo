@@ -40,6 +40,7 @@ serve(async (req: Request) => {
       | "membership_updates"
       | "sessions"
       | "rsvps"
+      | "verifications"
       | null;
     let notifications: {
       userId: string;
@@ -293,6 +294,36 @@ serve(async (req: Request) => {
             kind: "sessions",
           });
         }
+      }
+    }
+
+    if (table === "verification_requests" && type === "UPDATE") {
+      // Host verification status changed. Fire one push to the
+      // requester on the pending → approved/rejected transition so
+      // they don't have to keep checking MyProfile to find out.
+      const oldStatus = old_record?.status;
+      const newStatus = record.status;
+      if (oldStatus === "pending" && newStatus === "approved") {
+        notifications.push({
+          userId: record.user_id as string,
+          title: "You're verified ✓",
+          body: "Your host profile now shows the Verified badge.",
+          url: "/me",
+          tag: `verification-${record.id}`,
+          kind: "verifications",
+        });
+      } else if (oldStatus === "pending" && newStatus === "rejected") {
+        const note = (record.notes as string | null)?.trim();
+        notifications.push({
+          userId: record.user_id as string,
+          title: "Verification update",
+          body: note
+            ? `Your request wasn't approved: ${note.slice(0, 140)}`
+            : "Your verification request wasn't approved this time.",
+          url: "/me",
+          tag: `verification-${record.id}`,
+          kind: "verifications",
+        });
       }
     }
 
