@@ -29,7 +29,26 @@ serve(async (req: Request) => {
     const payload: WebhookPayload = await req.json();
     const { type, table, record, old_record } = payload;
 
-    let notifications: { userId: string; title: string; body: string; url: string; tag: string }[] = [];
+    // Each notification carries a `kind` matching a key in the user's
+    // notification_prefs (set via NotificationSettings). Before sending
+    // we look up each recipient's prefs and drop any kind they've
+    // opted out of. `null` kind means "always send" — used for manual
+    // pushes from other edge functions that do their own filtering.
+    type NotifKind =
+      | "messages"
+      | "join_requests"
+      | "membership_updates"
+      | "sessions"
+      | "rsvps"
+      | null;
+    let notifications: {
+      userId: string;
+      title: string;
+      body: string;
+      url: string;
+      tag: string;
+      kind: NotifKind;
+    }[] = [];
 
     // ── Handle different event types ──
 
@@ -46,6 +65,7 @@ serve(async (req: Request) => {
         body: (record.body as string) || "",
         url: (record.url as string) || "/",
         tag: (record.tag as string) || `manual-${Date.now()}`,
+        kind: null,
       });
     }
 
@@ -70,6 +90,7 @@ serve(async (req: Request) => {
           body: `${requester?.first_name || "Someone"} wants to join ${pg.name}`,
           url: "/host/dashboard",
           tag: `join-request-${record.id}`,
+          kind: "join_requests",
         });
       }
     }
@@ -92,6 +113,7 @@ serve(async (req: Request) => {
           body: `You've been accepted into ${pg?.name || "the playgroup"}`,
           url: `/playgroup/${record.playgroup_id}`,
           tag: `approved-${record.id}`,
+          kind: "membership_updates",
         });
       }
 
@@ -109,6 +131,7 @@ serve(async (req: Request) => {
           body: `Your request to join ${pg?.name || "the playgroup"} was not accepted`,
           url: "/browse",
           tag: `declined-${record.id}`,
+          kind: "membership_updates",
         });
       }
     }
@@ -145,6 +168,7 @@ serve(async (req: Request) => {
             body: `${sender?.first_name || "Someone"}: ${preview}`,
             url: `/messages/${record.playgroup_id}`,
             tag: `msg-${record.playgroup_id}`,
+            kind: "messages",
           });
         }
       }
@@ -179,6 +203,7 @@ serve(async (req: Request) => {
             body: `${pg?.name || "Playgroup"}: ${scheduledDate}`,
             url: `/playgroup/${record.playgroup_id}`,
             tag: `session-${record.id}`,
+            kind: "sessions",
           });
         }
       }
@@ -222,6 +247,7 @@ serve(async (req: Request) => {
             body,
             url: `/playgroup/${record.playgroup_id}`,
             tag: `session-cancel-${record.id}`,
+            kind: "sessions",
           });
         }
       }
@@ -283,9 +309,40 @@ serve(async (req: Request) => {
               body,
               url: "/host/dashboard",
               tag: `rsvp-${eventRecord.id}`,
+              kind: "rsvps",
             });
           }
         }
+      }
+    }
+
+    // ── Apply per-user notification_prefs filter ──
+    //
+    // NotificationSettings exposes toggles for each `kind`. Default
+    // is on — only filter out users who explicitly set false.
+    // Notifications with kind=null bypass the filter (manual_push
+    // does its own filtering upstream).
+    if (notifications.length > 0) {
+      const userIds = [
+        ...new Set(notifications.filter((n) => n.kind).map((n) => n.userId)),
+      ];
+      if (userIds.length > 0) {
+        const { data: prefRows } = await supabase
+          .from("profiles")
+          .select("id, notification_prefs")
+          .in("id", userIds);
+        const prefsByUser = new Map<string, Record<string, unknown>>(
+          (prefRows || []).map((p) => [
+            p.id as string,
+            (p.notification_prefs as Record<string, unknown>) || {},
+          ]),
+        );
+        notifications = notifications.filter((n) => {
+          if (!n.kind) return true;
+          const prefs = prefsByUser.get(n.userId);
+          // Missing prefs row OR missing key both default to true.
+          return prefs?.[n.kind] !== false;
+        });
       }
     }
 
