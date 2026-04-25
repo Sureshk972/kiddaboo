@@ -99,8 +99,44 @@ serve(async (req: Request) => {
       const oldRole = old_record?.role;
       const newRole = record.role;
 
-      // Request approved → notify the requester
-      if (oldRole === "pending" && newRole === "member") {
+      // Tolerate missing old_record. The "Send old record" webhook
+      // toggle has to be on for oldRole to be populated; if someone
+      // forgets to flip it during a config change, the previous
+      // implementation silently never sent approval/decline pushes.
+      // We instead fall back to deciding by newRole alone, gated by
+      // a (membership_id, kind) dedupe claim so a no-op UPDATE on an
+      // already-member row can't refire the push.
+      if (!old_record) {
+        console.warn(
+          "send-push: memberships UPDATE arrived without old_record — " +
+            "verify the database webhook has 'Send old record' enabled. " +
+            "Falling back to dedupe-gated detection.",
+        );
+      }
+
+      const looksApproved =
+        newRole === "member" && (oldRole === "pending" || oldRole === undefined);
+      const looksDeclined =
+        newRole === "declined" && (oldRole === "pending" || oldRole === undefined);
+
+      const claimNotification = async (
+        kind: "approved" | "declined",
+      ): Promise<boolean> => {
+        // Insert-as-dedupe. The unique (membership_id, kind) index
+        // returns 23505 on duplicates — that's expected and means
+        // someone else already fired this push.
+        const { error } = await supabase
+          .from("membership_notifications_sent")
+          .insert({ membership_id: record.id, kind });
+        if (!error) return true;
+        if ((error as { code?: string }).code === "23505") return false;
+        console.error("membership dedupe claim failed:", error);
+        // Fail closed when the dedupe table is unreachable — better to
+        // miss one notification than to spam every UPDATE.
+        return false;
+      };
+
+      if (looksApproved && (await claimNotification("approved"))) {
         const { data: pg } = await supabase
           .from("playgroups")
           .select("name")
@@ -117,8 +153,7 @@ serve(async (req: Request) => {
         });
       }
 
-      // Request declined → notify the requester
-      if (oldRole === "pending" && newRole === "declined") {
+      if (looksDeclined && (await claimNotification("declined"))) {
         const { data: pg } = await supabase
           .from("playgroups")
           .select("name")
