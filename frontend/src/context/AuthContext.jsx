@@ -93,8 +93,35 @@ export function AuthProvider({ children }) {
     return { data, error };
   };
 
-  // Sign out
+  // Sign out. Cancels the browser push subscription and removes the
+  // matching push_subscriptions row before tearing down the auth
+  // session — otherwise the device keeps receiving OS-level pushes
+  // about the signed-out user's groups, which is a privacy leak on
+  // shared devices.
   const signOut = async () => {
+    if (
+      typeof navigator !== "undefined" &&
+      "serviceWorker" in navigator &&
+      "PushManager" in window
+    ) {
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        if (subscription) {
+          if (user) {
+            await supabase
+              .from("push_subscriptions")
+              .delete()
+              .eq("user_id", user.id)
+              .eq("endpoint", subscription.endpoint);
+          }
+          await subscription.unsubscribe();
+        }
+      } catch (err) {
+        console.error("Failed to clean up push subscription on sign out:", err);
+      }
+    }
+
     await supabase.auth.signOut();
     setUser(null);
     setProfile(null);
