@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useSubscription } from "../hooks/useSubscription";
 import { supabase } from "../lib/supabase";
 import usePushNotifications from "../hooks/usePushNotifications";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
@@ -61,6 +62,18 @@ const NOTIFICATION_TYPES = [
       </svg>
     ),
   },
+  {
+    key: "session_reminders",
+    label: "Session Reminders",
+    description: "Reminders 24h and 2h before each session you've RSVP'd to",
+    premium: true,
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
+        <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+  },
 ];
 
 const DEFAULT_PREFS = {
@@ -69,12 +82,14 @@ const DEFAULT_PREFS = {
   membership_updates: true,
   sessions: true,
   rsvps: true,
+  session_reminders: true,
 };
 
 export default function NotificationSettings() {
   useDocumentTitle("Notifications"); // #50
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isPremium } = useSubscription();
   const {
     isSupported,
     permission,
@@ -238,39 +253,61 @@ export default function NotificationSettings() {
             Notification Types
           </h3>
           <div className="bg-white rounded-2xl border border-cream-dark overflow-hidden">
-            {NOTIFICATION_TYPES.map((type, i) => (
-              <div
-                key={type.key}
-                className={`flex items-center gap-3 px-4 py-4 ${
-                  i < NOTIFICATION_TYPES.length - 1 ? "border-b border-cream-dark" : ""
-                }`}
-              >
-                <div className="w-9 h-9 bg-cream rounded-lg flex items-center justify-center flex-shrink-0 text-taupe">
-                  {type.icon}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-charcoal font-medium">{type.label}</p>
-                  <p className="text-[11px] text-taupe mt-0.5 leading-relaxed">
-                    {type.description}
-                  </p>
-                </div>
-                {/* Toggle */}
-                <button
-                  onClick={() => togglePref(type.key)}
-                  disabled={!isSubscribed}
-                  className={`relative w-10 h-[22px] rounded-full transition-colors border-none cursor-pointer flex-shrink-0 ${
-                    prefs[type.key] && isSubscribed ? "bg-sage" : "bg-cream-dark"
-                  } ${!isSubscribed ? "opacity-30 cursor-default" : ""}`}
-                  aria-label={`Toggle ${type.label}`}
+            {NOTIFICATION_TYPES.map((type, i) => {
+              const locked = type.premium && !isPremium;
+              const interactable = isSubscribed && !locked;
+              return (
+                <div
+                  key={type.key}
+                  className={`flex items-center gap-3 px-4 py-4 ${
+                    i < NOTIFICATION_TYPES.length - 1 ? "border-b border-cream-dark" : ""
+                  }`}
                 >
-                  <div
-                    className={`absolute top-[2px] w-[18px] h-[18px] bg-white rounded-full shadow-sm transition-transform ${
-                      prefs[type.key] && isSubscribed ? "translate-x-[20px]" : "translate-x-[2px]"
-                    }`}
-                  />
-                </button>
-              </div>
-            ))}
+                  <div className="w-9 h-9 bg-cream rounded-lg flex items-center justify-center flex-shrink-0 text-taupe">
+                    {type.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm text-charcoal font-medium">{type.label}</p>
+                      {type.premium && (
+                        <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-white bg-amber-400 px-1.5 py-0.5 rounded-full">
+                          <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                          </svg>
+                          Premium
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-taupe mt-0.5 leading-relaxed">
+                      {type.description}
+                    </p>
+                    {locked && (
+                      <button
+                        onClick={() => navigate("/premium")}
+                        className="text-[11px] text-sage-dark font-medium underline mt-1 bg-transparent border-none cursor-pointer p-0"
+                      >
+                        Upgrade to enable
+                      </button>
+                    )}
+                  </div>
+                  {/* Toggle */}
+                  <button
+                    onClick={() => interactable && togglePref(type.key)}
+                    disabled={!interactable}
+                    className={`relative w-10 h-[22px] rounded-full transition-colors border-none cursor-pointer flex-shrink-0 ${
+                      prefs[type.key] && interactable ? "bg-sage" : "bg-cream-dark"
+                    } ${!interactable ? "opacity-30 cursor-default" : ""}`}
+                    aria-label={`Toggle ${type.label}`}
+                  >
+                    <div
+                      className={`absolute top-[2px] w-[18px] h-[18px] bg-white rounded-full shadow-sm transition-transform ${
+                        prefs[type.key] && interactable ? "translate-x-[20px]" : "translate-x-[2px]"
+                      }`}
+                    />
+                  </button>
+                </div>
+              );
+            })}
           </div>
 
           {!isSubscribed && (
