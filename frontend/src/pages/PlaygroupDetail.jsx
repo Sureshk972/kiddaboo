@@ -228,7 +228,6 @@ export default function PlaygroupDetail() {
 
     if (group.accessType === "open") {
       // Directly join open groups
-      await incrementUsage();
       const { error } = await supabase.from("memberships").insert({
         user_id: user.id,
         playgroup_id: id,
@@ -236,6 +235,9 @@ export default function PlaygroupDetail() {
         joined_at: new Date().toISOString(),
       });
       if (!error) {
+        // Only consume the free monthly quota on successful insert,
+        // so a transient error doesn't burn the user's one request.
+        await incrementUsage();
         setJoinStatus("member");
         setJoinError("");
         setJoinMessage("You're in! Say hi in the group chat.");
@@ -254,8 +256,13 @@ export default function PlaygroupDetail() {
   // screen on actual DB success, not fire-and-forget.
   const handleJoinSubmit = async ({ intro, answers }) => {
     if (!user) return { error: "Not signed in" };
+    // Re-check the monthly quota at submit time — the pre-check in
+    // handleJoinClick can go stale if usage updates from another tab
+    // or a parallel submission.
+    if (!canSendJoinRequest) {
+      return { error: "You've reached your monthly join request limit. Upgrade to Premium for unlimited requests." };
+    }
 
-    await incrementUsage();
     const { error } = await supabase.from("memberships").insert({
       user_id: user.id,
       playgroup_id: id,
@@ -265,6 +272,8 @@ export default function PlaygroupDetail() {
     });
 
     if (!error) {
+      // Increment only after the insert succeeds (see #1 above).
+      await incrementUsage();
       setJoinStatus("pending");
       fetchGroup();
     }
