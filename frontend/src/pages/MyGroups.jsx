@@ -41,7 +41,7 @@ const STATUS_BADGES = {
 export default function MyGroups() {
   useDocumentTitle("My Groups");
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, accountType, loading: authLoading } = useAuth();
 
   const [hosting, setHosting] = useState(null);
   const [joined, setJoined] = useState([]);
@@ -166,6 +166,10 @@ export default function MyGroups() {
       <div className="max-w-md mx-auto px-5 py-5 flex flex-col gap-6 w-full flex-1">
 
         {/* ───────── HOSTING SECTION ───────── */}
+        {/* Parent-account users don't see the Hosting section. The
+            parent flow stays focused on browsing/joining; becoming a
+            host requires re-onboarding as organizer. */}
+        {accountType !== "parent" && (
         <section>
           <div className="flex items-center gap-2 mb-3">
             <div className="w-6 h-6 rounded-full bg-sage/15 flex items-center justify-center">
@@ -267,9 +271,10 @@ export default function MyGroups() {
             </div>
           )}
         </section>
+        )}
 
         {/* ───────── DIVIDER ───────── */}
-        <div className="h-px bg-cream-dark" />
+        {accountType !== "parent" && <div className="h-px bg-cream-dark" />}
 
         {/* ───────── JOINED SECTION ───────── */}
         <section className="flex-1 flex flex-col">

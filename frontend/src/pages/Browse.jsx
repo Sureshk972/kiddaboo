@@ -19,7 +19,7 @@ export default function Browse() {
   // #50: per-route document title
   useDocumentTitle("Browse");
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
+  const { user, profile, accountType } = useAuth();
   const [isHost, setIsHost] = useState(false);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -434,8 +434,11 @@ export default function Browse() {
               ))}
             </div>
 
-            {/* Host CTA — hide for users who are already hosts */}
-            {!search && activeFilterCount === 0 && !isHost && (
+            {/* Host CTA — hide for users who are already hosts and for
+                parent-account users (parent flow stays focused on
+                browsing/joining; becoming a host requires re-onboarding
+                as organizer). */}
+            {!search && activeFilterCount === 0 && !isHost && accountType !== "parent" && (
               <div className="mt-12 relative overflow-hidden rounded-2xl bg-sage-light/15 p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 group">
                 <div className="relative z-10 md:w-3/5">
                   <h2 className="text-2xl md:text-3xl font-heading font-bold text-sage-dark mb-3 leading-tight">
@@ -497,14 +500,18 @@ export default function Browse() {
                   No playgroups yet
                 </h3>
                 <p className="text-sm text-taupe mb-4">
-                  Be the first to create one in your area!
+                  {accountType === "parent"
+                    ? "Check back soon — new playgroups are added often."
+                    : "Be the first to create one in your area!"}
                 </p>
-                <button
-                  onClick={() => navigate("/host/create")}
-                  className="bg-sage text-white font-medium text-sm rounded-2xl px-6 py-3 cursor-pointer border-none hover:bg-sage-dark transition-colors"
-                >
-                  Organize a Playgroup
-                </button>
+                {accountType !== "parent" && (
+                  <button
+                    onClick={() => navigate("/host/create")}
+                    className="bg-sage text-white font-medium text-sm rounded-2xl px-6 py-3 cursor-pointer border-none hover:bg-sage-dark transition-colors"
+                  >
+                    Organize a Playgroup
+                  </button>
+                )}
               </>
             )}
           </div>
