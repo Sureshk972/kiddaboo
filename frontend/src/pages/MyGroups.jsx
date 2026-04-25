@@ -89,8 +89,11 @@ export default function MyGroups() {
           .select("role")
           .eq("playgroup_id", pg.id);
 
+        // Include the creator in the member count so this matches what
+        // PlaygroupDetail and GroupChat show — otherwise the host's own
+        // group reads as "1 member fewer" everywhere except those pages.
         const memberCount = (pgMembers || []).filter(
-          (m) => m.role === "member"
+          (m) => m.role === "member" || m.role === "creator"
         ).length;
         const pendingCount = (pgMembers || []).filter(
           (m) => m.role === "pending"

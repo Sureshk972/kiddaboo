@@ -28,10 +28,14 @@ export default function AddChildren() {
     setSaving(true);
     setError("");
 
-    // Delete existing children first (in case user goes back and re-does this step)
-    await supabase.from("children").delete().eq("user_id", user.id);
+    // Snapshot existing rows first. We only delete them AFTER the
+    // insert lands — otherwise a transient insert failure would wipe
+    // every existing child record with no way to recover.
+    const { data: existing } = await supabase
+      .from("children")
+      .select("id")
+      .eq("user_id", user.id);
 
-    // Insert all valid children
     const rows = validChildren.map((c) => ({
       user_id: user.id,
       name: c.name.trim(),
@@ -41,13 +45,19 @@ export default function AddChildren() {
 
     const { error: insertError } = await supabase.from("children").insert(rows);
 
-    setSaving(false);
-
     if (insertError) {
+      setSaving(false);
       setError("Could not save. Please try again.");
       return;
     }
 
+    // Insert succeeded — now safe to remove the old rows.
+    const oldIds = (existing || []).map((r) => r.id);
+    if (oldIds.length > 0) {
+      await supabase.from("children").delete().in("id", oldIds);
+    }
+
+    setSaving(false);
     navigate("/success");
   };
 
