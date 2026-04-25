@@ -49,7 +49,7 @@ export default function Browse() {
       .eq("role", "creator")
       .limit(1)
       .then(({ data }) => {
-        if (data?.length > 0) setIsHost(true);
+        setIsHost((data?.length || 0) > 0);
       });
   }, [user]);
 
