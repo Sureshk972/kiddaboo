@@ -427,6 +427,12 @@ verify_jwt = false
 [functions.verify-otp]
 verify_jwt = false
 
+# submit-join-request enforces the 1/month free tier cap server-side.
+# Same ES256/HS256 gateway mismatch — auth handled in-body via
+# admin.auth.getUser(token).
+[functions.submit-join-request]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327

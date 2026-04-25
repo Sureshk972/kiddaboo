@@ -26,6 +26,25 @@ const ACCESS_LABELS = {
   invite: { text: "Invite Only", color: "bg-cream-dark text-taupe" },
 };
 
+// Maps server-side error codes from the submit-join-request edge
+// function to user-facing copy.
+function joinErrorMessage(code) {
+  switch (code) {
+    case "quota_exceeded":
+      return "You've used your free join request this month. Upgrade to Premium for unlimited requests.";
+    case "phone_not_verified":
+      return "Verify your phone number before joining a group.";
+    case "already_member":
+      return "You're already part of this group.";
+    case "playgroup_inactive":
+      return "This playgroup isn't accepting new members right now.";
+    case "playgroup_not_found":
+      return "We couldn't find this playgroup.";
+    default:
+      return null;
+  }
+}
+
 // Transform a real Supabase playgroup into the shape PlaygroupDetail expects
 function transformRealPlaygroup(pg) {
   const host = pg.profiles;
@@ -127,7 +146,7 @@ export default function PlaygroupDetail() {
   }, [realGroup, previewMode]);
 
   const { blockUser, submitReport } = useBlocks(user?.id);
-  const { canSendJoinRequest, joinRequestsRemaining, joinRequestLimit, isPremium, incrementUsage } = useSubscription();
+  const { canSendJoinRequest, joinRequestsRemaining, joinRequestLimit, isPremium } = useSubscription();
 
   // Fetch upcoming sessions for this playgroup
   const { sessions, nextSession } = useSessions(id);
@@ -227,25 +246,21 @@ export default function PlaygroupDetail() {
     }
 
     if (group.accessType === "open") {
-      // Directly join open groups
-      const { error } = await supabase.from("memberships").insert({
-        user_id: user.id,
-        playgroup_id: id,
-        role: "member",
-        joined_at: new Date().toISOString(),
+      // Server-side enforced join. The edge function checks phone
+      // verification, premium status, and the free-tier monthly cap
+      // (a determined client could bypass the local check).
+      const { data, error } = await supabase.functions.invoke("submit-join-request", {
+        body: { playgroup_id: id },
       });
-      if (!error) {
-        // Only consume the free monthly quota on successful insert,
-        // so a transient error doesn't burn the user's one request.
-        await incrementUsage();
-        setJoinStatus("member");
-        setJoinError("");
-        setJoinMessage("You're in! Say hi in the group chat.");
-        fetchGroup();
-      } else {
+      if (error || !data?.ok) {
         setJoinMessage("");
-        setJoinError("Something went wrong joining this group. Please try again.");
+        setJoinError(joinErrorMessage(data?.error) || "Something went wrong joining this group. Please try again.");
+        return;
       }
+      setJoinStatus("member");
+      setJoinError("");
+      setJoinMessage("You're in! Say hi in the group chat.");
+      fetchGroup();
     } else {
       setShowJoinSheet(true);
     }
@@ -256,28 +271,17 @@ export default function PlaygroupDetail() {
   // screen on actual DB success, not fire-and-forget.
   const handleJoinSubmit = async ({ intro, answers }) => {
     if (!user) return { error: "Not signed in" };
-    // Re-check the monthly quota at submit time — the pre-check in
-    // handleJoinClick can go stale if usage updates from another tab
-    // or a parallel submission.
-    if (!canSendJoinRequest) {
-      return { error: "You've reached your monthly join request limit. Upgrade to Premium for unlimited requests." };
-    }
 
-    const { error } = await supabase.from("memberships").insert({
-      user_id: user.id,
-      playgroup_id: id,
-      role: "pending",
-      intro_message: intro,
-      screening_answers: answers,
+    const { data, error } = await supabase.functions.invoke("submit-join-request", {
+      body: { playgroup_id: id, intro, answers },
     });
-
-    if (!error) {
-      // Increment only after the insert succeeds (see #1 above).
-      await incrementUsage();
-      setJoinStatus("pending");
-      fetchGroup();
+    if (error || !data?.ok) {
+      return { error: joinErrorMessage(data?.error) || "Something went wrong submitting your request. Please try again." };
     }
-    return { error: error || null };
+
+    setJoinStatus("pending");
+    fetchGroup();
+    return { error: null };
   };
 
   return (
