@@ -113,19 +113,31 @@ serve(async (req) => {
     .gt("current_period_end", now);
   const isPremium = (subs || []).length > 0;
 
-  // 5. Free-tier monthly quota.
+  // 5. Free-tier monthly quota — atomic claim.
+  //    claim_join_request_quota() runs an INSERT … ON CONFLICT …
+  //    RETURNING in a single statement. Two concurrent calls cannot
+  //    both succeed past the cap (closes the prior read-modify-write
+  //    race). Returns the new count if the claim succeeded, NULL if
+  //    the user has hit the limit.
   const month = now.slice(0, 7); // YYYY-MM
+  let claimed = false;
   if (!isPremium) {
-    const { data: usage } = await admin
-      .from("join_request_usage")
-      .select("request_count")
-      .eq("user_id", userId)
-      .eq("month", month)
-      .maybeSingle();
-    const used = usage?.request_count || 0;
-    if (used >= FREE_JOIN_LIMIT) {
-      return json({ ok: false, error: "quota_exceeded", used, limit: FREE_JOIN_LIMIT });
+    const { data: claimResult, error: claimErr } = await admin.rpc(
+      "claim_join_request_quota",
+      { p_user_id: userId, p_month: month, p_limit: FREE_JOIN_LIMIT },
+    );
+    if (claimErr) {
+      console.error("claim_join_request_quota failed:", claimErr);
+      return json({ ok: false, error: "quota_check_failed" });
     }
+    if (claimResult === null || claimResult === undefined) {
+      return json({
+        ok: false,
+        error: "quota_exceeded",
+        limit: FREE_JOIN_LIMIT,
+      });
+    }
+    claimed = true;
   }
 
   // 6. Insert membership.
@@ -145,25 +157,19 @@ serve(async (req) => {
   const { error: insertErr } = await admin.from("memberships").insert(insertRow);
   if (insertErr) {
     console.error("membership insert failed:", insertErr);
+    // Roll back the quota claim so a transient DB error doesn't burn
+    // the user's monthly request. Best-effort — if this decrement also
+    // fails, we'd rather under-charge than fail the response twice.
+    if (claimed) {
+      await admin
+        .from("join_request_usage")
+        .update({ request_count: 0 })
+        .eq("user_id", userId)
+        .eq("month", month)
+        .gt("request_count", 0)
+        .lte("request_count", 1);
+    }
     return json({ ok: false, error: "insert_failed", detail: insertErr.message });
-  }
-
-  // 7. Increment usage only for free users and only after successful
-  //    insert, so a failed write doesn't burn the user's quota.
-  if (!isPremium) {
-    const { data: usage } = await admin
-      .from("join_request_usage")
-      .select("request_count")
-      .eq("user_id", userId)
-      .eq("month", month)
-      .maybeSingle();
-    const next = (usage?.request_count || 0) + 1;
-    await admin
-      .from("join_request_usage")
-      .upsert(
-        { user_id: userId, month, request_count: next },
-        { onConflict: "user_id,month" },
-      );
   }
 
   return json({ ok: true, role });
