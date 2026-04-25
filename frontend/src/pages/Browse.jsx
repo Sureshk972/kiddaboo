@@ -36,6 +36,7 @@ export default function Browse() {
     ageRange: [],
     setting: [],
     accessType: [],
+    verifiedOnly: false,
   });
 
   const { userLocation, loading: locationLoading, error: locationError, requestLocation } = useUserLocation();
@@ -130,11 +131,14 @@ export default function Browse() {
 
   const allPlaygroups = useMemo(() => realPlaygroups, [realPlaygroups]);
 
-  // Count active filters
-  const activeFilterCount = Object.values(filters).reduce(
-    (sum, arr) => sum + arr.length,
-    0
-  );
+  // Count active filters. verifiedOnly is a boolean, not an array, so
+  // sum it separately.
+  const activeFilterCount =
+    filters.vibeTags.length +
+    filters.ageRange.length +
+    filters.setting.length +
+    filters.accessType.length +
+    (filters.verifiedOnly ? 1 : 0);
 
   // Tag and (for free users) gate newly-posted groups. Computed in the
   // memo so the cutoff stays fresh as time passes between fetches.
@@ -196,6 +200,11 @@ export default function Browse() {
     // Access type filter
     if (filters.accessType.length > 0) {
       list = list.filter((g) => filters.accessType.includes(g.accessType));
+    }
+
+    // Verified hosts only
+    if (filters.verifiedOnly) {
+      list = list.filter((g) => g.verified);
     }
 
     // Compute distance if user location is available

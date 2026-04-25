@@ -16,8 +16,36 @@ export default function UserDetailPanel({
   const [children, setChildren] = useState([]);
   const [memberships, setMemberships] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Local mirror of is_verified so the badge updates without re-fetching
+  // the parent list. The DB trigger check_is_verified_escalation enforces
+  // that only admins can actually flip it; the button is gated by the
+  // Admin route, but the trigger is the real guard.
+  const [verified, setVerified] = useState(!!profile.is_verified);
+  const [verifying, setVerifying] = useState(false);
+  const [verifyError, setVerifyError] = useState("");
 
   const isSuspended = !!profile.is_suspended;
+
+  const toggleVerified = async () => {
+    const next = !verified;
+    const action = next ? "verify" : "unverify";
+    if (!window.confirm(`${next ? "Mark as verified" : "Remove verified status"} for ${profile.first_name || "this user"}?`)) {
+      return;
+    }
+    setVerifying(true);
+    setVerifyError("");
+    const { error } = await supabase
+      .from("profiles")
+      .update({ is_verified: next })
+      .eq("id", profile.id);
+    setVerifying(false);
+    if (error) {
+      console.error(`Failed to ${action} user:`, error);
+      setVerifyError(error.message || `Couldn't ${action} this user.`);
+      return;
+    }
+    setVerified(next);
+  };
 
   useEffect(() => {
     if (!profile?.id) return;
@@ -99,7 +127,7 @@ export default function UserDetailPanel({
             <div className="flex items-center justify-center gap-2 mt-1">
               {role !== "none" && <StatusBadge status={role} />}
               {isSuspended && <StatusBadge status="suspended" />}
-              {profile.is_verified && (
+              {verified && (
                 <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
                   Verified
                 </span>
@@ -168,6 +196,26 @@ export default function UserDetailPanel({
                 <p className="text-[11px] text-taupe">Reports Against</p>
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={toggleVerified}
+              disabled={verifying}
+              className={`mt-3 w-full text-sm font-medium rounded-xl px-4 py-2.5 border transition-colors cursor-pointer ${
+                verified
+                  ? "bg-white border-cream-dark text-charcoal hover:bg-cream"
+                  : "bg-blue-600 border-blue-600 text-white hover:bg-blue-700"
+              } ${verifying ? "opacity-60 cursor-wait" : ""}`}
+            >
+              {verifying
+                ? "Saving..."
+                : verified
+                ? "Remove verified status"
+                : "Mark as verified"}
+            </button>
+            {verifyError && (
+              <p className="text-xs text-red-600 mt-2 text-center">{verifyError}</p>
+            )}
           </div>
 
           {/* Children */}
