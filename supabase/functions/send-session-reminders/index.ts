@@ -116,17 +116,36 @@ async function filterPremiumOnly(reminders: Reminder[]): Promise<Reminder[]> {
 }
 
 async function alreadySent(r: Reminder): Promise<boolean> {
-  // Insert-as-dedupe: relies on the unique index. If the row already
-  // exists we get a 23505 and skip; if it inserts, we own the send.
+  // Cheap pre-check before sending. Catches the steady-state case
+  // where a previous tick already marked this reminder sent.
+  const { data, error } = await admin
+    .from("session_reminders_sent")
+    .select("id")
+    .eq("session_id", r.session_id)
+    .eq("user_id", r.user_id)
+    .eq("kind", r.kind)
+    .maybeSingle();
+  if (error) {
+    console.error("dedupe check failed:", error);
+    return false; // fail open — better to retry than miss forever
+  }
+  return !!data;
+}
+
+async function markSent(r: Reminder): Promise<void> {
+  // Best-effort. If two cron ticks both passed the pre-check and both
+  // sent (rare), the second insert hits the unique index and 23505s —
+  // expected. The push itself uses tag=`session-reminder-${id}-${kind}`
+  // which the device's notification system uses to coalesce duplicates,
+  // so the user sees one notification regardless.
   const { error } = await admin.from("session_reminders_sent").insert({
     session_id: r.session_id,
     user_id: r.user_id,
     kind: r.kind,
   });
-  if (!error) return false;
-  if ((error as { code?: string }).code === "23505") return true;
-  console.error("dedupe insert failed:", error);
-  return true; // fail closed — better to skip than double-send
+  if (error && (error as { code?: string }).code !== "23505") {
+    console.error("mark-sent insert failed:", error);
+  }
 }
 
 async function sendReminder(r: Reminder): Promise<boolean> {
@@ -189,8 +208,12 @@ serve(async (_req) => {
       continue;
     }
     const ok = await sendReminder(r);
-    if (ok) sent++;
-    else failed++;
+    if (ok) {
+      await markSent(r);
+      sent++;
+    } else {
+      failed++;
+    }
   }
 
   return new Response(
