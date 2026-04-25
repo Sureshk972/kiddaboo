@@ -59,6 +59,14 @@ export default function MyProfile() {
           <h2 className="text-lg font-heading font-bold text-charcoal">
             {firstName} {lastName}
           </h2>
+          {profile?.phone_verified_at && (
+            <span className="inline-flex items-center gap-1 mt-1.5 text-[11px] text-sage-dark bg-sage-light px-2 py-0.5 rounded-full">
+              <svg width="10" height="10" viewBox="0 0 20 20" fill="none">
+                <path d="M5 10l3 3 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Phone verified
+            </span>
+          )}
           {user?.email && (
             <p className="text-xs text-taupe mt-1">{user.email}</p>
           )}

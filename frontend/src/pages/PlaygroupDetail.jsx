@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import PhotoCarousel from "../components/playgroup/PhotoCarousel";
 import EnvironmentChecklist from "../components/playgroup/EnvironmentChecklist";
@@ -126,34 +126,35 @@ export default function PlaygroupDetail() {
   } = useReviews(id);
 
   // Try fetching from Supabase first
-  useEffect(() => {
-    const fetchGroup = async () => {
-      const { data, error } = await supabase
-        .from("playgroups")
-        .select(`
-          *,
-          profiles:creator_id ( first_name, last_name, bio, philosophy_tags, is_verified, trust_score ),
-          memberships ( user_id, role, profiles:user_id ( first_name, last_name, phone_verified_at, bio, philosophy_tags, account_type, zip_code, photo_url ) )
-        `)
-        .eq("id", id)
-        .single();
+  const fetchGroup = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("playgroups")
+      .select(`
+        *,
+        profiles:creator_id ( first_name, last_name, bio, philosophy_tags, is_verified, trust_score ),
+        memberships ( user_id, role, profiles:user_id ( first_name, last_name, phone_verified_at, bio, philosophy_tags, account_type, zip_code, photo_url ) )
+      `)
+      .eq("id", id)
+      .single();
 
-      if (!error && data) {
-        setRealGroup(transformRealPlaygroup(data));
+    if (!error && data) {
+      setRealGroup(transformRealPlaygroup(data));
 
-        // In preview mode, don't reflect the host's own "creator" status —
-        // we want to see the parent CTA as a parent would.
-        if (user && !previewMode) {
-          const existing = (data.memberships || []).find(
-            (m) => m.user_id === user.id
-          );
-          if (existing) setJoinStatus(existing.role);
-        }
+      // In preview mode, don't reflect the host's own "creator" status —
+      // we want to see the parent CTA as a parent would.
+      if (user && !previewMode) {
+        const existing = (data.memberships || []).find(
+          (m) => m.user_id === user.id
+        );
+        if (existing) setJoinStatus(existing.role);
       }
-      setLoading(false);
-    };
-    fetchGroup();
+    }
+    setLoading(false);
   }, [id, user, previewMode]);
+
+  useEffect(() => {
+    fetchGroup();
+  }, [fetchGroup]);
 
   // Track playgroup view for host analytics (deduplicated hourly)
   useEffect(() => {
@@ -222,6 +223,7 @@ export default function PlaygroupDetail() {
         setJoinStatus("member");
         setJoinError("");
         setJoinMessage("You're in! Say hi in the group chat.");
+        fetchGroup();
       } else {
         setJoinMessage("");
         setJoinError("Something went wrong joining this group. Please try again.");
@@ -248,6 +250,7 @@ export default function PlaygroupDetail() {
 
     if (!error) {
       setJoinStatus("pending");
+      fetchGroup();
     }
     return { error: error || null };
   };
@@ -661,7 +664,7 @@ export default function PlaygroupDetail() {
               </Button>
               {!isPremium && user && (
                 <p className="text-[11px] text-taupe/60 text-center mt-2">
-                  {joinRequestsRemaining} of {joinRequestLimit} free requests remaining
+                  {joinRequestsRemaining} of {joinRequestLimit} free requests left this month
                 </p>
               )}
             </>
@@ -711,7 +714,7 @@ export default function PlaygroupDetail() {
                 </svg>
               </div>
               <h3 className="font-heading font-bold text-charcoal text-lg mb-2">
-                You've used all {joinRequestLimit} free requests
+                You've used all {joinRequestLimit} free requests this month
               </h3>
               <p className="text-sm text-taupe leading-relaxed mb-5">
                 Upgrade to Premium for unlimited join requests, advanced filters, and priority placement.
