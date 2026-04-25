@@ -184,6 +184,49 @@ serve(async (req: Request) => {
       }
     }
 
+    if (table === "sessions" && type === "UPDATE") {
+      // Session cancelled → notify everyone who RSVP'd "going" so they
+      // don't show up to a cancelled session. Fires only on the
+      // null → non-null transition of cancelled_at to avoid double-firing
+      // on subsequent edits to a cancelled row.
+      const wasCancelled = !!old_record?.cancelled_at;
+      const isCancelled = !!record.cancelled_at;
+      if (!wasCancelled && isCancelled) {
+        const { data: rsvps } = await supabase
+          .from("rsvps")
+          .select("user_id")
+          .eq("session_id", record.id)
+          .eq("status", "going");
+
+        const { data: pg } = await supabase
+          .from("playgroups")
+          .select("name")
+          .eq("id", record.playgroup_id)
+          .single();
+
+        const start = new Date(record.scheduled_at as string);
+        const dayStr = start.toLocaleDateString("en-US", {
+          weekday: "long",
+          month: "short",
+          day: "numeric",
+        });
+        const reason = (record.cancel_reason as string | null)?.trim();
+        const body = reason
+          ? `${dayStr} — ${reason}`
+          : `${dayStr} session has been cancelled`;
+
+        for (const r of rsvps || []) {
+          notifications.push({
+            userId: r.user_id as string,
+            title: `Cancelled: ${pg?.name || "Playgroup"}`,
+            body,
+            url: `/playgroup/${record.playgroup_id}`,
+            tag: `session-cancel-${record.id}`,
+          });
+        }
+      }
+    }
+
     if (table === "rsvps" && (type === "INSERT" || type === "UPDATE" || type === "DELETE")) {
       // RSVP → notify the host on every state change so the roster is
       // accurate. UPDATE only fires when the status actually flipped
