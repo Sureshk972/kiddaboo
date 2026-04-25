@@ -96,7 +96,23 @@ async function filterPremiumOnly(reminders: Reminder[]): Promise<Reminder[]> {
     .gt("current_period_end", new Date().toISOString())
     .in("user_id", userIds);
   const premiumIds = new Set((subs || []).map((s) => s.user_id));
-  return reminders.filter((r) => premiumIds.has(r.user_id));
+
+  // Honor the per-user opt-out from NotificationSettings. Default
+  // is on — only filter out users who explicitly set the toggle
+  // to false.
+  const { data: profiles } = await admin
+    .from("profiles")
+    .select("id, notification_prefs")
+    .in("id", userIds);
+  const optedOut = new Set(
+    (profiles || [])
+      .filter((p) => p.notification_prefs?.session_reminders === false)
+      .map((p) => p.id),
+  );
+
+  return reminders.filter(
+    (r) => premiumIds.has(r.user_id) && !optedOut.has(r.user_id),
+  );
 }
 
 async function alreadySent(r: Reminder): Promise<boolean> {

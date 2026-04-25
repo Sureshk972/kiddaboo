@@ -30,6 +30,7 @@ const FEATURES = [
   { free: "Browse & search playgroups", premium: "Browse & search playgroups", both: true },
   { free: "Basic filters", premium: "Advanced filters (age, setting)" },
   { free: "Group chat", premium: "Group chat", both: true },
+  { free: "—", premium: "Session reminders (24h + 2h)" },
   { free: "—", premium: "Priority in host queues" },
   { free: "—", premium: "Premium badge on profile" },
   { free: "—", premium: "Early access to new groups" },
