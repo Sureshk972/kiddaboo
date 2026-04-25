@@ -593,11 +593,15 @@ export default function PlaygroupDetail() {
               })
               .map((m) => {
                 const isOrganizer = m.membership_role === "creator";
+                const isSelf = user?.id === m.id;
                 return (
                   <button
                     key={m.id}
-                    onClick={() => setActiveProfile(m)}
-                    className="bg-white rounded-xl border border-cream-dark p-3 flex gap-3 items-center text-left cursor-pointer"
+                    onClick={isSelf ? undefined : () => setActiveProfile(m)}
+                    disabled={isSelf}
+                    className={`bg-white rounded-xl border border-cream-dark p-3 flex gap-3 items-center text-left ${
+                      isSelf ? "cursor-default" : "cursor-pointer"
+                    }`}
                   >
                     <div
                       className={`w-10 h-10 rounded-full bg-sage-light flex-shrink-0 flex items-center justify-center overflow-hidden ${
