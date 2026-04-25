@@ -1,6 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import useNotifications from "../../hooks/useNotifications";
 
 // Icons
 const BrowseIcon = (active) => (
@@ -185,16 +184,11 @@ const ORGANIZER_TABS = [
   { path: "/my-profile", label: "Profile", icon: ProfileIcon },
 ];
 
-export default function TabBar() {
+export default function TabBar({ badges = {} }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, signOut, accountType } = useAuth();
-  const { unreadMessages, pendingRequests } = useNotifications(user?.id);
+  const { signOut, accountType } = useAuth();
   const TABS = accountType === "organizer" ? ORGANIZER_TABS : PARENT_TABS;
-  const badges = {
-    "/messages": unreadMessages,
-    "/host/dashboard": pendingRequests,
-  };
 
   return (
     <nav aria-label="Main navigation" className="sticky bottom-0 z-30 bg-white border-t border-cream-dark shadow-[0_-2px_8px_rgba(0,0,0,0.04)] pb-[env(safe-area-inset-bottom)]">
