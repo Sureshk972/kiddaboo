@@ -26,6 +26,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
+// Mirror of FREE_JOIN_LIMIT in frontend/src/hooks/useSubscription.js.
+// This is the authoritative value; the frontend copy only drives UI
+// copy ("X requests left"). If you change one, change the other.
 const FREE_JOIN_LIMIT = 1;
 
 const corsHeaders = {
