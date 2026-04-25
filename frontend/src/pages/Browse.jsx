@@ -69,8 +69,11 @@ export default function Browse() {
     const fetchPlaygroups = async () => {
       setFetchError(false);
       setLoadingReal(true);
-      // Fetch playgroups and premium host IDs in parallel
-      const [pgResult, premiumResult] = await Promise.all([
+      // Fetch playgroups, premium host IDs, and the current user's
+      // own memberships in parallel. The membership map lets us surface
+      // join status on each card so we don't show "Join Group" to
+      // someone who's already a member.
+      const [pgResult, premiumResult, myMembershipsResult] = await Promise.all([
         supabase
           .from("playgroups")
           .select(`
@@ -86,10 +89,20 @@ export default function Browse() {
           .eq("type", "host_premium")
           .eq("status", "active")
           .gt("current_period_end", new Date().toISOString()),
+        user
+          ? supabase
+              .from("memberships")
+              .select("playgroup_id, role")
+              .eq("user_id", user.id)
+          : Promise.resolve({ data: [] }),
       ]);
 
       const premiumHostIds = new Set(
         (premiumResult.data || []).map((s) => s.user_id)
+      );
+
+      const myJoinStatusByPg = new Map(
+        (myMembershipsResult.data || []).map((m) => [m.playgroup_id, m.role])
       );
 
       if (pgResult.error) {
@@ -100,6 +113,7 @@ export default function Browse() {
           pgResult.data.map((pg, i) => ({
             ...transformPlaygroup(pg, i),
             isHostPremium: premiumHostIds.has(pg.creator_id),
+            joinStatus: myJoinStatusByPg.get(pg.id) || null,
           }))
         );
       }
