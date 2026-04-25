@@ -43,7 +43,7 @@ export function AuthProvider({ children }) {
   const fetchProfile = async (userId) => {
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, phone_verified_at, created_at, updated_at, notification_prefs, role, account_type")
+      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, phone_verified_at, created_at, updated_at, notification_prefs, role, account_type, timezone")
       .eq("id", userId)
       .single();
 
@@ -52,6 +52,21 @@ export function AuthProvider({ children }) {
     }
     if (data) {
       setProfile(data);
+      // Sync the user's IANA timezone so server-side scheduled pushes
+      // (session reminders) can render times in their local TZ instead
+      // of the Deno edge runtime's UTC.
+      try {
+        const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (browserTz && browserTz !== data.timezone) {
+          supabase
+            .from("profiles")
+            .update({ timezone: browserTz })
+            .eq("id", userId)
+            .then(() => {});
+        }
+      } catch {
+        // Intl support is universal in supported browsers; swallow if not.
+      }
     }
     setLoading(false);
   };

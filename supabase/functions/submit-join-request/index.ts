@@ -91,7 +91,23 @@ serve(async (req) => {
     return json({ ok: false, error: "playgroup_inactive" });
   }
 
-  // 3. Already-a-member guard.
+  // 3. Capacity guard for open-access groups. For request/invite groups
+  //    the host approves manually so the host owns capacity decisions;
+  //    for open groups the insert is auto-approved, so we have to
+  //    enforce max_families server-side or a popular open group can
+  //    blow past its cap during a brief click-race.
+  if (pg.access_type === "open" && pg.max_families) {
+    const { count: memberCount } = await admin
+      .from("memberships")
+      .select("id", { count: "exact", head: true })
+      .eq("playgroup_id", playgroupId)
+      .in("role", ["creator", "member"]);
+    if (memberCount !== null && memberCount >= pg.max_families) {
+      return json({ ok: false, error: "playgroup_full" });
+    }
+  }
+
+  // 4. Already-a-member guard.
   const { data: existing } = await admin
     .from("memberships")
     .select("id, role")

@@ -38,6 +38,8 @@ function joinErrorMessage(code) {
       return "You're already part of this group.";
     case "playgroup_inactive":
       return "This playgroup isn't accepting new members right now.";
+    case "playgroup_full":
+      return "This playgroup is full. Try another group or check back later.";
     case "playgroup_not_found":
       return "We couldn't find this playgroup.";
     default:
