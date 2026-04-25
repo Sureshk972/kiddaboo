@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 import { haversineDistance } from "../lib/distance";
 import { useUserLocation } from "../hooks/useUserLocation";
 import { useAuth } from "../context/AuthContext";
+import { useSubscription } from "../hooks/useSubscription";
 import FilterSheet from "../components/browse/FilterSheet";
 import PlaygroupCard from "../components/browse/PlaygroupCard";
 import { transformPlaygroup } from "../lib/playgroupTransform";
@@ -15,11 +16,16 @@ const SORT_OPTIONS = [
   { value: "spots", label: "Spots" },
 ];
 
+// Premium parents see new playgroups immediately; free parents see them
+// after this window. Matches the "Early access to new groups" Premium claim.
+const EARLY_ACCESS_HOURS = 24;
+
 export default function Browse() {
   // #50: per-route document title
   useDocumentTitle("Browse");
   const navigate = useNavigate();
   const { user, profile, accountType } = useAuth();
+  const { isPremium } = useSubscription();
   const [isHost, setIsHost] = useState(false);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -130,9 +136,34 @@ export default function Browse() {
     0
   );
 
+  // Tag and (for free users) gate newly-posted groups. Computed in the
+  // memo so the cutoff stays fresh as time passes between fetches.
+  const earlyAccessCutoff = useMemo(
+    () => Date.now() - EARLY_ACCESS_HOURS * 60 * 60 * 1000,
+    [refetchKey]
+  );
+
+  // Number of newly-posted groups hidden from the current free user.
+  // Drives the "X new playgroups today — go premium" teaser banner.
+  const hiddenNewCount = useMemo(() => {
+    if (isPremium) return 0;
+    return realPlaygroups.filter(
+      (g) => g.createdAt && new Date(g.createdAt).getTime() > earlyAccessCutoff
+    ).length;
+  }, [realPlaygroups, isPremium, earlyAccessCutoff]);
+
   // Filter and sort playgroups
   const results = useMemo(() => {
-    let list = [...allPlaygroups];
+    let list = allPlaygroups.map((g) => ({
+      ...g,
+      isNewlyPosted:
+        !!g.createdAt && new Date(g.createdAt).getTime() > earlyAccessCutoff,
+    }));
+
+    // Early access gate — free users don't see newly-posted groups
+    if (!isPremium) {
+      list = list.filter((g) => !g.isNewlyPosted);
+    }
 
     // Search
     if (debouncedSearch.trim()) {
@@ -216,7 +247,7 @@ export default function Browse() {
     }
 
     return list;
-  }, [debouncedSearch, filters, sortBy, allPlaygroups, userLocation]);
+  }, [debouncedSearch, filters, sortBy, allPlaygroups, userLocation, isPremium, earlyAccessCutoff]);
 
   // When user taps "Nearest", request location and switch sort
   const handleNearestSort = () => {
@@ -420,6 +451,23 @@ export default function Browse() {
               </div>
             ))}
           </div>
+        )}
+
+        {/* Premium early-access teaser */}
+        {!loadingReal && !fetchError && !isPremium && hiddenNewCount > 0 && (
+          <button
+            onClick={() => navigate("/premium")}
+            className="w-full mb-6 flex items-center justify-between gap-3 bg-amber-50 border border-amber-200 hover:border-amber-300 rounded-xl px-4 py-3 text-left cursor-pointer transition-colors"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="text-lg">✨</span>
+              <p className="text-xs text-charcoal min-w-0">
+                <span className="font-bold">{hiddenNewCount} new playgroup{hiddenNewCount !== 1 ? "s" : ""}</span> posted in the last 24h.
+                <span className="text-taupe"> Go Premium for early access.</span>
+              </p>
+            </div>
+            <span className="text-xs font-bold text-amber-700 shrink-0">→</span>
+          </button>
         )}
 
         {/* Result count */}

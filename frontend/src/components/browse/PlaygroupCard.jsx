@@ -32,6 +32,11 @@ export default function PlaygroupCard({ group, onClick, featured = false, premiu
               <span className="px-3 py-1 bg-amber-400/90 backdrop-blur-md rounded-full text-[10px] font-bold tracking-widest uppercase text-white">
                 Premium
               </span>
+              {group.isNewlyPosted && (
+                <span className="px-3 py-1 bg-terracotta/90 backdrop-blur-md rounded-full text-[10px] font-bold tracking-widest uppercase text-white">
+                  New
+                </span>
+              )}
               <span className={`px-3 py-1 backdrop-blur-md rounded-full text-[10px] font-bold tracking-widest uppercase ${
                 group.accessType === "open"
                   ? "bg-sage/90 text-white"
@@ -176,6 +181,11 @@ export default function PlaygroupCard({ group, onClick, featured = false, premiu
           {premium && (
             <span className="px-3 py-1 bg-amber-400/90 backdrop-blur-md rounded-full text-[10px] font-bold tracking-widest uppercase text-white">
               Premium
+            </span>
+          )}
+          {group.isNewlyPosted && (
+            <span className="px-3 py-1 bg-terracotta/90 backdrop-blur-md rounded-full text-[10px] font-bold tracking-widest uppercase text-white">
+              New
             </span>
           )}
           <span className={`px-3 py-1 backdrop-blur-md rounded-full text-[10px] font-bold tracking-widest uppercase ${
