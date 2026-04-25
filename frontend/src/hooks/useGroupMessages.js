@@ -54,36 +54,31 @@ export default function useGroupMessages(playgroupId, userId) {
           filter: `playgroup_id=eq.${playgroupId}`,
         },
         async (payload) => {
-          // Don't duplicate if we sent it ourselves (optimistic update)
+          // Side effects (the profile fetch) must not live inside a
+          // setState updater — React 18 strict mode runs updaters
+          // twice, so the fetch would fire twice per inbound message.
+          // Instead: fetch the profile once, then setMessages once
+          // with both the row and the profile attached.
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("first_name, last_name, photo_url")
+            .eq("id", payload.new.sender_id)
+            .single();
+
           setMessages((prev) => {
-            if (prev.find((m) => m.id === payload.new.id)) return prev;
-
-            // Fetch sender profile
-            supabase
-              .from("profiles")
-              .select("first_name, last_name, photo_url")
-              .eq("id", payload.new.sender_id)
-              .single()
-              .then(({ data: profile }) => {
-                setMessages((prev2) => {
-                  // Check again for duplicates
-                  const existing = prev2.find((m) => m.id === payload.new.id);
-                  if (existing) {
-                    // Update with profile info if missing
-                    if (!existing.profiles) {
-                      return prev2.map((m) =>
-                        m.id === payload.new.id
-                          ? { ...m, profiles: profile }
-                          : m
-                      );
-                    }
-                    return prev2;
-                  }
-                  return [...prev2, { ...payload.new, profiles: profile }];
-                });
-              });
-
-            return [...prev, { ...payload.new, profiles: null }];
+            // Don't duplicate if we sent it ourselves (optimistic
+            // update already added the row) — instead, backfill the
+            // profile if the optimistic row didn't have one.
+            const existing = prev.find((m) => m.id === payload.new.id);
+            if (existing) {
+              if (!existing.profiles && profile) {
+                return prev.map((m) =>
+                  m.id === payload.new.id ? { ...m, profiles: profile } : m
+                );
+              }
+              return prev;
+            }
+            return [...prev, { ...payload.new, profiles: profile }];
           });
         }
       )
