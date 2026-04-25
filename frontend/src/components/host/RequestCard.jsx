@@ -59,6 +59,11 @@ export default function RequestCard({
             <p className="text-sm font-medium text-charcoal">
               {request.name}
             </p>
+            {request.isPremium && !actionState && (
+              <span className="text-[10px] bg-sage text-white px-1.5 py-0.5 rounded-full font-medium">
+                Premium
+              </span>
+            )}
             {actionState && (
               <span
                 className={`text-[10px] ${actionState.textColor} font-medium flex items-center gap-0.5`}

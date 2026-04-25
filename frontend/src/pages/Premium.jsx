@@ -28,7 +28,6 @@ const PLANS = [
 const FEATURES = [
   { free: "1 join request / month", premium: "Unlimited join requests" },
   { free: "Browse & search playgroups", premium: "Browse & search playgroups", both: true },
-  { free: "Near Me map view", premium: "Near Me map view", both: true },
   { free: "Basic filters", premium: "Advanced filters (age, philosophy)" },
   { free: "Group chat", premium: "Group chat", both: true },
   { free: "—", premium: "Priority in host queues" },

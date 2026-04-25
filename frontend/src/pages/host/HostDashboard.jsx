@@ -90,6 +90,24 @@ export default function HostDashboard() {
           childrenByUser[c.user_id].push(c);
         });
 
+        // Premium parents float to the top of the pending queue. Fetch
+        // active joiner subscriptions for the pending users so we can
+        // tag and sort below.
+        const pendingUserIds = memberships
+          .filter((m) => m.role === "pending")
+          .map((m) => m.user_id);
+        let premiumPendingIds = new Set();
+        if (pendingUserIds.length > 0) {
+          const { data: pendingSubs } = await supabase
+            .from("subscriptions")
+            .select("user_id")
+            .eq("type", "joiner")
+            .eq("status", "active")
+            .gt("current_period_end", new Date().toISOString())
+            .in("user_id", pendingUserIds);
+          premiumPendingIds = new Set((pendingSubs || []).map((s) => s.user_id));
+        }
+
         // Split into pending requests and active members
         const pending = memberships
           .filter((m) => m.role === "pending")
@@ -117,7 +135,16 @@ export default function HostDashboard() {
               bio: m.profiles?.bio || "",
               answers,
               requestedAt: timeAgo(m.created_at),
+              createdAt: m.created_at,
+              isPremium: premiumPendingIds.has(m.user_id),
             };
+          })
+          // Premium first; within each tier, newest first (matches the
+          // existing `.order("created_at", { ascending: false })` on
+          // memberships).
+          .sort((a, b) => {
+            if (a.isPremium !== b.isPremium) return a.isPremium ? -1 : 1;
+            return b.createdAt.localeCompare(a.createdAt);
           });
 
         const active = memberships
