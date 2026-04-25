@@ -52,13 +52,25 @@ export default function FilterSheet({ open, onClose, filters, onChange, isPremiu
     onChange({ ...filters, [key]: next });
   };
 
-  const activeCount = Object.values(filters).reduce(
-    (sum, arr) => sum + arr.length,
-    0
-  );
+  const activeCount =
+    (filters.vibeTags?.length || 0) +
+    (filters.ageRange?.length || 0) +
+    (filters.setting?.length || 0) +
+    (filters.accessType?.length || 0) +
+    (filters.verifiedOnly ? 1 : 0);
 
   const clearAll = () => {
-    onChange({ vibeTags: [], ageRange: [], setting: [], accessType: [] });
+    onChange({
+      vibeTags: [],
+      ageRange: [],
+      setting: [],
+      accessType: [],
+      verifiedOnly: false,
+    });
+  };
+
+  const toggleVerifiedOnly = () => {
+    onChange({ ...filters, verifiedOnly: !filters.verifiedOnly });
   };
 
   const PremiumLock = () => (
@@ -152,6 +164,39 @@ export default function FilterSheet({ open, onClose, filters, onChange, isPremiu
               selected={filters.accessType}
               onToggle={(v) => toggle("accessType", v)}
             />
+
+            {/* Trust — verified hosts only. Free for everyone since
+                trust-and-safety filters shouldn't be paywalled. */}
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-charcoal">Trust</label>
+              <button
+                type="button"
+                onClick={toggleVerifiedOnly}
+                className={`flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left cursor-pointer transition-colors border ${
+                  filters.verifiedOnly
+                    ? "bg-blue-50 border-blue-300 text-blue-800"
+                    : "bg-cream-dark border-transparent text-charcoal hover:border-sage-light"
+                }`}
+              >
+                <span className="flex items-center gap-2 text-xs font-medium">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+                  </svg>
+                  Verified hosts only
+                </span>
+                <span
+                  className={`relative w-9 h-5 rounded-full transition-colors ${
+                    filters.verifiedOnly ? "bg-blue-600" : "bg-cream"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                      filters.verifiedOnly ? "translate-x-[18px]" : "translate-x-0.5"
+                    }`}
+                  />
+                </span>
+              </button>
+            </div>
           </div>
         </div>
 
