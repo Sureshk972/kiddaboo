@@ -51,6 +51,18 @@ export default function useSessions(playgroupId) {
   // Create a new session
   const createSession = useCallback(
     async (sessionData) => {
+      // TEMP DEBUG: confirm auth.uid() matches playgroup creator at insert time.
+      const { data: sessionUser } = await supabase.auth.getUser();
+      const { data: pg } = await supabase
+        .from("playgroups")
+        .select("id, creator_id")
+        .eq("id", playgroupId)
+        .maybeSingle();
+      // eslint-disable-next-line no-alert
+      alert(
+        `DEBUG\nauth uid: ${sessionUser?.user?.id}\nplaygroup id: ${pg?.id}\ncreator id: ${pg?.creator_id}\ncreated_by sent: ${sessionData?.created_by}\nmatch: ${sessionUser?.user?.id === pg?.creator_id}`
+      );
+
       const { data, error } = await supabase
         .from("sessions")
         .insert({
