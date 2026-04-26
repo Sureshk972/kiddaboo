@@ -28,8 +28,9 @@ function RsvpButtons({ session, playgroupName }) {
 
   // Verified-only sessions: server enforces via trigger, but we mirror
   // the check here so the button is disabled with an explanation
-  // instead of failing on click.
-  const verifiedGate = !!session.requires_verified && !profile?.is_verified;
+  // instead of failing on click. Treat unloaded profile as not-verified
+  // so we don't briefly enable the button before auth resolves.
+  const verifiedGate = !!session.requires_verified && (!profile || !profile.is_verified);
 
   const handleRsvp = async (status) => {
     if (verifiedGate && status === "going") return;
