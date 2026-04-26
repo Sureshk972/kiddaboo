@@ -22,10 +22,7 @@ export default function VerificationsTab({ onPendingCountChange }) {
     setLoading(true);
     const { data, error: err } = await supabase
       .from("verification_requests")
-      .select(`
-        id, status, submitted_at, reviewed_at, notes,
-        profiles:user_id ( id, first_name, last_name, photo_url, bio, trust_score, is_verified )
-      `)
+      .select("id, user_id, status, submitted_at, reviewed_at, notes")
       .eq("status", filter)
       .order("submitted_at", { ascending: false })
       .limit(100);
@@ -36,7 +33,26 @@ export default function VerificationsTab({ onPendingCountChange }) {
       setLoading(false);
       return;
     }
-    setRequests(data || []);
+
+    // Fetch profiles separately — verification_requests.user_id is FK'd
+    // to auth.users (not public.profiles), so PostgREST can't resolve
+    // an embedded join. Hydrate client-side with a single batch query.
+    const userIds = (data || []).map((r) => r.user_id);
+    let profilesById = {};
+    if (userIds.length > 0) {
+      const { data: profs, error: profErr } = await supabase
+        .from("profiles")
+        .select("id, first_name, last_name, photo_url, bio, trust_score, is_verified")
+        .in("id", userIds);
+      if (profErr) {
+        console.error("Failed to fetch profiles for verification queue:", profErr);
+        setError("Couldn't load requests.");
+        setLoading(false);
+        return;
+      }
+      profilesById = Object.fromEntries((profs || []).map((p) => [p.id, p]));
+    }
+    setRequests((data || []).map((r) => ({ ...r, profiles: profilesById[r.user_id] || null })));
     setLoading(false);
 
     // Refresh sidebar pending count alongside.
