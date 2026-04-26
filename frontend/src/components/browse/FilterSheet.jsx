@@ -41,7 +41,14 @@ function ChipGroup({ label, options, selected, onToggle }) {
   );
 }
 
-export default function FilterSheet({ open, onClose, filters, onChange, isPremium = false, onUpgrade }) {
+const DISTANCE_OPTIONS = [
+  { value: 5, label: "≤ 5 mi" },
+  { value: 10, label: "≤ 10 mi" },
+  { value: 25, label: "≤ 25 mi" },
+  { value: 50, label: "≤ 50 mi" },
+];
+
+export default function FilterSheet({ open, onClose, filters, onChange, isPremium = false, onUpgrade, hasLocation = false }) {
   if (!open) return null;
 
   const toggle = (key, value) => {
@@ -57,7 +64,8 @@ export default function FilterSheet({ open, onClose, filters, onChange, isPremiu
     (filters.ageRange?.length || 0) +
     (filters.setting?.length || 0) +
     (filters.accessType?.length || 0) +
-    (filters.verifiedOnly ? 1 : 0);
+    (filters.verifiedOnly ? 1 : 0) +
+    (filters.maxDistance ? 1 : 0);
 
   const clearAll = () => {
     onChange({
@@ -66,6 +74,15 @@ export default function FilterSheet({ open, onClose, filters, onChange, isPremiu
       setting: [],
       accessType: [],
       verifiedOnly: false,
+      maxDistance: null,
+    });
+  };
+
+  const setMaxDistance = (value) => {
+    // Single-select: tapping the active chip clears it.
+    onChange({
+      ...filters,
+      maxDistance: filters.maxDistance === value ? null : value,
     });
   };
 
@@ -119,6 +136,40 @@ export default function FilterSheet({ open, onClose, filters, onChange, isPremiu
           </div>
 
           <div className="flex flex-col gap-6">
+            {/* Distance — needs user location to be meaningful */}
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-charcoal">Distance</label>
+              {hasLocation ? (
+                <div className="flex flex-wrap gap-2">
+                  {DISTANCE_OPTIONS.map((opt) => {
+                    const isSelected = filters.maxDistance === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setMaxDistance(opt.value)}
+                        className={`
+                          px-3 py-2 rounded-full text-xs font-medium
+                          transition-all duration-150 cursor-pointer border
+                          ${
+                            isSelected
+                              ? "bg-sage-light text-sage-dark border-sage"
+                              : "bg-cream-dark text-taupe border-transparent hover:border-sage-light"
+                          }
+                        `}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-taupe/70 bg-cream-dark/60 rounded-xl px-3 py-2.5">
+                  Enable location on the Browse page to filter by distance.
+                </p>
+              )}
+            </div>
+
             {/* Vibe */}
             <ChipGroup
               label="Vibe"
