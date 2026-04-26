@@ -4,7 +4,7 @@ export default function ReviewCard({ review, isOwn, onEdit, onReport }) {
   // Support both old shape (mock) and new shape (real)
   const name = review.reviewer_name || review.reviewer || "User";
   const initials = review.reviewer_initials || review.initials || "U";
-  const avatarUrl = review.reviewer_avatar_url || review.avatar_url || null;
+  const avatarUrl = review.reviewer_photo_url || review.avatar_url || null;
   const overall = review.rating_environment
     ? Math.round(
         (review.rating_environment +

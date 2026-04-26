@@ -14,7 +14,7 @@ export default function useReviews(playgroupId) {
       .from("reviews")
       .select(`
         *,
-        profiles:reviewer_id ( first_name, last_name, avatar_url )
+        profiles:reviewer_id ( first_name, last_name, photo_url )
       `)
       .eq("playgroup_id", playgroupId)
       .order("created_at", { ascending: false });
@@ -29,7 +29,7 @@ export default function useReviews(playgroupId) {
             reviewer_name: `${first} ${last}`.trim(),
             reviewer_initials:
               (first[0] || "U").toUpperCase() + (last[0] || "").toUpperCase(),
-            reviewer_avatar_url: r.profiles?.avatar_url || null,
+            reviewer_photo_url: r.profiles?.photo_url || null,
           };
         })
       );
@@ -144,7 +144,7 @@ export default function useReviews(playgroupId) {
         })
         .select(`
           *,
-          profiles:reviewer_id ( first_name, last_name, avatar_url )
+          profiles:reviewer_id ( first_name, last_name, photo_url )
         `)
         .single();
 
@@ -156,7 +156,7 @@ export default function useReviews(playgroupId) {
           reviewer_name: `${first} ${last}`.trim(),
           reviewer_initials:
             (first[0] || "U").toUpperCase() + (last[0] || "").toUpperCase(),
-          reviewer_avatar_url: data.profiles?.avatar_url || null,
+          reviewer_photo_url: data.profiles?.photo_url || null,
         };
         setReviews((prev) => [enriched, ...prev]);
       }
