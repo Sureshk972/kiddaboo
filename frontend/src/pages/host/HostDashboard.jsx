@@ -1035,6 +1035,7 @@ export default function HostDashboard() {
         onClose={() => setShowScheduleSheet(false)}
         defaultLocation={realPlaygroup?.location_name || ""}
         playgroupName={realPlaygroup?.name || ""}
+        hostIsVerified={!!profile?.is_verified}
         onSchedule={async (sessionData) => {
           const result = await createSession({
             ...sessionData,
@@ -1052,6 +1053,7 @@ export default function HostDashboard() {
         onClose={() => setEditTarget(null)}
         defaultLocation={realPlaygroup?.location_name || ""}
         playgroupName={realPlaygroup?.name || ""}
+        hostIsVerified={!!profile?.is_verified}
         existingSession={editTarget}
         onUpdate={async (updates, prev) => {
           const parts = [];

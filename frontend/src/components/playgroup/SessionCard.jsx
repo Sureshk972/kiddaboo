@@ -1,5 +1,6 @@
 import { useState } from "react";
 import useRsvps from "../../hooks/useRsvps";
+import { useAuth } from "../../context/AuthContext";
 import { friendlyDate, formatSessionTime, formatDuration } from "../../lib/dateUtils";
 import { downloadIcs } from "../../lib/icsExport";
 
@@ -21,10 +22,17 @@ function AddToCalendarButton({ session, playgroupName }) {
 
 function RsvpButtons({ session, playgroupName }) {
   const sessionId = session.id;
+  const { profile } = useAuth();
   const { myRsvp, goingCount, upsertRsvp, deleteRsvp } = useRsvps(sessionId);
   const [saving, setSaving] = useState(false);
 
+  // Verified-only sessions: server enforces via trigger, but we mirror
+  // the check here so the button is disabled with an explanation
+  // instead of failing on click.
+  const verifiedGate = !!session.requires_verified && !profile?.is_verified;
+
   const handleRsvp = async (status) => {
+    if (verifiedGate && status === "going") return;
     setSaving(true);
     if (myRsvp?.status === status) {
       await deleteRsvp();
@@ -38,10 +46,22 @@ function RsvpButtons({ session, playgroupName }) {
   const isNotGoing = myRsvp?.status === "not_going";
 
   return (
-    <div className="flex items-center gap-2 mt-3">
+    <div className="flex flex-col gap-2 mt-3">
+      {session.requires_verified && (
+        <div className="flex items-center gap-1.5 text-[11px] text-sage-dark">
+          <svg width="12" height="12" viewBox="0 0 20 20" fill="none">
+            <path d="M10 1l2.5 2 3 -.5 .5 3 2 2.5 -2 2.5 -.5 3 -3 -.5 -2.5 2 -2.5 -2 -3 .5 -.5 -3 -2 -2.5 2 -2.5 .5 -3 3 .5z" fill="#5C6B52" />
+            <path d="M7 10l2 2 4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span className="font-medium">Verified parents only</span>
+          {verifiedGate && <span className="text-taupe">— request verification on your profile</span>}
+        </div>
+      )}
+      <div className="flex items-center gap-2">
       <button
         onClick={() => handleRsvp("going")}
-        disabled={saving}
+        disabled={saving || verifiedGate}
+        title={verifiedGate ? "Verified parents only" : undefined}
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer border ${
           isGoing
             ? "bg-sage text-white border-sage"
@@ -81,6 +101,7 @@ function RsvpButtons({ session, playgroupName }) {
       </button>
 
       {isGoing && <AddToCalendarButton session={session} playgroupName={playgroupName} />}
+      </div>
     </div>
   );
 }

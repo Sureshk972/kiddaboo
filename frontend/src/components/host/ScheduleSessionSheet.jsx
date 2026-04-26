@@ -34,6 +34,10 @@ export default function ScheduleSessionSheet({
   // onSchedule. Copy and button labels shift accordingly.
   existingSession = null,
   onUpdate,
+  // Hosts can only restrict a session to verified parents if they
+  // themselves are verified — otherwise the trust signal is empty.
+  // Parent toggles visibility based on this flag.
+  hostIsVerified = false,
 }) {
   const isEdit = !!existingSession;
   const [date, setDate] = useState("");
@@ -41,6 +45,7 @@ export default function ScheduleSessionSheet({
   const [duration, setDuration] = useState(120);
   const [location, setLocation] = useState(defaultLocation);
   const [notes, setNotes] = useState("");
+  const [requiresVerified, setRequiresVerified] = useState(false);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [confirmOvernight, setConfirmOvernight] = useState(false);
@@ -56,6 +61,7 @@ export default function ScheduleSessionSheet({
     setDuration(existingSession.duration_minutes || 120);
     setLocation(existingSession.location_name || "");
     setNotes(existingSession.notes || "");
+    setRequiresVerified(!!existingSession.requires_verified);
   }, [isOpen, existingSession]);
 
   const canSubmit = date && time && !saving;
@@ -84,6 +90,7 @@ export default function ScheduleSessionSheet({
       duration_minutes: duration,
       location_name: location || null,
       notes: notes || null,
+      requires_verified: hostIsVerified ? requiresVerified : false,
     };
 
     const result = isEdit
@@ -113,6 +120,7 @@ export default function ScheduleSessionSheet({
     setDuration(120);
     setLocation(defaultLocation);
     setNotes("");
+    setRequiresVerified(false);
     setSaving(false);
     setSuccess(false);
     setConfirmOvernight(false);
@@ -314,6 +322,31 @@ export default function ScheduleSessionSheet({
                   "
                 />
               </div>
+
+              {hostIsVerified && (
+                <div className="mb-6 bg-white border border-cream-dark rounded-xl p-3">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={requiresVerified}
+                      onChange={(e) => setRequiresVerified(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 accent-sage cursor-pointer"
+                    />
+                    <span className="flex-1">
+                      <span className="text-sm font-medium text-charcoal flex items-center gap-1">
+                        Verified parents only
+                        <svg width="12" height="12" viewBox="0 0 20 20" fill="none">
+                          <path d="M10 1l2.5 2 3 -.5 .5 3 2 2.5 -2 2.5 -.5 3 -3 -.5 -2.5 2 -2.5 -2 -3 .5 -.5 -3 -2 -2.5 2 -2.5 .5 -3 3 .5z" fill="#5C6B52" />
+                          <path d="M7 10l2 2 4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </span>
+                      <span className="text-xs text-taupe block mt-0.5">
+                        Only parents with the Verified badge can RSVP &ldquo;Going.&rdquo;
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              )}
 
               <Button
                 fullWidth
