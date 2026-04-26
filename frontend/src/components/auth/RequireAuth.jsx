@@ -35,6 +35,7 @@ export default function RequireAuth({ children }) {
   // to /verify-phone before we even know their state.
   if (
     profile &&
+    profile.role !== "admin" &&
     !profile.is_phone_verified &&
     !PHONE_VERIFY_EXEMPT.has(location.pathname)
   ) {
