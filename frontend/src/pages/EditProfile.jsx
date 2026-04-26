@@ -28,7 +28,7 @@ function childFieldsDiffer(a, b) {
 export default function EditProfile() {
   useDocumentTitle("Edit Profile"); // #50
   const navigate = useNavigate();
-  const { user, profile, updateProfile } = useAuth();
+  const { user, profile, updateProfile, isHost } = useAuth();
 
   // Profile fields
   const [firstName, setFirstName] = useState("");
@@ -470,10 +470,15 @@ export default function EditProfile() {
           maxSelections={4}
         />
 
-        {/* Divider */}
-        <div className="h-px bg-cream-dark" />
+        {/* Divider — only when the children section will render below */}
+        {!isHost && <div className="h-px bg-cream-dark" />}
 
-        {/* Children section */}
+        {/* Children section — hidden for hosts. Children belong to a
+            parent's profile only; hosts shouldn't be entering kids on
+            an organizer account. The MyProfile menu already hides the
+            "Manage Children" link for hosts; this closes the loophole
+            of navigating directly to /edit-profile#children. */}
+        {!isHost && (
         <div id="children" style={{ scrollMarginTop: "80px" }}>
           <h2 className="text-lg font-bold tracking-tight mb-1" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
             Your little ones
@@ -541,6 +546,7 @@ export default function EditProfile() {
             + Add another child
           </button>
         </div>
+        )}
 
         {/* Error / Success */}
         {error && <p className="text-sm text-red-500">{error}</p>}
