@@ -27,7 +27,7 @@ const VERIFY_ERROR_COPY = {
  */
 export default function PhoneVerify() {
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { signOut, fetchProfile, user } = useAuth();
   const { status, error, sendCode, verifyCode } = usePhoneVerification();
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
@@ -66,8 +66,15 @@ export default function PhoneVerify() {
     e.preventDefault();
     const { error: err } = await verifyCode(normalizePhone(phone), code);
     if (!err) {
+      // Refetch profile so AuthContext picks up is_phone_verified=true
+      // before we navigate. Otherwise RequireAuth on the next route
+      // sees the stale flag and bounces back here, creating a loop.
+      if (user) await fetchProfile(user.id);
       const role = sessionStorage.getItem("kiddaboo.pendingAccountType");
-      navigate(role === "organizer" ? "/host/create" : "/children");
+      // Parent already entered children before being routed here, so
+      // skip /children and go straight to /success. Organizers still
+      // need to create their first playgroup.
+      navigate(role === "organizer" ? "/host/create" : "/success");
     }
   }
 
