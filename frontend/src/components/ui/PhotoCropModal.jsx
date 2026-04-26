@@ -9,34 +9,49 @@ const MIME = "image/jpeg";
 // square canvas at MAX_SIZE, then re-encode as JPEG. Mirrors what
 // imageProcessing.js does for auto-center-crop, just driven by the
 // modal's drag/zoom state instead of the geometric center.
+function loadImage(src, timeoutMs = 15000) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const timer = setTimeout(() => {
+      img.src = "";
+      reject(new Error("image_load_timeout"));
+    }, timeoutMs);
+    img.onload = () => {
+      clearTimeout(timer);
+      resolve(img);
+    };
+    img.onerror = () => {
+      clearTimeout(timer);
+      reject(new Error("image_load_failed"));
+    };
+    img.src = src;
+  });
+}
+
 async function renderCrop(imageSrc, pixelCrop, baseName) {
-  const bitmap = await createImageBitmap(await (await fetch(imageSrc)).blob());
-  try {
-    const target = Math.min(pixelCrop.width, MAX_SIZE);
-    const canvas = document.createElement("canvas");
-    canvas.width = target;
-    canvas.height = target;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(
-      bitmap,
-      pixelCrop.x,
-      pixelCrop.y,
-      pixelCrop.width,
-      pixelCrop.height,
-      0,
-      0,
-      target,
-      target
-    );
-    const blob = await new Promise((resolve) =>
-      canvas.toBlob(resolve, MIME, QUALITY)
-    );
-    if (!blob) return null;
-    const safeBase = (baseName || "photo").replace(/\.[^.]+$/, "");
-    return new File([blob], `${safeBase}.jpg`, { type: MIME });
-  } finally {
-    bitmap.close?.();
-  }
+  const img = await loadImage(imageSrc);
+  const target = Math.min(pixelCrop.width, MAX_SIZE);
+  const canvas = document.createElement("canvas");
+  canvas.width = target;
+  canvas.height = target;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(
+    img,
+    pixelCrop.x,
+    pixelCrop.y,
+    pixelCrop.width,
+    pixelCrop.height,
+    0,
+    0,
+    target,
+    target
+  );
+  const blob = await new Promise((resolve) =>
+    canvas.toBlob(resolve, MIME, QUALITY)
+  );
+  if (!blob) return null;
+  const safeBase = (baseName || "photo").replace(/\.[^.]+$/, "");
+  return new File([blob], `${safeBase}.jpg`, { type: MIME });
 }
 
 export default function PhotoCropModal({ file, onCancel, onConfirm }) {
@@ -53,6 +68,17 @@ export default function PhotoCropModal({ file, onCancel, onConfirm }) {
     setImageSrc(url);
     return () => URL.revokeObjectURL(url);
   }, [file]);
+
+  // Escape always exits — even if a render hangs busy=true, the user
+  // needs an out. onCancel unmounts the modal in the parent so any
+  // in-flight renderCrop becomes a no-op.
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") onCancel();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onCancel]);
 
   const onCropComplete = useCallback((_area, areaPixels) => {
     setCroppedAreaPixels(areaPixels);
@@ -83,7 +109,7 @@ export default function PhotoCropModal({ file, onCancel, onConfirm }) {
     <>
       <div
         className="fixed inset-0 bg-charcoal/60 z-40"
-        onClick={() => !busy && onCancel()}
+        onClick={onCancel}
       />
       <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
         <div className="bg-cream rounded-2xl w-full max-w-md shadow-xl overflow-hidden">
@@ -129,8 +155,7 @@ export default function PhotoCropModal({ file, onCancel, onConfirm }) {
             <div className="flex gap-3">
               <button
                 onClick={onCancel}
-                disabled={busy}
-                className="flex-1 bg-white border border-cream-dark text-charcoal font-medium rounded-xl py-3 text-sm cursor-pointer transition-colors hover:bg-cream-dark/50 disabled:opacity-50"
+                className="flex-1 bg-white border border-cream-dark text-charcoal font-medium rounded-xl py-3 text-sm cursor-pointer transition-colors hover:bg-cream-dark/50"
               >
                 Cancel
               </button>
