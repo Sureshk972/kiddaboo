@@ -12,6 +12,11 @@ export default function VerificationsTab({ onPendingCountChange }) {
   const [loading, setLoading] = useState(true);
   const [actingId, setActingId] = useState(null);
   const [error, setError] = useState("");
+  // Reject opens an inline notes editor on the row instead of a confirm()
+  // dialog, so admins can leave a short reason that flows into the
+  // rejection push notification body.
+  const [rejectingId, setRejectingId] = useState(null);
+  const [rejectNote, setRejectNote] = useState("");
 
   const fetchRequests = async () => {
     setLoading(true);
@@ -48,13 +53,15 @@ export default function VerificationsTab({ onPendingCountChange }) {
     fetchRequests();
   }, [filter]);
 
-  const handleDecision = async (req, decision) => {
+  const handleDecision = async (req, decision, noteOverride) => {
     const verb = decision === "approved" ? "approve" : "reject";
-    if (!window.confirm(`${decision === "approved" ? "Approve" : "Reject"} verification for ${req.profiles?.first_name || "this user"}?`)) {
+    if (decision === "approved" && !window.confirm(`Approve verification for ${req.profiles?.first_name || "this user"}?`)) {
       return;
     }
     setActingId(req.id);
     setError("");
+
+    const note = (noteOverride ?? "").trim() || null;
 
     // Update the request row first. If this fails (e.g. RLS denial),
     // we abort before touching the profile so we don't leave the two
@@ -65,6 +72,7 @@ export default function VerificationsTab({ onPendingCountChange }) {
         status: decision,
         reviewed_at: new Date().toISOString(),
         reviewer_id: (await supabase.auth.getUser()).data.user?.id,
+        ...(decision === "rejected" ? { notes: note } : {}),
       })
       .eq("id", req.id);
 
@@ -89,6 +97,8 @@ export default function VerificationsTab({ onPendingCountChange }) {
     }
 
     setActingId(null);
+    setRejectingId(null);
+    setRejectNote("");
     fetchRequests();
   };
 
@@ -171,7 +181,7 @@ export default function VerificationsTab({ onPendingCountChange }) {
                 </div>
               </div>
 
-              {filter === "pending" && (
+              {filter === "pending" && rejectingId !== req.id && (
                 <div className="flex gap-2 mt-3">
                   <button
                     type="button"
@@ -183,12 +193,52 @@ export default function VerificationsTab({ onPendingCountChange }) {
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleDecision(req, "rejected")}
+                    onClick={() => {
+                      setRejectingId(req.id);
+                      setRejectNote("");
+                    }}
                     disabled={actingId === req.id}
                     className="flex-1 bg-white border border-cream-dark text-charcoal text-sm font-medium rounded-xl px-3 py-2 hover:bg-cream disabled:opacity-60 disabled:cursor-wait cursor-pointer"
                   >
                     Reject
                   </button>
+                </div>
+              )}
+
+              {filter === "pending" && rejectingId === req.id && (
+                <div className="mt-3 space-y-2">
+                  <label className="block text-xs font-medium text-charcoal">
+                    Reason (optional, shown to user)
+                  </label>
+                  <textarea
+                    value={rejectNote}
+                    onChange={(e) => setRejectNote(e.target.value.slice(0, 280))}
+                    placeholder="e.g. Photo doesn't match profile name"
+                    rows={2}
+                    className="w-full text-sm border border-cream-dark rounded-xl px-3 py-2 focus:outline-none focus:border-charcoal resize-none"
+                  />
+                  <p className="text-[10px] text-taupe text-right">{rejectNote.length}/280</p>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleDecision(req, "rejected", rejectNote)}
+                      disabled={actingId === req.id}
+                      className="flex-1 bg-charcoal text-white text-sm font-medium rounded-xl px-3 py-2 hover:bg-charcoal/90 disabled:opacity-60 disabled:cursor-wait cursor-pointer"
+                    >
+                      {actingId === req.id ? "..." : "Confirm reject"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRejectingId(null);
+                        setRejectNote("");
+                      }}
+                      disabled={actingId === req.id}
+                      className="flex-1 bg-white border border-cream-dark text-charcoal text-sm font-medium rounded-xl px-3 py-2 hover:bg-cream disabled:opacity-60 disabled:cursor-wait cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
