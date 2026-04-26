@@ -84,6 +84,17 @@ const NOTIFICATION_TYPES = [
       </svg>
     ),
   },
+  {
+    key: "reviews",
+    label: "Review Reminders",
+    description: "A nudge to leave a review a few hours after a session you attended",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M8 10h8M8 13h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
 ];
 
 const DEFAULT_PREFS = {
@@ -94,6 +105,7 @@ const DEFAULT_PREFS = {
   rsvps: true,
   session_reminders: true,
   verifications: true,
+  reviews: true,
 };
 
 export default function NotificationSettings() {
