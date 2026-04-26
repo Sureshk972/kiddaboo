@@ -41,6 +41,7 @@ serve(async (req: Request) => {
       | "sessions"
       | "rsvps"
       | "verifications"
+      | "reviews"
       | null;
     let notifications: {
       userId: string;
