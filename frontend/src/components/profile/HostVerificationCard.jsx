@@ -15,6 +15,11 @@ export default function HostVerificationCard({ userId, isVerified }) {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  // Address-entry form is opened by the "Request verification" /
+  // "Request again" button. We keep the textarea hidden by default
+  // so the card stays compact when there's nothing to do.
+  const [addressOpen, setAddressOpen] = useState(false);
+  const [address, setAddress] = useState("");
 
   const fetchLatest = async () => {
     setLoading(true);
@@ -34,11 +39,16 @@ export default function HostVerificationCard({ userId, isVerified }) {
   }, [userId]);
 
   const submitRequest = async () => {
+    const trimmed = address.trim();
+    if (!trimmed) {
+      setError("Enter your physical address to continue.");
+      return;
+    }
     setSubmitting(true);
     setError("");
     const { error: err } = await supabase
       .from("verification_requests")
-      .insert({ user_id: userId });
+      .insert({ user_id: userId, address: trimmed });
     setSubmitting(false);
     if (err) {
       console.error("Failed to submit verification request:", err);
@@ -50,6 +60,8 @@ export default function HostVerificationCard({ userId, isVerified }) {
       }
       return;
     }
+    setAddressOpen(false);
+    setAddress("");
     fetchLatest();
   };
 
@@ -112,14 +124,15 @@ export default function HostVerificationCard({ userId, isVerified }) {
               </p>
               <div className="mt-2 flex items-center gap-2">
                 {statusPill("Declined", "neutral")}
-                <button
-                  type="button"
-                  onClick={submitRequest}
-                  disabled={submitting}
-                  className="text-xs bg-blue-600 text-white font-medium rounded-lg px-3 py-1.5 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-wait cursor-pointer"
-                >
-                  {submitting ? "Submitting..." : "Request again"}
-                </button>
+                {!addressOpen && (
+                  <button
+                    type="button"
+                    onClick={() => setAddressOpen(true)}
+                    className="text-xs bg-blue-600 text-white font-medium rounded-lg px-3 py-1.5 hover:bg-blue-700 cursor-pointer"
+                  >
+                    Request again
+                  </button>
+                )}
               </div>
             </>
           ) : (
@@ -127,17 +140,53 @@ export default function HostVerificationCard({ userId, isVerified }) {
               <p className="text-xs text-taupe mt-0.5 leading-relaxed">
                 Verified hosts get a badge on their group and appear in the trusted-hosts filter.
               </p>
-              <div className="mt-2">
+              {!addressOpen && (
+                <div className="mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setAddressOpen(true)}
+                    className="text-xs bg-blue-600 text-white font-medium rounded-lg px-3 py-1.5 hover:bg-blue-700 cursor-pointer"
+                  >
+                    Request verification
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+          {addressOpen && !isVerified && latest?.status !== "pending" && (
+            <div className="mt-3 flex flex-col gap-2">
+              <label className="text-xs text-charcoal" htmlFor="verify-address">
+                Physical address (street, city, state, zip)
+              </label>
+              <textarea
+                id="verify-address"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                rows={2}
+                className="border border-cream-dark rounded-lg px-3 py-2 text-sm"
+                placeholder="123 Main St, Springfield, IL 62701"
+              />
+              <p className="text-[11px] text-taupe">
+                We use this to confirm you're a real person at a real location. It's not shown to parents.
+              </p>
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={submitRequest}
                   disabled={submitting}
                   className="text-xs bg-blue-600 text-white font-medium rounded-lg px-3 py-1.5 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-wait cursor-pointer"
                 >
-                  {submitting ? "Submitting..." : "Request verification"}
+                  {submitting ? "Submitting..." : "Submit for review"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setAddressOpen(false); setAddress(""); setError(""); }}
+                  className="text-xs text-taupe hover:text-charcoal"
+                >
+                  Cancel
                 </button>
               </div>
-            </>
+            </div>
           )}
           {error && (
             <p className="text-xs text-red-600 mt-2">{error}</p>

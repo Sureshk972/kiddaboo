@@ -22,7 +22,7 @@ export default function VerificationsTab({ onPendingCountChange }) {
     setLoading(true);
     const { data, error: err } = await supabase
       .from("verification_requests")
-      .select("id, user_id, status, submitted_at, reviewed_at, notes")
+      .select("id, user_id, status, submitted_at, reviewed_at, notes, address")
       .eq("status", filter)
       .order("submitted_at", { ascending: false })
       .limit(100);
@@ -187,6 +187,12 @@ export default function VerificationsTab({ onPendingCountChange }) {
                   {p.bio && (
                     <p className="text-xs text-charcoal/80 mt-2 leading-relaxed line-clamp-3">
                       {p.bio}
+                    </p>
+                  )}
+                  {req.address && (
+                    <p className="text-xs text-charcoal mt-2">
+                      <span className="font-medium">Address: </span>
+                      <span className="text-charcoal/80">{req.address}</span>
                     </p>
                   )}
                   {req.notes && (
