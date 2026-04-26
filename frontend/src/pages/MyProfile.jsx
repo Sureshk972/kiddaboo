@@ -223,7 +223,7 @@ export default function MyProfile() {
             onClick={() => !deleting && setShowDeleteConfirm(false)}
           />
           <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
-            <div className="bg-cream rounded-2xl p-6 max-w-sm w-full shadow-xl">
+            <div className="bg-cream rounded-2xl p-6 max-w-sm w-full shadow-xl max-h-[85vh] overflow-y-auto">
               <h3 className="font-heading font-bold text-charcoal text-lg mb-2">
                 Delete your account?
               </h3>

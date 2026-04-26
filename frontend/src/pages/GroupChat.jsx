@@ -98,7 +98,7 @@ export default function GroupChat() {
     prevMessageCount.current = messages.length;
     // Keep last-read timestamp fresh while viewing
     if (messages.length > 0) markChatRead(playgroupId);
-  }, [messages.length]);
+  }, [messages.length, playgroupId]);
 
   // Handle send. Return the ok flag from sendMessage so ChatInput can
   // keep the typed text in the field on failure (#24) instead of

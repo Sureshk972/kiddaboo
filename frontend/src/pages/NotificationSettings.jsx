@@ -148,7 +148,7 @@ export default function NotificationSettings() {
   // the error, so a dropped network request would leave the UI in a
   // state that silently disagreed with the DB until the next reload.
   const togglePref = async (key) => {
-    if (!user) return;
+    if (!user || saving) return;
     const previous = prefs;
     const updated = { ...prefs, [key]: !prefs[key] };
     setPrefs(updated);
