@@ -1,44 +1,57 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { OnboardingProvider } from "./context/OnboardingContext";
 import { HostProvider } from "./context/HostContext";
 import AppLayout from "./components/layout/AppLayout";
 import Welcome from "./pages/Welcome";
-import PhoneVerification from "./pages/PhoneVerification";
-import CreateProfile from "./pages/CreateProfile";
-import AddChildren from "./pages/AddChildren";
-import BrowseSuccess from "./pages/BrowseSuccess";
-import PlaygroupDetail from "./pages/PlaygroupDetail";
-import Browse from "./pages/Browse";
-import MyGroups from "./pages/MyGroups";
-import Messages from "./pages/Messages";
-import MyProfile from "./pages/MyProfile";
-import EditProfile from "./pages/EditProfile";
-import CreatePlaygroup from "./pages/host/CreatePlaygroup";
-import ScreeningQuestions from "./pages/host/ScreeningQuestions";
-import EnvironmentSetup from "./pages/host/EnvironmentSetup";
-import HostPhotos from "./pages/host/HostPhotos";
-import HostSuccess from "./pages/host/HostSuccess";
-import HostDashboard from "./pages/host/HostDashboard";
-import HostInsights from "./pages/host/HostInsights";
-import EditPlaygroup from "./pages/host/EditPlaygroup";
-import HostPremium from "./pages/host/HostPremium";
-import Admin from "./pages/Admin";
-import NotificationSettings from "./pages/NotificationSettings";
-import GroupChat from "./pages/GroupChat";
-import ResetPassword from "./pages/ResetPassword";
-import TermsOfService from "./pages/TermsOfService";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import Premium from "./pages/Premium";
-import NotFound from "./pages/NotFound";
 import RequireAuth from "./components/auth/RequireAuth";
 import RequireAdmin from "./components/auth/RequireAdmin";
 import OnboardingOnly from "./components/auth/OnboardingOnly";
 import ParentLayout from "./layouts/ParentLayout";
 import OrganizerLayout from "./layouts/OrganizerLayout";
 import RequireRole from "./components/auth/RequireRole";
-import ChooseRole from "./pages/onboarding/ChooseRole";
-import PhoneVerify from "./pages/onboarding/PhoneVerify";
+
+// Lazy-load every non-landing page so the initial JS bundle stays
+// small. Welcome and the auth/role wrappers stay eager since they're
+// rendered immediately.
+const PhoneVerification = lazy(() => import("./pages/PhoneVerification"));
+const CreateProfile = lazy(() => import("./pages/CreateProfile"));
+const AddChildren = lazy(() => import("./pages/AddChildren"));
+const BrowseSuccess = lazy(() => import("./pages/BrowseSuccess"));
+const PlaygroupDetail = lazy(() => import("./pages/PlaygroupDetail"));
+const Browse = lazy(() => import("./pages/Browse"));
+const MyGroups = lazy(() => import("./pages/MyGroups"));
+const Messages = lazy(() => import("./pages/Messages"));
+const MyProfile = lazy(() => import("./pages/MyProfile"));
+const EditProfile = lazy(() => import("./pages/EditProfile"));
+const CreatePlaygroup = lazy(() => import("./pages/host/CreatePlaygroup"));
+const ScreeningQuestions = lazy(() => import("./pages/host/ScreeningQuestions"));
+const EnvironmentSetup = lazy(() => import("./pages/host/EnvironmentSetup"));
+const HostPhotos = lazy(() => import("./pages/host/HostPhotos"));
+const HostSuccess = lazy(() => import("./pages/host/HostSuccess"));
+const HostDashboard = lazy(() => import("./pages/host/HostDashboard"));
+const HostInsights = lazy(() => import("./pages/host/HostInsights"));
+const EditPlaygroup = lazy(() => import("./pages/host/EditPlaygroup"));
+const HostPremium = lazy(() => import("./pages/host/HostPremium"));
+const Admin = lazy(() => import("./pages/Admin"));
+const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
+const GroupChat = lazy(() => import("./pages/GroupChat"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const Premium = lazy(() => import("./pages/Premium"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const ChooseRole = lazy(() => import("./pages/onboarding/ChooseRole"));
+const PhoneVerify = lazy(() => import("./pages/onboarding/PhoneVerify"));
+
+function RouteFallback() {
+  return (
+    <div className="min-h-screen bg-cream flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-sage border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+}
 
 export default function App() {
   return (
@@ -46,6 +59,7 @@ export default function App() {
       <AuthProvider>
       <OnboardingProvider>
         <HostProvider>
+          <Suspense fallback={<RouteFallback />}>
           <Routes>
             {/* Public routes — no auth required */}
             <Route path="/choose-role" element={<ChooseRole />} />
@@ -94,6 +108,7 @@ export default function App() {
             {/* 404 catch-all */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </Suspense>
         </HostProvider>
       </OnboardingProvider>
       </AuthProvider>
