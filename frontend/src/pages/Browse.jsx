@@ -13,6 +13,7 @@ import { useDocumentTitle } from "../hooks/useDocumentTitle";
 const SORT_OPTIONS = [
   { value: "distance", label: "Nearest" },
   { value: "rating", label: "Rated" },
+  { value: "newest", label: "Newest" },
   { value: "spots", label: "Spots" },
 ];
 
@@ -37,6 +38,7 @@ export default function Browse() {
     setting: [],
     accessType: [],
     verifiedOnly: false,
+    maxDistance: null,
   });
 
   const { userLocation, loading: locationLoading, error: locationError, requestLocation } = useUserLocation();
@@ -138,7 +140,8 @@ export default function Browse() {
     filters.ageRange.length +
     filters.setting.length +
     filters.accessType.length +
-    (filters.verifiedOnly ? 1 : 0);
+    (filters.verifiedOnly ? 1 : 0) +
+    (filters.maxDistance ? 1 : 0);
 
   // Tag and (for free users) gate newly-posted groups. Computed in the
   // memo so the cutoff stays fresh as time passes between fetches.
@@ -218,6 +221,15 @@ export default function Browse() {
       }));
     }
 
+    // Max-distance filter — only applies when we know the user's
+    // location. Groups without coordinates are dropped from a distance
+    // filter rather than silently passing through.
+    if (filters.maxDistance && userLocation) {
+      list = list.filter(
+        (g) => g.distance != null && g.distance <= filters.maxDistance
+      );
+    }
+
     // Sort
     if (sortBy === "distance" && userLocation) {
       // #22: strict distance sort. We used to bucket Open groups above
@@ -237,6 +249,12 @@ export default function Browse() {
       });
     } else if (sortBy === "rating") {
       list.sort((a, b) => b.rating - a.rating);
+    } else if (sortBy === "newest") {
+      list.sort((a, b) => {
+        const at = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const bt = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return bt - at;
+      });
     } else if (sortBy === "reviews") {
       list.sort((a, b) => b.reviewCount - a.reviewCount);
     } else if (sortBy === "spots") {
@@ -563,12 +581,21 @@ export default function Browse() {
                   No playgroups found
                 </h3>
                 <p className="text-sm text-taupe mb-4">
-                  Try adjusting your search or filters.
+                  {(() => {
+                    // Suggest loosening the single most-restrictive
+                    // filter rather than always blanket "clear all", so
+                    // the user keeps the rest of their refinement.
+                    if (search) return "Try a different search term, or loosen your filters.";
+                    if (filters.maxDistance) return "Try a wider distance.";
+                    if (filters.verifiedOnly) return "Try removing 'Verified hosts only'.";
+                    if (filters.accessType.length > 0) return "Try removing access-type filters.";
+                    return "Try adjusting your filters.";
+                  })()}
                 </p>
                 <button
                   onClick={() => {
                     setSearch("");
-                    setFilters({ vibeTags: [], ageRange: [], setting: [], accessType: [], verifiedOnly: false });
+                    setFilters({ vibeTags: [], ageRange: [], setting: [], accessType: [], verifiedOnly: false, maxDistance: null });
                   }}
                   className="text-sm text-sage font-medium hover:text-sage-dark cursor-pointer bg-transparent border-none underline underline-offset-4"
                 >
@@ -607,6 +634,7 @@ export default function Browse() {
         onChange={setFilters}
         isPremium={isPremium}
         onUpgrade={() => navigate("/premium")}
+        hasLocation={!!userLocation}
       />
     </div>
   );
