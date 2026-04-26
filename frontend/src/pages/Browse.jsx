@@ -568,7 +568,7 @@ export default function Browse() {
                 <button
                   onClick={() => {
                     setSearch("");
-                    setFilters({ vibeTags: [], ageRange: [], setting: [], accessType: [] });
+                    setFilters({ vibeTags: [], ageRange: [], setting: [], accessType: [], verifiedOnly: false });
                   }}
                   className="text-sm text-sage font-medium hover:text-sage-dark cursor-pointer bg-transparent border-none underline underline-offset-4"
                 >
