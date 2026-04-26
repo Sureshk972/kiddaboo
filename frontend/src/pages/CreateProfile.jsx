@@ -7,7 +7,7 @@ import Button from "../components/ui/Button";
 import { useOnboarding } from "../context/OnboardingContext";
 import { useAuth } from "../context/AuthContext";
 import { uploadProfilePhoto } from "../lib/storage";
-import { processProfilePhoto } from "../lib/imageProcessing";
+import PhotoCropModal from "../components/ui/PhotoCropModal";
 import { PHILOSOPHY_TAGS } from "../data/mockData";
 
 export default function CreateProfile() {
@@ -17,6 +17,7 @@ export default function CreateProfile() {
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [photoFile, setPhotoFile] = useState(null);
+  const [rawPhoto, setRawPhoto] = useState(null);
 
   // Read role once on mount — determines which voice the copy uses.
   // Missing value falls back to parent framing; handleContinue has a
@@ -26,12 +27,18 @@ export default function CreateProfile() {
   );
   const isOrganizer = pendingAccountType === "organizer";
 
-  const handlePhotoChange = async (e) => {
+  const handlePhotoChange = (e) => {
     const raw = e.target.files?.[0];
+    // Reset value so re-picking the same file re-opens the cropper.
+    e.target.value = "";
     if (!raw) return;
-    const processed = await processProfilePhoto(raw);
-    setPhotoFile(processed);
-    updateField("photoUrl", URL.createObjectURL(processed));
+    setRawPhoto(raw);
+  };
+
+  const handleCropConfirm = (cropped) => {
+    setPhotoFile(cropped);
+    updateField("photoUrl", URL.createObjectURL(cropped));
+    setRawPhoto(null);
   };
 
   const handleContinue = async () => {
@@ -230,6 +237,12 @@ export default function CreateProfile() {
           {saving ? "Saving..." : "Continue"}
         </Button>
       </div>
+
+      <PhotoCropModal
+        file={rawPhoto}
+        onCancel={() => setRawPhoto(null)}
+        onConfirm={handleCropConfirm}
+      />
     </OnboardingLayout>
   );
 }

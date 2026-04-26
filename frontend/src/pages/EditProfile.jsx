@@ -6,7 +6,7 @@ import Button from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 import { uploadProfilePhoto } from "../lib/storage";
-import { processProfilePhoto } from "../lib/imageProcessing";
+import PhotoCropModal from "../components/ui/PhotoCropModal";
 import { PHILOSOPHY_TAGS, AGE_RANGES, PERSONALITY_TAGS } from "../data/mockData";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
@@ -37,7 +37,7 @@ export default function EditProfile() {
   const [philosophyTags, setPhilosophyTags] = useState([]);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [photoFile, setPhotoFile] = useState(null);
-  const [photoProcessing, setPhotoProcessing] = useState(false);
+  const [rawPhoto, setRawPhoto] = useState(null);
   // Tracks an explicit "Remove photo" tap so handleSave clears
   // photo_url even though no new file was uploaded.
   const [photoCleared, setPhotoCleared] = useState(false);
@@ -69,22 +69,18 @@ export default function EditProfile() {
     }
   }, [profile]);
 
-  const handlePhotoChange = async (e) => {
+  const handlePhotoChange = (e) => {
     const raw = e.target.files?.[0];
+    e.target.value = "";
     if (!raw) return;
-    // Process synchronously before previewing so the preview, the file
-    // we'll upload, and the file we measure size against are all the
-    // same processed blob — no chance of a 4 MB original sneaking past
-    // validation that compared against the resized version.
-    setPhotoProcessing(true);
-    try {
-      const processed = await processProfilePhoto(raw);
-      setPhotoFile(processed);
-      setPhotoPreview(URL.createObjectURL(processed));
-      setPhotoCleared(false);
-    } finally {
-      setPhotoProcessing(false);
-    }
+    setRawPhoto(raw);
+  };
+
+  const handleCropConfirm = (cropped) => {
+    setPhotoFile(cropped);
+    setPhotoPreview(URL.createObjectURL(cropped));
+    setPhotoCleared(false);
+    setRawPhoto(null);
   };
 
   const handleRemovePhoto = () => {
@@ -396,7 +392,6 @@ export default function EditProfile() {
               accept="image/*"
               onChange={handlePhotoChange}
               className="hidden"
-              disabled={photoProcessing}
             />
             <div className="w-24 h-24 rounded-full border-2 border-dashed border-taupe/30 bg-cream-dark flex items-center justify-center overflow-hidden group-hover:border-sage transition-colors relative">
               {photoPreview ? (
@@ -411,17 +406,12 @@ export default function EditProfile() {
                   <circle cx="12" cy="13" r="4" stroke="currentColor" strokeWidth="1.5"/>
                 </svg>
               )}
-              {photoProcessing && (
-                <div className="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                </div>
-              )}
             </div>
             <p className="text-xs text-taupe/60 text-center mt-2">
-              {photoProcessing ? "Processing…" : photoPreview ? "Change photo" : "Add photo"}
+              {photoPreview ? "Change photo" : "Add photo"}
             </p>
           </label>
-          {photoPreview && !photoProcessing && (
+          {photoPreview && (
             <button
               type="button"
               onClick={handleRemovePhoto}
@@ -563,6 +553,12 @@ export default function EditProfile() {
           {saving ? "Saving..." : "Save Changes"}
         </Button>
       </div>
+
+      <PhotoCropModal
+        file={rawPhoto}
+        onCancel={() => setRawPhoto(null)}
+        onConfirm={handleCropConfirm}
+      />
     </div>
   );
 }
