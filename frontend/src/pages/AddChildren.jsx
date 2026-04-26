@@ -128,11 +128,17 @@ export default function AddChildren() {
 
         {/* Add another child */}
         <Button variant="secondary" fullWidth onClick={addChild}>
-          + Add another child
+          {data.children.length === 0 ? "+ Add a child" : "+ Add another child"}
         </Button>
 
         {error && (
           <p className="text-sm text-red-500">{error}</p>
+        )}
+
+        {!data.children.some((c) => c.name.trim()) && (
+          <p className="text-xs text-taupe/70 text-center -mb-2">
+            Add at least one name to continue.
+          </p>
         )}
 
         <Button
