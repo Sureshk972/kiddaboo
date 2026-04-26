@@ -85,7 +85,7 @@ export default function Browse() {
           .from("playgroups")
           .select(`
             *,
-            profiles:creator_id ( first_name, last_name, is_verified ),
+            profiles:creator_id ( first_name, last_name, photo_url, is_verified ),
             memberships ( role )
           `)
           .eq("is_active", true)

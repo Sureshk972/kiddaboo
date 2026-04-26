@@ -56,6 +56,7 @@ export function transformPlaygroup(pg, index = 0, overrides = {}) {
     setting: pg.environment?.setting || "Indoor",
     hostName: `${hostFirst} ${hostLast}`.trim(),
     hostInitials,
+    hostPhoto: host?.photo_url || overrides.hostPhoto || null,
     verified: host?.is_verified || false,
     photoColor: CARD_COLORS[index % CARD_COLORS.length],
     photos: pg.photos || [],
