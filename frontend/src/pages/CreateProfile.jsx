@@ -7,6 +7,7 @@ import Button from "../components/ui/Button";
 import { useOnboarding } from "../context/OnboardingContext";
 import { useAuth } from "../context/AuthContext";
 import { uploadProfilePhoto } from "../lib/storage";
+import { processProfilePhoto } from "../lib/imageProcessing";
 import { PHILOSOPHY_TAGS } from "../data/mockData";
 
 export default function CreateProfile() {
@@ -25,13 +26,12 @@ export default function CreateProfile() {
   );
   const isOrganizer = pendingAccountType === "organizer";
 
-  const handlePhotoChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setPhotoFile(file);
-      const url = URL.createObjectURL(file);
-      updateField("photoUrl", url);
-    }
+  const handlePhotoChange = async (e) => {
+    const raw = e.target.files?.[0];
+    if (!raw) return;
+    const processed = await processProfilePhoto(raw);
+    setPhotoFile(processed);
+    updateField("photoUrl", URL.createObjectURL(processed));
   };
 
   const handleContinue = async () => {

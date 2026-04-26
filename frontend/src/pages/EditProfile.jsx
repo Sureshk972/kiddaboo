@@ -6,6 +6,7 @@ import Button from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 import { uploadProfilePhoto } from "../lib/storage";
+import { processProfilePhoto } from "../lib/imageProcessing";
 import { PHILOSOPHY_TAGS, AGE_RANGES, PERSONALITY_TAGS } from "../data/mockData";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
@@ -64,12 +65,16 @@ export default function EditProfile() {
     }
   }, [profile]);
 
-  const handlePhotoChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setPhotoFile(file);
-      setPhotoPreview(URL.createObjectURL(file));
-    }
+  const handlePhotoChange = async (e) => {
+    const raw = e.target.files?.[0];
+    if (!raw) return;
+    // Process synchronously before previewing so the preview, the file
+    // we'll upload, and the file we measure size against are all the
+    // same processed blob — no chance of a 4 MB original sneaking past
+    // validation that compared against the resized version.
+    const processed = await processProfilePhoto(raw);
+    setPhotoFile(processed);
+    setPhotoPreview(URL.createObjectURL(processed));
   };
 
   // Fetch children
