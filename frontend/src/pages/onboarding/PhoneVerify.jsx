@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Button from "../../components/ui/Button";
 import { usePhoneVerification } from "../../hooks/usePhoneVerification";
+import { useAuth } from "../../context/AuthContext";
 
 // User-friendly copy per error code. Keys match codes returned by
 // send-otp and verify-otp edge functions.
@@ -26,9 +27,15 @@ const VERIFY_ERROR_COPY = {
  */
 export default function PhoneVerify() {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
   const { status, error, sendCode, verifyCode } = usePhoneVerification();
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
+
+  async function onCancel() {
+    await signOut();
+    navigate("/", { replace: true });
+  }
 
   // The send-otp edge function regex rejects anything except `+` and
   // digits. Users will naturally type spaces/dashes/parens (and our
@@ -72,6 +79,13 @@ export default function PhoneVerify() {
   return (
     <div className="min-h-screen bg-cream px-6 py-10 flex flex-col">
       <div className="max-w-md mx-auto w-full">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="text-sm text-taupe hover:text-charcoal mb-6"
+        >
+          ← Back
+        </button>
         <h1 className="text-2xl font-bold text-charcoal mb-2">Verify your phone</h1>
         <p className="text-sm text-taupe mb-8">
           We send a 6-digit code to make sure you're a real person. We won't share your number.
