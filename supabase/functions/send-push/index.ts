@@ -309,7 +309,7 @@ serve(async (req: Request) => {
           userId: record.user_id as string,
           title: "You're verified ✓",
           body: "Your host profile now shows the Verified badge.",
-          url: "/me",
+          url: "/my-profile",
           tag: `verification-${record.id}`,
           kind: "verifications",
         });
@@ -321,7 +321,7 @@ serve(async (req: Request) => {
           body: note
             ? `Your request wasn't approved: ${note.slice(0, 140)}`
             : "Your verification request wasn't approved this time.",
-          url: "/me",
+          url: "/my-profile",
           tag: `verification-${record.id}`,
           kind: "verifications",
         });
@@ -454,7 +454,10 @@ serve(async (req: Request) => {
           failed++;
 
           // If subscription is expired/invalid, clean it up
-          if (err instanceof Error && err.message.includes("410")) {
+          if (
+            err instanceof Error &&
+            (err.message.includes("410") || err.message.includes("404"))
+          ) {
             await supabase
               .from("push_subscriptions")
               .delete()
@@ -510,7 +513,13 @@ async function sendWebPush(
     });
 
     if (response.status === 201 || response.status === 200) return true;
-    if (response.status === 410) throw new Error("410 Gone");
+    // Both 410 Gone and 404 Not Found mean the subscription is dead.
+    // Mozilla's autopush returns 404 for unsubscribed endpoints where
+    // FCM returns 410, so we have to handle both or those rows leak
+    // forever and burn a fetch on every send.
+    if (response.status === 410 || response.status === 404) {
+      throw new Error(`${response.status} Gone`);
+    }
 
     console.error(`Push failed: ${response.status} ${await response.text()}`);
     return false;
