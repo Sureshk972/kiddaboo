@@ -48,6 +48,7 @@ export default function ScheduleSessionSheet({
   const [requiresVerified, setRequiresVerified] = useState(false);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [confirmOvernight, setConfirmOvernight] = useState(false);
 
   // Prefill when opening in edit mode. Guarded on isOpen so the form
@@ -83,6 +84,7 @@ export default function ScheduleSessionSheet({
 
   const submit = async () => {
     setSaving(true);
+    setSubmitError("");
 
     const scheduledAt = new Date(`${date}T${time}:00`).toISOString();
     const payload = {
@@ -98,7 +100,14 @@ export default function ScheduleSessionSheet({
       : await onSchedule?.({ title: playgroupName || "Playdate", ...payload });
 
     setSaving(false);
-    if (!result?.error) setSuccess(true);
+    if (result?.error) {
+      setSubmitError(
+        result.error.message ||
+          `Couldn't ${isEdit ? "update" : "schedule"} the session. Please try again.`,
+      );
+      return;
+    }
+    setSuccess(true);
   };
 
   const handleSchedule = async () => {
@@ -123,6 +132,7 @@ export default function ScheduleSessionSheet({
     setRequiresVerified(false);
     setSaving(false);
     setSuccess(false);
+    setSubmitError("");
     setConfirmOvernight(false);
     onClose();
   };
@@ -345,6 +355,12 @@ export default function ScheduleSessionSheet({
                       </span>
                     </span>
                   </label>
+                </div>
+              )}
+
+              {submitError && (
+                <div className="bg-terracotta-light/30 border border-terracotta-light rounded-xl p-3 mb-3">
+                  <p className="text-sm text-terracotta font-medium">{submitError}</p>
                 </div>
               )}
 
