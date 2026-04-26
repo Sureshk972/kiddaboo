@@ -37,6 +37,10 @@ export default function EditProfile() {
   const [philosophyTags, setPhilosophyTags] = useState([]);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [photoFile, setPhotoFile] = useState(null);
+  const [photoProcessing, setPhotoProcessing] = useState(false);
+  // Tracks an explicit "Remove photo" tap so handleSave clears
+  // photo_url even though no new file was uploaded.
+  const [photoCleared, setPhotoCleared] = useState(false);
 
   // Children
   const [children, setChildren] = useState([
@@ -72,9 +76,21 @@ export default function EditProfile() {
     // we'll upload, and the file we measure size against are all the
     // same processed blob — no chance of a 4 MB original sneaking past
     // validation that compared against the resized version.
-    const processed = await processProfilePhoto(raw);
-    setPhotoFile(processed);
-    setPhotoPreview(URL.createObjectURL(processed));
+    setPhotoProcessing(true);
+    try {
+      const processed = await processProfilePhoto(raw);
+      setPhotoFile(processed);
+      setPhotoPreview(URL.createObjectURL(processed));
+      setPhotoCleared(false);
+    } finally {
+      setPhotoProcessing(false);
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    setPhotoCleared(true);
   };
 
   // Fetch children
@@ -214,7 +230,11 @@ export default function EditProfile() {
         bio: bio.trim(),
         philosophy_tags: philosophyTags,
       };
-      if (photoUrl) profileData.photo_url = photoUrl;
+      if (photoUrl) {
+        profileData.photo_url = photoUrl;
+      } else if (photoCleared) {
+        profileData.photo_url = null;
+      }
 
       const { error: profileError } = await updateProfile(profileData);
 
@@ -369,15 +389,16 @@ export default function EditProfile() {
 
       <div className="max-w-md mx-auto px-5 py-6 flex flex-col gap-6">
         {/* Profile photo */}
-        <div className="flex justify-center">
+        <div className="flex flex-col items-center">
           <label className="cursor-pointer group">
             <input
               type="file"
               accept="image/*"
               onChange={handlePhotoChange}
               className="hidden"
+              disabled={photoProcessing}
             />
-            <div className="w-24 h-24 rounded-full border-2 border-dashed border-taupe/30 bg-cream-dark flex items-center justify-center overflow-hidden group-hover:border-sage transition-colors">
+            <div className="w-24 h-24 rounded-full border-2 border-dashed border-taupe/30 bg-cream-dark flex items-center justify-center overflow-hidden group-hover:border-sage transition-colors relative">
               {photoPreview ? (
                 <img
                   src={photoPreview}
@@ -390,11 +411,25 @@ export default function EditProfile() {
                   <circle cx="12" cy="13" r="4" stroke="currentColor" strokeWidth="1.5"/>
                 </svg>
               )}
+              {photoProcessing && (
+                <div className="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
             </div>
             <p className="text-xs text-taupe/60 text-center mt-2">
-              {photoPreview ? "Change photo" : "Add photo"}
+              {photoProcessing ? "Processing…" : photoPreview ? "Change photo" : "Add photo"}
             </p>
           </label>
+          {photoPreview && !photoProcessing && (
+            <button
+              type="button"
+              onClick={handleRemovePhoto}
+              className="mt-1 text-xs text-taupe/60 hover:text-terracotta underline underline-offset-2 bg-transparent border-none cursor-pointer"
+            >
+              Remove photo
+            </button>
+          )}
         </div>
 
         {/* Name fields */}
