@@ -133,6 +133,7 @@ export default function HostDashboard() {
               childrenAges: kids.map((c) => c.age_range ? `${c.name} (${c.age_range})` : c.name),
               philosophyTags: m.profiles?.philosophy_tags || [],
               bio: m.profiles?.bio || "",
+              photoUrl: m.profiles?.photo_url || "",
               answers,
               requestedAt: timeAgo(m.created_at),
               createdAt: m.created_at,
@@ -307,7 +308,7 @@ export default function HostDashboard() {
         childrenAges: request.childrenAges,
         bio: request.bio || "",
         philosophyTags: request.philosophyTags || [],
-        photoUrl: "",
+        photoUrl: request.photoUrl || "",
         joinedAt: new Date(joinedAt).toLocaleDateString("en-US", {
           month: "short",
           year: "numeric",
