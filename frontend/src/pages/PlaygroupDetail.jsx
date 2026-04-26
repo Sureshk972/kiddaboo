@@ -68,6 +68,7 @@ function transformRealPlaygroup(pg) {
       isHost: m.role === "creator",
       membership_role: m.role,
       is_phone_verified: m.profiles?.is_phone_verified,
+      is_verified: m.profiles?.is_verified,
       account_type: m.profiles?.account_type,
       zip_code: m.profiles?.zip_code,
       bio: m.profiles?.bio,
@@ -169,7 +170,7 @@ export default function PlaygroupDetail() {
       .select(`
         *,
         profiles:creator_id ( first_name, last_name, bio, philosophy_tags, is_verified, trust_score ),
-        memberships ( user_id, role, profiles:user_id ( first_name, last_name, is_phone_verified, bio, philosophy_tags, account_type, zip_code, photo_url ) )
+        memberships ( user_id, role, profiles:user_id ( first_name, last_name, is_phone_verified, is_verified, bio, philosophy_tags, account_type, zip_code, photo_url ) )
       `)
       .eq("id", id)
       .single();
@@ -637,6 +638,14 @@ export default function PlaygroupDetail() {
                           {m.first_name} {m.last_name}
                         </div>
                         <RoleBadge role={isOrganizer ? "organizer" : "parent"} />
+                        {isOrganizer && m.is_verified && (
+                          <span title="Verified host" className="inline-flex">
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                              <circle cx="8" cy="8" r="7" fill="#7A8F6D" />
+                              <path d="M5 8L7 10L11 6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </span>
+                        )}
                       </div>
                       <div className="text-[11px] text-taupe">
                         {isOrganizer ? "Runs the group" : ""}

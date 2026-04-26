@@ -33,6 +33,10 @@ function ChildrenCard({ children }) {
 export default function ProfilePanel({ profile, onMessage }) {
   if (!profile) return null;
   const verified = !!profile.is_phone_verified;
+  // is_verified is the admin-granted "Verified host" badge — distinct
+  // from phone verification. Surfaced as a separate badge so users can
+  // tell the two trust signals apart.
+  const isVerifiedHost = !!profile.is_verified && profile.account_type === "organizer";
   const fullName = `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim();
 
   return (
@@ -52,8 +56,23 @@ export default function ProfilePanel({ profile, onMessage }) {
             <VerifiedBadge verified={verified} />
           </div>
         </div>
-        <div className="font-bold text-charcoal mt-2">{fullName || "Kiddaboo user"}</div>
+        <div className="font-bold text-charcoal mt-2 flex items-center gap-1.5">
+          {fullName || "Kiddaboo user"}
+          {isVerifiedHost && (
+            <span title="Verified host" className="inline-flex">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="8" r="7" fill="#7A8F6D" />
+                <path d="M5 8L7 10L11 6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+          )}
+        </div>
         {verified && <VerifiedLabel accountType={profile.account_type} />}
+        {isVerifiedHost && (
+          <div className="text-xs text-sage-dark font-bold mt-1">
+            ✓ Verified host
+          </div>
+        )}
       </div>
 
       <div className="text-center py-3 border-t border-b border-cream-dark mb-4">
