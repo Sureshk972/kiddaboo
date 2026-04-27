@@ -51,6 +51,14 @@ export default function useSessions(playgroupId) {
   // Create a new session
   const createSession = useCallback(
     async (sessionData) => {
+      // TEMP DEBUG: ask the DB what auth.uid() actually is for this JWT.
+      const { data: serverUid, error: rpcErr } = await supabase.rpc("debug_auth_uid");
+      const { data: clientUser } = await supabase.auth.getUser();
+      // eslint-disable-next-line no-alert
+      alert(
+        `AUTH CHECK\nclient user.id: ${clientUser?.user?.id}\nserver auth.uid(): ${serverUid}\nrpc err: ${rpcErr?.message || "none"}\nmatch: ${clientUser?.user?.id === serverUid}`
+      );
+
       const { data, error } = await supabase
         .from("sessions")
         .insert({
@@ -63,7 +71,7 @@ export default function useSessions(playgroupId) {
       if (error) {
         // eslint-disable-next-line no-alert
         alert(
-          `INSERT ERROR\nmessage: ${error.message}\ncode: ${error.code}\ndetails: ${error.details}\nhint: ${error.hint}\npayload: ${JSON.stringify({ playgroup_id: playgroupId, ...sessionData })}`
+          `INSERT ERROR\nmessage: ${error.message}\ncode: ${error.code}\ndetails: ${error.details}\nhint: ${error.hint}`
         );
       }
 
