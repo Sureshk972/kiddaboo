@@ -51,14 +51,14 @@ export default function useSessions(playgroupId) {
   // Create a new session
   const createSession = useCallback(
     async (sessionData) => {
-      // TEMP DEBUG: evaluate the exact RLS expression server-side.
-      const { data: rlsRows, error: rpcErr } = await supabase.rpc("debug_session_rls", {
+      // TEMP DEBUG: have Postgres attempt the insert under the host's
+      // session and report whether it works server-side via RPC.
+      const { data: tryResult, error: tryErr } = await supabase.rpc("debug_try_session_insert", {
         p_playgroup_id: playgroupId,
       });
-      const row = Array.isArray(rlsRows) ? rlsRows[0] : rlsRows;
       // eslint-disable-next-line no-alert
       alert(
-        `RLS CHECK\nuid: ${row?.uid}\nvisible_creator: ${row?.visible_creator}\nrls_passes: ${row?.rls_passes}\nrpc err: ${rpcErr?.message || "none"}`
+        `SERVER INSERT TEST\nresult: ${tryResult}\nrpc err: ${tryErr?.message || "none"}`
       );
 
       const { data, error } = await supabase
