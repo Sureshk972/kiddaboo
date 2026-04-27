@@ -1,4 +1,5 @@
 import TabBar from "../components/layout/TabBar";
+import { useNotificationCounts } from "../context/NotificationsContext";
 
 /**
  * Parent-mode wrapper. Adds the small uppercase "PARENT" label at the
@@ -10,6 +11,11 @@ import TabBar from "../components/layout/TabBar";
  * does the accent overriding.
  */
 export default function ParentLayout({ children }) {
+  const { unreadMessages, pendingRequests } = useNotificationCounts();
+  const badges = {
+    "/my-groups": pendingRequests,
+    "/messages": unreadMessages,
+  };
   return (
     <div className="min-h-screen bg-cream flex flex-col" data-mode="parent">
       <div className="hidden md:block bg-sage-light/40 text-center py-2 text-xs text-sage-dark border-b border-cream-dark">
@@ -22,7 +28,7 @@ export default function ParentLayout({ children }) {
           </span>
         </div>
         <div className="flex-1">{children}</div>
-        <TabBar />
+        <TabBar badges={badges} />
       </div>
     </div>
   );

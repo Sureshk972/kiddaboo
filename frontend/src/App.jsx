@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { OnboardingProvider } from "./context/OnboardingContext";
 import { HostProvider } from "./context/HostContext";
+import { NotificationsProvider } from "./context/NotificationsContext";
 import AppLayout from "./components/layout/AppLayout";
 import Welcome from "./pages/Welcome";
 import RequireAuth from "./components/auth/RequireAuth";
@@ -60,6 +61,7 @@ export default function App() {
       <AuthProvider>
       <OnboardingProvider>
         <HostProvider>
+          <NotificationsProvider>
           <Suspense fallback={<RouteFallback />}>
           <Routes>
             {/* Public routes — no auth required */}
@@ -111,6 +113,7 @@ export default function App() {
             <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>
+          </NotificationsProvider>
         </HostProvider>
       </OnboardingProvider>
       </AuthProvider>

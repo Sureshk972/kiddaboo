@@ -2,14 +2,14 @@ import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import TabBar from "./TabBar";
 import { useAuth } from "../../context/AuthContext";
-import useNotifications from "../../hooks/useNotifications";
+import { useNotificationCounts } from "../../context/NotificationsContext";
 import usePushNotifications from "../../hooks/usePushNotifications";
 import PushPermissionPrompt from "../ui/PushPermissionPrompt";
 import PageTransition from "../ui/PageTransition";
 
 export default function AppLayout({ children }) {
   const { user } = useAuth();
-  const { unreadMessages, pendingRequests } = useNotifications(user?.id);
+  const { unreadMessages, pendingRequests } = useNotificationCounts();
   const { shouldShowPrompt, subscribe, dismissPrompt } = usePushNotifications(user?.id);
   const location = useLocation();
   const scrollRef = useRef(null);

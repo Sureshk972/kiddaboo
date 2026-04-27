@@ -1,4 +1,5 @@
 import TabBar from "../components/layout/TabBar";
+import { useNotificationCounts } from "../context/NotificationsContext";
 
 /**
  * Organizer-mode wrapper. Terracotta accent, "ORGANIZER" label, and
@@ -8,6 +9,11 @@ import TabBar from "../components/layout/TabBar";
  * want (e.g., buttons that read from [data-mode=organizer] .btn).
  */
 export default function OrganizerLayout({ children }) {
+  const { unreadMessages, pendingRequests } = useNotificationCounts();
+  const badges = {
+    "/host/dashboard": pendingRequests,
+    "/messages": unreadMessages,
+  };
   return (
     <div className="min-h-screen bg-[#F9F4ED] flex flex-col" data-mode="organizer">
       <div className="hidden md:block bg-terracotta-light/40 text-center py-2 text-xs text-terracotta border-b border-cream-dark">
@@ -20,7 +26,7 @@ export default function OrganizerLayout({ children }) {
           </span>
         </div>
         <div className="flex-1">{children}</div>
-        <TabBar />
+        <TabBar badges={badges} />
       </div>
     </div>
   );
