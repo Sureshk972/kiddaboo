@@ -51,12 +51,14 @@ export default function useSessions(playgroupId) {
   // Create a new session
   const createSession = useCallback(
     async (sessionData) => {
-      // TEMP DEBUG: ask the DB what auth.uid() actually is for this JWT.
-      const { data: serverUid, error: rpcErr } = await supabase.rpc("debug_auth_uid");
-      const { data: clientUser } = await supabase.auth.getUser();
+      // TEMP DEBUG: evaluate the exact RLS expression server-side.
+      const { data: rlsRows, error: rpcErr } = await supabase.rpc("debug_session_rls", {
+        p_playgroup_id: playgroupId,
+      });
+      const row = Array.isArray(rlsRows) ? rlsRows[0] : rlsRows;
       // eslint-disable-next-line no-alert
       alert(
-        `AUTH CHECK\nclient user.id: ${clientUser?.user?.id}\nserver auth.uid(): ${serverUid}\nrpc err: ${rpcErr?.message || "none"}\nmatch: ${clientUser?.user?.id === serverUid}`
+        `RLS CHECK\nuid: ${row?.uid}\nvisible_creator: ${row?.visible_creator}\nrls_passes: ${row?.rls_passes}\nrpc err: ${rpcErr?.message || "none"}`
       );
 
       const { data, error } = await supabase
