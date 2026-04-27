@@ -51,31 +51,20 @@ export default function useSessions(playgroupId) {
   // Create a new session
   const createSession = useCallback(
     async (sessionData) => {
-      // TEMP DEBUG: have Postgres attempt the insert under the host's
-      // session and report whether it works server-side via RPC.
-      const { data: tryResult, error: tryErr } = await supabase.rpc("debug_try_session_insert", {
-        p_playgroup_id: playgroupId,
-      });
-      // eslint-disable-next-line no-alert
-      alert(
-        `SERVER INSERT TEST\nresult: ${tryResult}\nrpc err: ${tryErr?.message || "none"}`
-      );
-
+      // RLS WITH CHECK on sessions misbehaves in this project (the
+      // expression evaluates true server-side but the INSERT is still
+      // rejected). Using a SECURITY DEFINER RPC that enforces the same
+      // "must be playgroup creator" rule in function code.
       const { data, error } = await supabase
-        .from("sessions")
-        .insert({
-          playgroup_id: playgroupId,
-          ...sessionData,
-        })
-        .select()
-        .single();
-
-      if (error) {
-        // eslint-disable-next-line no-alert
-        alert(
-          `INSERT ERROR\nmessage: ${error.message}\ncode: ${error.code}\ndetails: ${error.details}\nhint: ${error.hint}`
-        );
-      }
+        .rpc("create_session", {
+          p_playgroup_id: playgroupId,
+          p_scheduled_at: sessionData.scheduled_at,
+          p_duration_minutes: sessionData.duration_minutes,
+          p_location_name: sessionData.location_name ?? null,
+          p_notes: sessionData.notes ?? null,
+          p_requires_verified: sessionData.requires_verified ?? false,
+          p_title: sessionData.title ?? null,
+        });
 
       if (!error && data) {
         setSessions((prev) => {
