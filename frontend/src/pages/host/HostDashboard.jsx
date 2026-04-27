@@ -642,6 +642,16 @@ export default function HostDashboard() {
               </h3>
               <div className="flex items-center gap-3">
                 <button
+                  onClick={() => navigate(`/messages/session/${nextSession.id}`)}
+                  className="text-taupe/50 hover:text-sage-dark transition-colors bg-transparent border-none cursor-pointer p-0.5"
+                  title="Session chat"
+                  aria-label="Session chat"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path d="M21 15C21 15.53 20.79 16.04 20.41 16.41C20.04 16.79 19.53 17 19 17H7L3 21V5C3 4.47 3.21 3.96 3.59 3.59C3.96 3.21 4.47 3 5 3H19C19.53 3 20.04 3.21 20.41 3.59C20.79 3.96 21 4.47 21 5V15Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                <button
                   onClick={() => setEditTarget(nextSession)}
                   className="text-taupe/50 hover:text-sage-dark transition-colors bg-transparent border-none cursor-pointer p-0.5"
                   title="Edit session"
@@ -748,6 +758,16 @@ export default function HostDashboard() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => navigate(`/messages/session/${session.id}`)}
+                        className="text-taupe/40 hover:text-sage-dark transition-colors bg-transparent border-none cursor-pointer p-1"
+                        title="Session chat"
+                        aria-label="Session chat"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                          <path d="M21 15C21 15.53 20.79 16.04 20.41 16.41C20.04 16.79 19.53 17 19 17H7L3 21V5C3 4.47 3.21 3.96 3.59 3.59C3.96 3.21 4.47 3 5 3H19C19.53 3 20.04 3.21 20.41 3.59C20.79 3.96 21 4.47 21 5V15Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </button>
                       <button
                         onClick={() => setEditTarget(session)}
                         className="text-taupe/40 hover:text-sage-dark transition-colors bg-transparent border-none cursor-pointer p-1"

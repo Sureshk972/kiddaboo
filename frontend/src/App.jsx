@@ -37,6 +37,7 @@ const HostPremium = lazy(() => import("./pages/host/HostPremium"));
 const Admin = lazy(() => import("./pages/Admin"));
 const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
 const GroupChat = lazy(() => import("./pages/GroupChat"));
+const SessionChat = lazy(() => import("./pages/SessionChat"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
@@ -88,6 +89,7 @@ export default function App() {
             {/* Detail pages — requires auth, no tab bar */}
             <Route path="/playgroup/:id" element={<RequireAuth><PlaygroupDetail /></RequireAuth>} />
             <Route path="/messages/:playgroupId" element={<RequireAuth><GroupChat /></RequireAuth>} />
+            <Route path="/messages/session/:sessionId" element={<RequireAuth><SessionChat /></RequireAuth>} />
             <Route path="/edit-profile" element={<RequireAuth><EditProfile /></RequireAuth>} />
             <Route path="/notifications" element={<RequireAuth><NotificationSettings /></RequireAuth>} />
             <Route path="/host/edit/:id" element={<RequireAuth><EditPlaygroup /></RequireAuth>} />
