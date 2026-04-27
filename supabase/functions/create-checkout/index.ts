@@ -25,17 +25,21 @@ const corsHeaders = {
 const PRICES: Record<string, { amount: number; interval: string; name: string; type: string }> = {
   monthly:      { amount: 799,  interval: "month", name: "Kiddaboo Premium Monthly",      type: "joiner" },
   annual:       { amount: 7999, interval: "year",  name: "Kiddaboo Premium Annual",       type: "joiner" },
-  host_monthly: { amount: 499,  interval: "month", name: "Kiddaboo Host Premium Monthly", type: "host_premium" },
-  host_annual:  { amount: 4999, interval: "year",  name: "Kiddaboo Host Premium Annual",  type: "host_premium" },
+  host_monthly: { amount: 799,  interval: "month", name: "Kiddaboo Host Premium Monthly", type: "host_premium" },
+  host_annual:  { amount: 7999, interval: "year",  name: "Kiddaboo Host Premium Annual",  type: "host_premium" },
 };
 
 async function getOrCreatePrice(plan: string): Promise<string> {
   const config = PRICES[plan];
   if (!config) throw new Error("Invalid plan");
 
-  // Search for existing price
+  // Search for existing price. The price_v tag pins this lookup to the
+  // current price tier — bump it when amounts change so we create a new
+  // Stripe price instead of reusing a stale one (Stripe forbids
+  // mutating unit_amount on an existing price).
+  const priceV = "2";
   const prices = await stripe.prices.search({
-    query: `metadata["kiddaboo_plan"]:"${plan}" active:"true"`,
+    query: `metadata["kiddaboo_plan"]:"${plan}" metadata["kiddaboo_price_v"]:"${priceV}" active:"true"`,
   });
 
   if (prices.data.length > 0) {
@@ -45,7 +49,7 @@ async function getOrCreatePrice(plan: string): Promise<string> {
   // Create product and price
   const product = await stripe.products.create({
     name: config.name,
-    metadata: { kiddaboo_plan: plan },
+    metadata: { kiddaboo_plan: plan, kiddaboo_price_v: priceV },
   });
 
   const price = await stripe.prices.create({
@@ -53,7 +57,7 @@ async function getOrCreatePrice(plan: string): Promise<string> {
     unit_amount: config.amount,
     currency: "usd",
     recurring: { interval: config.interval as "month" | "year" },
-    metadata: { kiddaboo_plan: plan },
+    metadata: { kiddaboo_plan: plan, kiddaboo_price_v: priceV },
   });
 
   return price.id;

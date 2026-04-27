@@ -57,7 +57,7 @@ serve(async (req) => {
         // Determine price from plan
         const priceCentsMap: Record<string, number> = {
           monthly: 799, annual: 7999,
-          host_monthly: 499, host_annual: 4999,
+          host_monthly: 799, host_annual: 7999,
         };
 
         await supabase.from("subscriptions").upsert(

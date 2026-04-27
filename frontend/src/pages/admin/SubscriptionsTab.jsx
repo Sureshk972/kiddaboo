@@ -34,8 +34,8 @@ import StatusBadge from "./StatusBadge";
 const LEGACY_PRICES = {
   monthly: 799,
   annual: 7999,
-  host_monthly: 499,
-  host_annual: 4999,
+  host_monthly: 799,
+  host_annual: 7999,
 };
 
 function isHostSub(sub) {

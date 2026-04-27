@@ -9,16 +9,16 @@ const PLANS = [
   {
     key: "host_monthly",
     label: "Monthly",
-    price: "$4.99",
+    price: "$7.99",
     period: "/mo",
     description: "Cancel anytime",
   },
   {
     key: "host_annual",
     label: "Annual",
-    price: "$49.99",
+    price: "$79.99",
     period: "/yr",
-    description: "2 months free — just $4.17/mo",
+    description: "2 months free — just $6.67/mo",
     badge: "Best Value",
   },
 ];
