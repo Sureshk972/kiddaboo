@@ -767,7 +767,9 @@ export default function PlaygroupDetail() {
                 </svg>
               </div>
               <h3 className="font-heading font-bold text-charcoal text-lg mb-2">
-                You've used all {joinRequestLimit} free requests this month
+                {joinRequestLimit === 1
+                  ? "You've used your free request this month"
+                  : `You've used all ${joinRequestLimit} free requests this month`}
               </h3>
               <p className="text-sm text-taupe leading-relaxed mb-5">
                 Upgrade to Premium for unlimited join requests, advanced filters, and priority placement.

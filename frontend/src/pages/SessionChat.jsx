@@ -151,11 +151,18 @@ export default function SessionChat() {
             </svg>
           </button>
 
+          <div className="w-9 h-9 rounded-full bg-sage-light flex items-center justify-center shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-sage-dark">
+              <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M3 10H21" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M8 2V6M16 2V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </div>
           <div className="flex-1 min-w-0">
             <h1 className="font-heading font-bold text-charcoal text-base truncate">
-              {playgroup.name} session
+              {playgroup.name}
             </h1>
-            <p className="text-[10px] text-taupe">{sessionLabel}</p>
+            <p className="text-[10px] text-taupe truncate">Session · {sessionLabel}</p>
           </div>
         </div>
       </div>

@@ -102,7 +102,7 @@ function RsvpButtons({ session, playgroupName }) {
         Can't make it
       </button>
 
-      {isGoing && <AddToCalendarButton session={session} playgroupName={playgroupName} />}
+      <AddToCalendarButton session={session} playgroupName={playgroupName} />
       {isGoing && (
         <Link
           to={`/messages/session/${session.id}`}

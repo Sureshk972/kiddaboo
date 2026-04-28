@@ -179,6 +179,26 @@ export default function Premium() {
                 ))}
               </div>
             </div>
+
+            {/* Manage subscription. No Stripe billing-portal function
+                wired up yet, so cancellation is via email — but at
+                least surface that it's possible. Without this, "You're
+                Premium" is a dead end and parents email support
+                anyway. */}
+            <div className="bg-white rounded-2xl border border-cream-dark p-5">
+              <h3 className="font-heading font-semibold text-charcoal text-sm mb-2">
+                Manage subscription
+              </h3>
+              <p className="text-xs text-taupe leading-relaxed mb-3">
+                To change plan or cancel, email us — we&apos;ll process it within one business day. Cancelling keeps Premium active through the end of your current billing period.
+              </p>
+              <a
+                href="mailto:support@kiddaboo.com?subject=Manage%20Premium%20subscription"
+                className="text-sm text-sage hover:text-sage-dark font-medium no-underline"
+              >
+                support@kiddaboo.com →
+              </a>
+            </div>
           </div>
         ) : (
           <div className="space-y-6">

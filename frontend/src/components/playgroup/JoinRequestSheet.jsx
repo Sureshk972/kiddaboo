@@ -157,9 +157,12 @@ export default function JoinRequestSheet({
 
               {/* Intro message */}
               <div className="mb-5">
-                <label className="text-sm font-medium text-taupe block mb-1.5">
+                <label className="text-sm font-medium text-taupe block mb-1">
                   Introduce yourself
                 </label>
+                <p className="text-[11px] text-taupe/70 mb-1.5">
+                  Hosts approve faster when they hear about your kid&apos;s age, what your family enjoys, and why this group fits.
+                </p>
                 <textarea
                   value={intro}
                   onChange={(e) => setIntro(e.target.value)}

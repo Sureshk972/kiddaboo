@@ -18,6 +18,12 @@ export default function CreateProfile() {
   const [saving, setSaving] = useState(false);
   const [photoFile, setPhotoFile] = useState(null);
   const [rawPhoto, setRawPhoto] = useState(null);
+  // Drives the spinner overlay on the avatar while the file is being
+  // uploaded to Supabase Storage. Supabase's upload() doesn't emit
+  // progress events, so this is a binary indicator — but at least the
+  // user sees that *something* is happening on a slow connection
+  // instead of a frozen "Saving..." button.
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   // Read role once on mount — determines which voice the copy uses.
   // Missing value falls back to parent framing; handleContinue has a
@@ -65,7 +71,9 @@ export default function CreateProfile() {
       // whether to approve join requests.
       let photoUrl = null;
       if (photoFile && user) {
+        setUploadingPhoto(true);
         const { url, error: uploadErr } = await uploadProfilePhoto(photoFile, user.id);
+        setUploadingPhoto(false);
         if (uploadErr) {
           console.warn("Photo upload failed:", uploadErr);
           setSaving(false);
@@ -126,7 +134,7 @@ export default function CreateProfile() {
               onChange={handlePhotoChange}
               className="hidden"
             />
-            <div className={`w-24 h-24 rounded-full border-2 border-dashed bg-cream-dark flex items-center justify-center overflow-hidden group-hover:border-sage transition-colors ${
+            <div className={`relative w-24 h-24 rounded-full border-2 border-dashed bg-cream-dark flex items-center justify-center overflow-hidden group-hover:border-sage transition-colors ${
               errors.photo ? "border-red-400" : "border-taupe/30"
             }`}>
               {data.photoUrl ? (
@@ -140,6 +148,14 @@ export default function CreateProfile() {
                   <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   <circle cx="12" cy="13" r="4" stroke="currentColor" strokeWidth="1.5"/>
                 </svg>
+              )}
+              {uploadingPhoto && (
+                <div className="absolute inset-0 bg-charcoal/40 flex items-center justify-center">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="animate-spin text-white">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.3" strokeWidth="3" />
+                    <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                  </svg>
+                </div>
               )}
             </div>
             <p className={`text-xs text-center mt-2 ${errors.photo ? "text-red-500 font-medium" : "text-taupe/60"}`}>
