@@ -126,7 +126,7 @@ export default function ProfilePanel({ profile, onMessage }) {
         onClick={onMessage}
         className="w-full bg-sage-dark text-white rounded-xl py-3 font-bold text-sm cursor-pointer border-none"
       >
-        Message
+        Open group chat
       </button>
     </div>
   );

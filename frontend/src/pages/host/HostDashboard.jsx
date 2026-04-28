@@ -41,6 +41,11 @@ export default function HostDashboard() {
   // #44: surface failures from approve/decline/waitlist mutations so the
   // host isn't left guessing when the optimistic state flips back.
   const [dashboardError, setDashboardError] = useState("");
+  // Undo banner for decline. Decline writes role='declined' immediately
+  // (so the request animates out), but we keep an undo window for 6s
+  // so a misclick can be reverted to role='pending'.
+  const [undoDecline, setUndoDecline] = useState(null);
+  const undoTimerRef = useRef(null);
 
   useEffect(() => {
     if (!user) {
@@ -328,7 +333,36 @@ export default function HostDashboard() {
     if (error) {
       console.error("Failed to decline membership:", error);
       rollback(id, `Couldn't decline ${firstName}. ${error.message || "Please try again."}`);
+      return;
     }
+
+    // Show 6s undo window. New decline replaces the previous one — the
+    // earlier decline becomes irreversible at that point, which matches
+    // the host's mental model (each decline gets its own 6s grace).
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    setUndoDecline({ id, name: firstName });
+    undoTimerRef.current = setTimeout(() => setUndoDecline(null), 6000);
+  };
+
+  const handleUndoDecline = async () => {
+    if (!undoDecline) return;
+    const { id } = undoDecline;
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    setUndoDecline(null);
+
+    const { error } = await supabase
+      .from("memberships")
+      .update({ role: "pending" })
+      .eq("id", id);
+    if (error) {
+      setDashboardError(`Couldn't undo. ${error.message || "Please try again."}`);
+      return;
+    }
+    setActionedIds((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
   };
 
   const handleWaitlist = async (id) => {
@@ -467,6 +501,36 @@ export default function HostDashboard() {
               onClick={() => setDashboardError("")}
               aria-label="Dismiss error"
               className="text-red-500 hover:text-red-700 bg-transparent border-none cursor-pointer p-0.5 shrink-0"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {undoDecline && (
+        <div className="sticky top-[68px] z-20 px-5 pt-3">
+          <div className="max-w-md mx-auto bg-charcoal text-white rounded-xl px-4 py-3 flex items-center gap-3 shadow-lg">
+            <p className="text-sm flex-1 leading-relaxed">
+              Declined {undoDecline.name}.
+            </p>
+            <button
+              type="button"
+              onClick={handleUndoDecline}
+              className="text-sm font-bold underline underline-offset-2 cursor-pointer bg-transparent border-none text-white"
+            >
+              Undo
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+                setUndoDecline(null);
+              }}
+              aria-label="Dismiss"
+              className="text-white/70 hover:text-white bg-transparent border-none cursor-pointer p-0.5 shrink-0"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                 <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -640,7 +704,7 @@ export default function HostDashboard() {
               <h3 className="text-sm font-heading font-bold text-charcoal">
                 Next Session
               </h3>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <button
                   onClick={() => navigate(`/messages/session/${nextSession.id}`)}
                   className="text-taupe/50 hover:text-sage-dark transition-colors bg-transparent border-none cursor-pointer p-0.5"
@@ -757,10 +821,10 @@ export default function HostDashboard() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={() => navigate(`/messages/session/${session.id}`)}
-                        className="text-taupe/40 hover:text-sage-dark transition-colors bg-transparent border-none cursor-pointer p-1"
+                        className="text-taupe/40 hover:text-sage-dark transition-colors bg-transparent border-none cursor-pointer p-1.5"
                         title="Session chat"
                         aria-label="Session chat"
                       >
@@ -770,7 +834,7 @@ export default function HostDashboard() {
                       </button>
                       <button
                         onClick={() => setEditTarget(session)}
-                        className="text-taupe/40 hover:text-sage-dark transition-colors bg-transparent border-none cursor-pointer p-1"
+                        className="text-taupe/40 hover:text-sage-dark transition-colors bg-transparent border-none cursor-pointer p-1.5"
                         title="Edit session"
                         aria-label="Edit session"
                       >
@@ -781,7 +845,7 @@ export default function HostDashboard() {
                       </button>
                       <button
                         onClick={() => openCancelSheet(session)}
-                        className="text-taupe/40 hover:text-terracotta transition-colors bg-transparent border-none cursor-pointer p-1"
+                        className="text-taupe/40 hover:text-terracotta transition-colors bg-transparent border-none cursor-pointer p-1.5"
                         title="Cancel session"
                         aria-label="Cancel session"
                       >

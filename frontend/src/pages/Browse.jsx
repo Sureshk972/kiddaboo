@@ -434,9 +434,19 @@ export default function Browse() {
             </div>
           </div>
 
-          {/* Location error */}
+          {/* Location error — actionable so the user knows the sort
+              isn't working and what to do about it. Without this CTA,
+              "Nearest" silently falls back to the default order. */}
           {locationError && sortBy === "distance" && (
-            <p className="text-xs text-terracotta mt-2">{locationError}</p>
+            <div className="mt-2 flex items-center gap-2">
+              <p className="text-xs text-terracotta flex-1">{locationError}</p>
+              <button
+                onClick={requestLocation}
+                className="text-xs font-medium text-sage-dark underline underline-offset-2 bg-transparent border-none cursor-pointer"
+              >
+                Enable location
+              </button>
+            </div>
           )}
         </div>
       </div>

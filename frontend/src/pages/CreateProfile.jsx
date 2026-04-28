@@ -190,9 +190,12 @@ export default function CreateProfile() {
 
         {/* Bio */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-taupe">
-            {isOrganizer ? "About you" : "About you & your family"}
-          </label>
+          <div className="flex items-baseline justify-between">
+            <label className="text-sm font-medium text-taupe">
+              {isOrganizer ? "About you" : "About you & your family"}
+            </label>
+            <span className="text-[11px] text-taupe/60">200 char max</span>
+          </div>
           <textarea
             value={data.bio}
             onChange={(e) => updateField("bio", e.target.value)}
@@ -210,7 +213,7 @@ export default function CreateProfile() {
               focus:ring-2 focus:ring-sage-light focus:border-sage
             "
           />
-          <span className="text-xs text-taupe/50 text-right">
+          <span className={`text-xs text-right ${data.bio.length >= 180 ? "text-terracotta" : "text-taupe/50"}`}>
             {data.bio.length}/200
           </span>
         </div>

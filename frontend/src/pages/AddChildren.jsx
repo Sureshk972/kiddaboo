@@ -28,23 +28,22 @@ export default function AddChildren() {
     setSaving(true);
     setError("");
 
-    // Delete existing children first (in case user goes back and re-does this step)
-    await supabase.from("children").delete().eq("user_id", user.id);
-
-    // Insert all valid children
-    const rows = validChildren.map((c) => ({
-      user_id: user.id,
+    // Atomic delete+insert via RPC. The previous client-side
+    // delete-then-insert wiped existing rows when the insert failed.
+    const payload = validChildren.map((c) => ({
       name: c.name.trim(),
       age_range: c.ageRange || null,
-      personality_tags: c.personalityTags,
+      personality_tags: c.personalityTags || [],
     }));
 
-    const { error: insertError } = await supabase.from("children").insert(rows);
+    const { error: rpcError } = await supabase.rpc("replace_children", {
+      p_children: payload,
+    });
 
     setSaving(false);
 
-    if (insertError) {
-      setError("Could not save. Please try again.");
+    if (rpcError) {
+      setError("Could not save. Please try again — your existing children are still there.");
       return;
     }
 
