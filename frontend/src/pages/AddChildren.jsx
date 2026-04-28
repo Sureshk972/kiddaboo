@@ -99,6 +99,7 @@ export default function AddChildren() {
                   value={child.name}
                   onChange={(val) => updateChild(child.id, "name", val)}
                   placeholder="First name"
+                  autoComplete="off"
                 />
 
                 <TagSelector

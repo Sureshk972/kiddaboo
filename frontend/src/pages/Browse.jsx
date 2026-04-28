@@ -12,9 +12,9 @@ import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const SORT_OPTIONS = [
   { value: "distance", label: "Nearest" },
-  { value: "rating", label: "Rated" },
+  { value: "rating", label: "Top rated" },
   { value: "newest", label: "Newest" },
-  { value: "spots", label: "Spots" },
+  { value: "spots", label: "Most spots" },
 ];
 
 // Premium parents see new playgroups immediately; free parents see them

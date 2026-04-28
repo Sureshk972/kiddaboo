@@ -444,7 +444,7 @@ describe("Authenticated Pages", () => {
     it("renders filter buttons", () => {
       renderWithRouter(<Browse />);
       expect(screen.getByText("Filters")).toBeInTheDocument();
-      expect(screen.getByText("Rated")).toBeInTheDocument();
+      expect(screen.getByText("Top rated")).toBeInTheDocument();
     });
   });
 

@@ -7,6 +7,8 @@ export default function Input({
   error = "",
   maxLength,
   className = "",
+  autoComplete,
+  inputMode,
 }) {
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
@@ -19,6 +21,8 @@ export default function Input({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         maxLength={maxLength}
+        autoComplete={autoComplete}
+        inputMode={inputMode}
         className={`
           bg-white border rounded-xl px-4 py-3.5 text-charcoal
           font-body text-base outline-none transition-all duration-150

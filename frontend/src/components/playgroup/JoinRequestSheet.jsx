@@ -6,12 +6,47 @@ export default function JoinRequestSheet({
   onClose,
   screeningQuestions = [],
   playgroupName,
+  playgroupId,
   onSubmit,
 }) {
+  // Draft autosave key — scoped to the playgroup so a parent who opens
+  // multiple groups before submitting doesn't clobber drafts. Falls
+  // back to name when id isn't passed (older callers).
+  const draftKey = `kiddaboo.joinDraft.${playgroupId || playgroupName || "unknown"}`;
+
   const [intro, setIntro] = useState("");
   const [answers, setAnswers] = useState(
     screeningQuestions.reduce((acc, q, i) => ({ ...acc, [i]: "" }), {})
   );
+
+  // Restore draft when the sheet opens.
+  useEffect(() => {
+    if (!isOpen) return;
+    try {
+      const raw = sessionStorage.getItem(draftKey);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (typeof parsed?.intro === "string") setIntro(parsed.intro);
+      if (parsed?.answers && typeof parsed.answers === "object") {
+        setAnswers((prev) => ({ ...prev, ...parsed.answers }));
+      }
+    } catch {
+      // Corrupt draft — ignore.
+    }
+  }, [isOpen, draftKey]);
+
+  // Autosave draft as the user types. sessionStorage (not localStorage)
+  // because join-intro can include personal context the parent wouldn't
+  // expect to persist across browser restarts.
+  useEffect(() => {
+    if (!isOpen) return;
+    if (!intro && Object.values(answers).every((v) => !v)) return;
+    try {
+      sessionStorage.setItem(draftKey, JSON.stringify({ intro, answers }));
+    } catch {
+      // Quota / private mode — silently drop.
+    }
+  }, [isOpen, intro, answers, draftKey]);
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -49,6 +84,11 @@ export default function JoinRequestSheet({
         setError("Something went wrong sending your request. Please try again.");
         setSaving(false);
         return;
+      }
+      try {
+        sessionStorage.removeItem(draftKey);
+      } catch {
+        // ignore
       }
       setSubmitted(true);
     } catch {

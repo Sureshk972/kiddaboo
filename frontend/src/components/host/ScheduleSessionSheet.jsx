@@ -23,6 +23,22 @@ function splitLocal(iso) {
   };
 }
 
+// Quick-pick chips: hosts almost always pick a weekend morning. These
+// shortcuts skip the date/time pickers for the 80% case. `targetDow`
+// is 0=Sun, 6=Sat. `weeksOut` of 1 means "the upcoming one"; 2 means
+// the one after that.
+function nextDow(targetDow, weeksOut = 1) {
+  const now = new Date();
+  const today = now.getDay();
+  let delta = (targetDow - today + 7) % 7;
+  if (delta === 0) delta = 7; // never "today" — that's not "next"
+  delta += (weeksOut - 1) * 7;
+  const d = new Date(now);
+  d.setDate(now.getDate() + delta);
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
 export default function ScheduleSessionSheet({
   isOpen,
   onClose,
@@ -67,11 +83,12 @@ export default function ScheduleSessionSheet({
 
   const canSubmit = date && time && !saving;
 
-  // "12:00 AM" / overnight confirmation: most hosts don't schedule playdates
-  // between midnight and 6 AM. If they do, make them confirm — this catches
-  // the classic "I meant noon, the picker rolled to 12:00 AM" mistake.
+  // Late-night confirmation: most hosts don't schedule playdates between
+  // 9 PM and 6 AM. If they do, make them confirm — this catches the
+  // classic "I meant 9 AM, the picker rolled to 9:00 PM" mistake and
+  // the "I meant noon, the picker rolled to 12:00 AM" mistake.
   const hour = time ? parseInt(time.split(":")[0], 10) : NaN;
-  const isOvernight = Number.isFinite(hour) && hour >= 0 && hour < 6;
+  const isOvernight = Number.isFinite(hour) && (hour < 6 || hour >= 21);
 
   // Friendly label for the overnight warning
   const timeLabel = (() => {
@@ -165,7 +182,7 @@ export default function ScheduleSessionSheet({
                 </svg>
               </div>
               <h3 className="text-lg font-heading font-bold text-charcoal mb-2 text-center">
-                Confirm overnight time
+                Confirm late-night time
               </h3>
               <p className="text-sm text-taupe leading-relaxed mb-4 text-center">
                 You&apos;ve scheduled this session for{" "}
@@ -173,7 +190,9 @@ export default function ScheduleSessionSheet({
                 {hour === 0 && " (midnight)"}. Most playdates happen during the day.
               </p>
               <p className="text-xs text-taupe/70 text-center mb-6">
-                If you meant noon, tap &ldquo;Go back&rdquo; and change the time to <span className="font-medium">12:00 PM</span>.
+                {hour < 6
+                  ? <>If you meant noon, tap &ldquo;Go back&rdquo; and change the time to <span className="font-medium">12:00 PM</span>.</>
+                  : <>If you meant the morning, tap &ldquo;Go back&rdquo; and switch AM/PM.</>}
               </p>
               <div className="flex gap-3">
                 <button
@@ -228,6 +247,36 @@ export default function ScheduleSessionSheet({
                   ? "Update the details below. RSVP'd families will be notified."
                   : "Pick a date and time for your next playdate."}
               </p>
+
+              {/* Quick picks — most hosts schedule weekend mornings.
+                  Hidden in edit mode since edits are usually small
+                  tweaks, not "pick a whole new slot." */}
+              {!isEdit && (
+                <div className="mb-4">
+                  <label className="text-sm font-medium text-taupe-dark block mb-1.5">
+                    Quick pick
+                  </label>
+                  <div className="flex gap-2 flex-wrap">
+                    {[
+                      { label: "This Sat 10 AM", dow: 6, weeks: 1, time: "10:00" },
+                      { label: "This Sun 10 AM", dow: 0, weeks: 1, time: "10:00" },
+                      { label: "Next Sat 10 AM", dow: 6, weeks: 2, time: "10:00" },
+                    ].map((qp) => (
+                      <button
+                        key={qp.label}
+                        type="button"
+                        onClick={() => {
+                          setDate(nextDow(qp.dow, qp.weeks));
+                          setTime(qp.time);
+                        }}
+                        className="px-3 py-1.5 rounded-full text-xs font-medium bg-white border border-cream-dark text-taupe-dark hover:border-sage-light hover:text-sage-dark transition-colors cursor-pointer"
+                      >
+                        {qp.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Date */}
               <div className="mb-4">

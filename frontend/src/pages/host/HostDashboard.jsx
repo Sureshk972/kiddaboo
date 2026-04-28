@@ -770,21 +770,19 @@ export default function HostDashboard() {
         ) : (
           <button
             onClick={() => setShowScheduleSheet(true)}
-            className="bg-sage-light/30 rounded-2xl p-4 border border-sage-light border-dashed cursor-pointer w-full text-left"
+            className="w-full bg-sage-dark text-white rounded-2xl px-4 py-5 cursor-pointer border-none hover:bg-sage transition-colors flex items-center gap-3 text-left"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-sage-light rounded-xl flex items-center justify-center flex-shrink-0">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <rect x="3" y="4" width="18" height="18" rx="2" stroke="#5C6B52" strokeWidth="1.5" />
-                  <path d="M3 10H21" stroke="#5C6B52" strokeWidth="1.5" />
-                  <path d="M8 2V6M16 2V6" stroke="#5C6B52" strokeWidth="1.5" strokeLinecap="round" />
-                  <path d="M12 14V18M10 16H14" stroke="#5C6B52" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-charcoal">Schedule your first session</p>
-                <p className="text-xs text-taupe">Tap to pick a date and time</p>
-              </div>
+            <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M3 10H21" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M8 2V6M16 2V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                <path d="M12 14V18M10 16H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-bold">Schedule your first session</p>
+              <p className="text-xs text-white/80">Tap to pick a date and time</p>
             </div>
           </button>
         )
@@ -1087,7 +1085,7 @@ export default function HostDashboard() {
                 {action.icon}
                 <span className="text-xs font-medium">{action.label}</span>
                 {action.disabled && (
-                  <span className="text-[9px] text-taupe/50">Coming soon</span>
+                  <span className="text-[9px] text-taupe/50">Create playgroup first</span>
                 )}
               </button>
             ))}

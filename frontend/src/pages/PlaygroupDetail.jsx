@@ -730,6 +730,7 @@ export default function PlaygroupDetail() {
         onClose={() => setShowJoinSheet(false)}
         screeningQuestions={group.screeningQuestions}
         playgroupName={group.name}
+        playgroupId={group.id}
         onSubmit={handleJoinSubmit}
       />
 

@@ -162,12 +162,14 @@ export default function CreateProfile() {
             onChange={(val) => updateField("firstName", val)}
             placeholder="Jane"
             error={errors.firstName}
+            autoComplete="given-name"
           />
           <Input
             label="Last name"
             value={data.lastName}
             onChange={(val) => updateField("lastName", val)}
             placeholder="Smith"
+            autoComplete="family-name"
           />
         </div>
 
@@ -181,6 +183,8 @@ export default function CreateProfile() {
               onChange={(val) => updateField("zipCode", val.replace(/[^0-9-]/g, "").slice(0, 10))}
               placeholder="60640"
               error={errors.zipCode}
+              autoComplete="postal-code"
+              inputMode="numeric"
             />
             <p className="text-[11px] text-taupe/50 -mt-4">
               Helps us show you playgroups nearby. Never shared publicly.

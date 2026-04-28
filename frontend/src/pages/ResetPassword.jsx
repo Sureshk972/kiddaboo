@@ -91,6 +91,7 @@ export default function ResetPassword() {
           onChange={setPassword}
           placeholder="At least 6 characters"
           type="password"
+          autoComplete="new-password"
         />
 
         <Input
@@ -100,6 +101,7 @@ export default function ResetPassword() {
           placeholder="Re-enter your password"
           type="password"
           error={error}
+          autoComplete="new-password"
         />
 
         <Button

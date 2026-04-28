@@ -232,6 +232,8 @@ export default function PhoneVerification() {
           placeholder="you@email.com"
           type="email"
           error={emailError}
+          autoComplete="email"
+          inputMode="email"
         />
 
         <div>
@@ -242,6 +244,7 @@ export default function PhoneVerification() {
             placeholder={mode === "signup" ? "At least 6 characters" : "Your password"}
             type="password"
             error={passwordError}
+            autoComplete={mode === "signup" ? "new-password" : "current-password"}
           />
           {mode === "signin" && (
             <button
