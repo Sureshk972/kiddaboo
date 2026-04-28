@@ -11,6 +11,10 @@ vi.mock("../../hooks/usePhoneVerification", () => ({
   usePhoneVerification: () => ({ status, error, sendCode, verifyCode, reset: vi.fn() }),
 }));
 
+vi.mock("../../context/AuthContext", () => ({
+  useAuth: () => ({ user: { id: "u1" }, profile: { account_type: "parent" }, refetchProfile: vi.fn() }),
+}));
+
 test("full flow: enter phone, send code, enter code, verified", async () => {
   status = "idle";
   error = null;
