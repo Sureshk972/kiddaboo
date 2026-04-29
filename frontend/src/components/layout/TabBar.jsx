@@ -211,8 +211,8 @@ export default function TabBar({ badges = {} }) {
                 transition-colors duration-150 cursor-pointer
                 border-none min-w-[60px] relative
                 ${isActive
-                  ? "text-white bg-sage active:scale-[0.98]"
-                  : "bg-transparent text-taupe hover:text-taupe-dark"}
+                  ? "text-white bg-sage-dark active:scale-[0.98]"
+                  : "text-white bg-sage hover:bg-sage-dark active:scale-[0.98]"}
               `}
             >
               <div className="relative">
@@ -224,9 +224,7 @@ export default function TabBar({ badges = {} }) {
                 )}
               </div>
               <span
-                className={`text-[10px] font-medium ${
-                  isActive ? "text-white" : "text-taupe"
-                }`}
+                className="text-[10px] font-medium text-white"
               >
                 {tab.label}
               </span>
@@ -236,14 +234,14 @@ export default function TabBar({ badges = {} }) {
         <button
           onClick={async () => { await signOut(); navigate("/"); }}
           aria-label="Sign out"
-          className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-colors duration-150 cursor-pointer bg-transparent border-none min-w-[60px] text-taupe hover:text-taupe-dark"
+          className="flex flex-col items-center gap-0.5 px-3 py-1.5 transition-all duration-150 cursor-pointer bg-sage hover:bg-sage-dark active:scale-[0.98] border-none min-w-[60px] text-white"
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
             <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             <polyline points="16 17 21 12 16 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <span className="text-[10px] font-medium text-taupe">Sign out</span>
+          <span className="text-[10px] font-medium text-white">Sign out</span>
         </button>
       </div>
     </nav>
