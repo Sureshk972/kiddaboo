@@ -21,7 +21,7 @@ export default function OrganizerLayout({ children }) {
       </div>
       <div className="max-w-md mx-auto w-full flex-1 flex flex-col">
         <div className="px-5 pt-3">
-          <span className="text-[10px] font-bold tracking-[1.5px] text-terracotta uppercase">
+          <span className="text-[10px] font-bold tracking-[1.5px] uppercase" style={{ color: '#8B3FE0' }}>
             Organizer
           </span>
         </div>
