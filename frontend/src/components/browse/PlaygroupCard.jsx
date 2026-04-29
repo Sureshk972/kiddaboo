@@ -177,25 +177,13 @@ export default function PlaygroupCard({ group, onClick, featured = false, premiu
             style={{ backgroundColor: group.photoColor + "40" }}
           />
         )}
-        <div className="absolute top-3 left-3 right-3 flex flex-wrap gap-1.5">
-          {premium && (
-            <span className="px-3 py-1 bg-white/90 backdrop-blur-md rounded-full text-[10px] font-bold tracking-widest uppercase" style={{ color: '#6B21D4' }}>
-              Premium
-            </span>
-          )}
-          {group.isNewlyPosted && (
+        {group.isNewlyPosted && (
+          <div className="absolute top-3 left-3 right-3 flex flex-wrap gap-1.5">
             <span className="px-3 py-1 bg-terracotta/90 backdrop-blur-md rounded-full text-[10px] font-bold tracking-widest uppercase text-white">
               New
             </span>
-          )}
-          <span className={`px-3 py-1 backdrop-blur-md rounded-full text-[10px] font-bold tracking-widest uppercase ${
-            group.accessType === "open"
-              ? "bg-sage/90 text-white"
-              : "bg-white/90"
-          }`} style={group.accessType === "open" ? undefined : { color: '#6B21D4' }}>
-            {ACCESS_LABELS[group.accessType]}
-          </span>
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Body */}
