@@ -655,7 +655,7 @@ export default function HostDashboard() {
             </div>
             {viewStats.recentViewers.length > 0 ? (
               <div className="space-y-2">
-                <p className="text-xs text-taupe font-medium">Recent viewers</p>
+                <p className="text-xs text-taupe font-bold">Recent viewers</p>
                 {viewStats.recentViewers.slice(0, 5).map((v, i) => (
                   <div key={i} className="flex items-center justify-between text-sm">
                     <span style={{ color: '#8B3FE0' }}>{v.name}</span>
