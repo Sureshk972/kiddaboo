@@ -4,8 +4,8 @@
   "description": "Find your people. Find your playgroup.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FAF7F2",
-  "theme_color": "#5C6B52",
+  "background_color": "#ECE3FB",
+  "theme_color": "#8B3FE0",
   "icons": [
     {
       "src": "/icon-192.png",

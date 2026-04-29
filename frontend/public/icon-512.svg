@@ -1,19 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="100" fill="#5C6B52"/>
-  <!-- Adult figure -->
-  <circle cx="186" cy="135" r="42" fill="#FAF7F2"/>
-  <path d="M186 190C146 190 126 222 126 260V324" stroke="#FAF7F2" stroke-width="28" stroke-linecap="round"/>
-  <path d="M186 190C226 190 246 222 246 260V324" stroke="#FAF7F2" stroke-width="28" stroke-linecap="round"/>
-  <path d="M186 238V324" stroke="#FAF7F2" stroke-width="28" stroke-linecap="round"/>
-  <!-- Child figure -->
-  <circle cx="336" cy="178" r="34" fill="#DAE4D0"/>
-  <path d="M336 218C304 218 286 246 286 276V334" stroke="#DAE4D0" stroke-width="24" stroke-linecap="round"/>
-  <path d="M336 218C368 218 386 246 386 276V334" stroke="#DAE4D0" stroke-width="24" stroke-linecap="round"/>
-  <path d="M336 262V334" stroke="#DAE4D0" stroke-width="24" stroke-linecap="round"/>
-  <!-- Holding hands arc -->
-  <path d="M246 305C262 278 286 278 286 305" stroke="#E8C4B0" stroke-width="18" stroke-linecap="round"/>
-  <!-- Playful ground elements -->
-  <circle cx="110" cy="386" r="13" fill="#DAE4D0" opacity="0.4"/>
-  <circle cx="256" cy="396" r="18" fill="#DAE4D0" opacity="0.3"/>
-  <circle cx="396" cy="386" r="12" fill="#DAE4D0" opacity="0.4"/>
+  <rect width="512" height="512" fill="#DCC9F5"/>
+  <rect x="112" y="164" width="80" height="80" fill="#F4C9A8"/>
+  <rect x="216" y="164" width="80" height="80" fill="#D9A441"/>
+  <rect x="320" y="164" width="80" height="80" fill="#B07A8B"/>
+  <rect x="164" y="268" width="80" height="80" fill="#B7A5E5"/>
+  <rect x="268" y="268" width="80" height="80" fill="#5C8C7E"/>
 </svg>
