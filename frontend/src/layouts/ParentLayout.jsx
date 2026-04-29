@@ -18,7 +18,7 @@ export default function ParentLayout({ children }) {
   };
   return (
     <div className="min-h-screen bg-cream flex flex-col" data-mode="parent">
-      <div className="hidden md:block bg-sage-light/40 text-center py-2 text-xs text-sage-dark border-b border-cream-dark">
+      <div className="hidden md:block bg-sage-dark text-center py-2 text-xs text-white">
         Kiddaboo is designed for mobile — open this on your phone for the best experience.
       </div>
       <div className="max-w-md mx-auto w-full flex-1 flex flex-col">
