@@ -211,7 +211,7 @@ export default function TabBar({ badges = {} }) {
                 transition-colors duration-150 cursor-pointer
                 border-none min-w-[60px] relative
                 ${isActive
-                  ? "text-sage-dark bg-sage-light"
+                  ? "text-white bg-sage active:scale-[0.98]"
                   : "bg-transparent text-taupe hover:text-taupe-dark"}
               `}
             >
@@ -225,7 +225,7 @@ export default function TabBar({ badges = {} }) {
               </div>
               <span
                 className={`text-[10px] font-medium ${
-                  isActive ? "text-sage-dark" : "text-taupe"
+                  isActive ? "text-white" : "text-taupe"
                 }`}
               >
                 {tab.label}
