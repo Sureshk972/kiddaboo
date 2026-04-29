@@ -862,7 +862,7 @@ export default function HostDashboard() {
         {/* Pending requests */}
         <div ref={requestsRef} className="scroll-mt-24">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-base font-heading font-bold text-charcoal">
+            <h3 className="text-base font-heading font-bold" style={{ color: '#8B3FE0' }}>
               Join Requests
               {activeRequests.length > 0 && (
                 <span className="ml-2 text-xs bg-terracotta-light text-taupe-dark px-2 py-0.5 rounded-full font-body font-normal">
@@ -900,7 +900,7 @@ export default function HostDashboard() {
 
         {/* Members */}
         <div ref={membersRef} className="scroll-mt-24">
-          <h3 className="text-base font-heading font-bold text-charcoal mb-3">
+          <h3 className="text-base font-heading font-bold mb-3" style={{ color: '#8B3FE0' }}>
             Members in Your Group
           </h3>
           <div className="bg-white rounded-2xl border border-cream-dark overflow-hidden">
@@ -934,7 +934,7 @@ export default function HostDashboard() {
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium text-charcoal">
+                    <p className="text-sm font-medium" style={{ color: '#8B3FE0' }}>
                       {member.name}
                     </p>
                     {member.role === "host" && (
