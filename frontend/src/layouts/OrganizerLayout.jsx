@@ -15,7 +15,7 @@ export default function OrganizerLayout({ children }) {
     "/messages": unreadMessages,
   };
   return (
-    <div className="min-h-screen bg-[#F9F4ED] flex flex-col" data-mode="organizer">
+    <div className="min-h-screen bg-cream flex flex-col" data-mode="organizer">
       <div className="hidden md:block bg-terracotta-light/40 text-center py-2 text-xs text-terracotta border-b border-cream-dark">
         Kiddaboo is designed for mobile — open this on your phone for the best experience.
       </div>

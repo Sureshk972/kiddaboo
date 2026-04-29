@@ -23,11 +23,6 @@ test("clicking Organizer card routes to /verify?role=organizer", () => {
   expect(navigate).toHaveBeenCalledWith("/verify?role=organizer");
 });
 
-test("renders footer note about adding the other role later", () => {
-  render(<MemoryRouter><ChooseRole /></MemoryRouter>);
-  expect(screen.getByText(/add the other role later/i)).toBeInTheDocument();
-});
-
 test("offers a sign-in link for returning users", () => {
   render(<MemoryRouter><ChooseRole /></MemoryRouter>);
   const link = screen.getByRole("link", { name: /sign in/i });

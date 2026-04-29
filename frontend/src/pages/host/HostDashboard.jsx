@@ -388,7 +388,7 @@ export default function HostDashboard() {
             crowd the host's name on narrow screens. "(Host)" was
             redundant here: they're already on the host dashboard. */}
         <div className="flex items-center justify-between gap-2">
-          <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
+          <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Inter', sans-serif", color: '#8B3FE0' }}>
             Kiddaboo
           </h1>
           <div className="flex items-center gap-2 flex-shrink-0">

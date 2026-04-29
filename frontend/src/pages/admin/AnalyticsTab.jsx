@@ -46,7 +46,7 @@ function LocationHeatmap({ playgroups }) {
     points.forEach(([lat, lng]) => {
       L.circleMarker([lat, lng], {
         radius: 5,
-        color: "#5C6B52",
+        color: "#8B3FE0",
         fillColor: "#5C6B52",
         fillOpacity: 0.7,
         weight: 1,

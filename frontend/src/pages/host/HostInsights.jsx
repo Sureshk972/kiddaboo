@@ -171,7 +171,7 @@ export default function HostInsights() {
         <div className="mb-2 flex items-center justify-between gap-2">
           <h1
             className="text-2xl font-bold tracking-tight"
-            style={{ fontFamily: "'ChunkFive', serif", color: "#5C6B52" }}
+            style={{ fontFamily: "'Inter', sans-serif", color: "#8B3FE0" }}
           >
             Kiddaboo
           </h1>

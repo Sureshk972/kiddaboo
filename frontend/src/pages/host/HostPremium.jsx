@@ -126,7 +126,7 @@ export default function HostPremium() {
               <path d="M15 18L9 12L15 6" stroke="#5C5C5C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-          <h1 className="font-bold text-base tracking-tight" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
+          <h1 className="font-bold text-base tracking-tight" style={{ fontFamily: "'Inter', sans-serif", color: '#8B3FE0' }}>
             Organizer Premium
           </h1>
         </div>

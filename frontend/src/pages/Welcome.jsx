@@ -32,27 +32,26 @@ export default function Welcome() {
     <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-6">
       {/* Logo area */}
       <div className="flex flex-col items-center gap-6 mb-12">
-        {/* Logo mark — a sprout/leaf */}
-        <div className="w-16 h-16 bg-sage-light rounded-full flex items-center justify-center">
-          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <path
-              d="M16 28V16M16 16C16 16 12 12 8 10C12 10 16 12 16 16ZM16 16C16 16 20 12 24 10C20 10 16 12 16 16Z"
-              stroke="#5C6B52"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <circle cx="16" cy="8" r="3" fill="#7A8F6D" opacity="0.5" />
-          </svg>
+        {/* Logo mark — five boxes echoing the illustration palette */}
+        <div className="w-16 h-16 bg-sage-light flex flex-col items-center justify-center gap-1">
+          <div className="flex gap-1">
+            <div className="w-3 h-3" style={{ background: '#F4C9A8' }}></div>
+            <div className="w-3 h-3" style={{ background: '#D9A441' }}></div>
+            <div className="w-3 h-3" style={{ background: '#B07A8B' }}></div>
+          </div>
+          <div className="flex gap-1">
+            <div className="w-3 h-3" style={{ background: '#B7A5E5' }}></div>
+            <div className="w-3 h-3" style={{ background: '#5C8C7E' }}></div>
+          </div>
         </div>
 
         {/* Brand name */}
-        <h1 className="text-4xl font-bold tracking-tight" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
+        <h1 className="text-5xl tracking-tight" style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 800, color: '#8B3FE0' }}>
           Kiddaboo
         </h1>
 
         {/* Tagline */}
-        <p className="text-lg text-taupe text-center leading-relaxed max-w-xs">
+        <p className="text-lg text-center leading-relaxed max-w-xs" style={{ color: '#8B3FE0' }}>
           Find your people.<br />Find your playgroup.
         </p>
       </div>
@@ -61,13 +60,13 @@ export default function Welcome() {
       <div className="w-full max-w-xs mb-12">
         <div className="bg-cream-dark rounded-2xl p-8 flex flex-col items-center gap-3">
           <div className="flex gap-2">
-            <div className="w-10 h-10 rounded-full bg-sage-light"></div>
-            <div className="w-10 h-10 rounded-full bg-terracotta-light"></div>
-            <div className="w-10 h-10 rounded-full bg-sage/30"></div>
+            <div className="w-10 h-10 rounded-full" style={{ background: '#F4C9A8' }}></div>
+            <div className="w-10 h-10 rounded-full" style={{ background: '#D9A441' }}></div>
+            <div className="w-10 h-10 rounded-full" style={{ background: '#B07A8B' }}></div>
           </div>
           <div className="flex gap-2 -mt-1">
-            <div className="w-8 h-8 rounded-full bg-terracotta/20"></div>
-            <div className="w-8 h-8 rounded-full bg-sage-light"></div>
+            <div className="w-8 h-8 rounded-full" style={{ background: '#B7A5E5' }}></div>
+            <div className="w-8 h-8 rounded-full" style={{ background: '#5C8C7E' }}></div>
           </div>
           <p className="text-xs text-taupe/60 mt-2">Curated playgroups for your family</p>
         </div>
@@ -94,13 +93,15 @@ export default function Welcome() {
       <div className="mt-8 flex gap-2">
         <button
           onClick={() => navigate("/terms")}
-          className="text-xs text-taupe/60 hover:text-taupe transition-colors cursor-pointer bg-transparent border-none underline underline-offset-2 px-3 py-3"
+          className="text-xs transition-colors cursor-pointer bg-transparent border-none underline underline-offset-2 px-3 py-3"
+          style={{ color: '#8B3FE0' }}
         >
           Terms of Service
         </button>
         <button
           onClick={() => navigate("/privacy")}
-          className="text-xs text-taupe/60 hover:text-taupe transition-colors cursor-pointer bg-transparent border-none underline underline-offset-2 px-3 py-3"
+          className="text-xs transition-colors cursor-pointer bg-transparent border-none underline underline-offset-2 px-3 py-3"
+          style={{ color: '#8B3FE0' }}
         >
           Privacy Policy
         </button>
@@ -111,7 +112,8 @@ export default function Welcome() {
         href="https://www.instagram.com/kiddaboo1/"
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-2 flex items-center gap-2 text-xs text-taupe/60 hover:text-sage transition-colors px-3 py-3"
+        className="mt-2 flex items-center gap-2 text-xs transition-colors px-3 py-3"
+        style={{ color: '#8B3FE0' }}
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
           <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" strokeWidth="1.5" />

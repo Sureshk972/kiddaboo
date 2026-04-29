@@ -377,7 +377,7 @@ export default function EditProfile() {
               />
             </svg>
           </button>
-          <h1 className="text-xl font-bold tracking-tight" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
+          <h1 className="text-xl font-bold tracking-tight" style={{ fontFamily: "'Inter', sans-serif", color: '#8B3FE0' }}>
             Edit Profile
           </h1>
         </div>
@@ -480,7 +480,7 @@ export default function EditProfile() {
             of navigating directly to /edit-profile#children. */}
         {!isHost && (
         <div id="children" style={{ scrollMarginTop: "80px" }}>
-          <h2 className="text-lg font-bold tracking-tight mb-1" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
+          <h2 className="text-lg font-bold tracking-tight mb-1" style={{ fontFamily: "'Inter', sans-serif", color: '#8B3FE0' }}>
             Your little ones
           </h2>
           <p className="text-sm text-taupe mb-4">

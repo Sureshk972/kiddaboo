@@ -292,7 +292,7 @@ export default function Browse() {
           {/* Title row */}
           <div className="mb-3 flex items-center justify-between gap-2">
             <div className="flex items-baseline gap-2 min-w-0">
-              <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'ChunkFive', serif", color: '#5C6B52' }}>
+              <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Inter', sans-serif", color: '#8B3FE0' }}>
                 Kiddaboo
               </h1>
               {profile?.first_name && (
