@@ -712,9 +712,9 @@ export default function HostDashboard() {
 
         {/* Next session card */}
         {nextSession ? (
-          <div className="bg-sage-light/30 rounded-2xl p-4 border border-sage-light">
+          <div className="bg-white rounded-2xl p-4 border border-cream-dark">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-heading font-bold text-charcoal">
+              <h3 className="text-sm font-heading font-bold" style={{ color: '#8B3FE0' }}>
                 Next Session
               </h3>
               <div className="flex items-center gap-4">
