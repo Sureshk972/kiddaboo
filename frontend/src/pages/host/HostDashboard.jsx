@@ -805,7 +805,7 @@ export default function HostDashboard() {
         {/* Upcoming sessions list (if more than 1) */}
         {sessions.length > 1 && (
           <div>
-            <h3 className="text-base font-heading font-bold text-charcoal mb-3">
+            <h3 className="text-base font-heading font-bold mb-3" style={{ color: '#8B3FE0' }}>
               Upcoming Sessions
             </h3>
             <div className="flex flex-col gap-2">
