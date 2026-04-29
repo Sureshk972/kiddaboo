@@ -161,11 +161,7 @@ export default function PlaygroupCard({ group, onClick, featured = false, premiu
   return (
     <div
       onClick={onClick}
-      className={`group bg-white rounded-2xl border overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer ${
-        premium
-          ? "border-sage hover:border-sage-dark ring-1 ring-sage-light"
-          : "border-cream-dark hover:border-sage-light"
-      }`}
+      className="group bg-white rounded-2xl border border-cream-dark hover:border-sage-light overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer"
     >
       {/* Photo */}
       <div className="relative h-44 overflow-hidden">
