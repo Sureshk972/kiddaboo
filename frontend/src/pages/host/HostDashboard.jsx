@@ -442,7 +442,7 @@ export default function HostDashboard() {
         {/* Playgroup name */}
         <div>
           <p className="text-[11px] text-taupe uppercase tracking-wide">Your playgroup</p>
-          <h2 className="text-lg font-heading font-bold text-charcoal truncate">
+          <h2 className="text-lg font-heading font-bold truncate" style={{ color: '#8B3FE0' }}>
             {loading ? "Loading…" : realPlaygroup ? pg.name : "No playgroup yet"}
           </h2>
         </div>
@@ -545,7 +545,7 @@ export default function HostDashboard() {
         <div>
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h3 className="text-base font-heading font-bold text-charcoal">
+              <h3 className="text-base font-heading font-bold" style={{ color: '#8B3FE0' }}>
                 How parents see you
               </h3>
               <p className="text-[11px] text-taupe">
