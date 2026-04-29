@@ -993,7 +993,7 @@ export default function HostDashboard() {
 
         {/* Recent activity */}
         <div>
-          <h3 className="text-base font-heading font-bold text-charcoal mb-3">
+          <h3 className="text-base font-heading font-bold mb-3" style={{ color: '#8B3FE0' }}>
             Recent Activity
           </h3>
           {realRequests.length > 0 || realMembers.length > 1 ? (
@@ -1022,7 +1022,7 @@ export default function HostDashboard() {
 
         {/* Quick actions */}
         <div>
-          <h3 className="text-base font-heading font-bold text-charcoal mb-3">
+          <h3 className="text-base font-heading font-bold mb-3" style={{ color: '#8B3FE0' }}>
             Quick Actions
           </h3>
           <div className="grid grid-cols-2 gap-3">
