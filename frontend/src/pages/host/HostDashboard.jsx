@@ -658,7 +658,7 @@ export default function HostDashboard() {
                 <p className="text-xs text-taupe font-medium">Recent viewers</p>
                 {viewStats.recentViewers.slice(0, 5).map((v, i) => (
                   <div key={i} className="flex items-center justify-between text-sm">
-                    <span className="text-charcoal">{v.name}</span>
+                    <span style={{ color: '#8B3FE0' }}>{v.name}</span>
                     <span className="text-xs text-taupe/60">{timeAgo(v.viewedAt)}</span>
                   </div>
                 ))}
