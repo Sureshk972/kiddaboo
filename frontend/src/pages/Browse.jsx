@@ -7,6 +7,7 @@ import { useAuth } from "../context/AuthContext";
 import { useSubscription } from "../hooks/useSubscription";
 import FilterSheet from "../components/browse/FilterSheet";
 import PlaygroupCard from "../components/browse/PlaygroupCard";
+import BrandMark from "../components/layout/BrandMark";
 import { transformPlaygroup } from "../lib/playgroupTransform";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
@@ -291,10 +292,8 @@ export default function Browse() {
         <div className="max-w-6xl mx-auto px-5 pt-4 pb-3">
           {/* Title row */}
           <div className="mb-3 flex items-center justify-between gap-2">
-            <div className="flex items-baseline gap-2 min-w-0">
-              <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Inter', sans-serif", color: '#8B3FE0' }}>
-                Kiddaboo
-              </h1>
+            <div className="flex items-center gap-2 min-w-0">
+              <BrandMark />
               {profile?.first_name && (
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-sm font-medium text-taupe truncate">

@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
 import { useSubscription } from "../../hooks/useSubscription";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
+import BrandMark from "../../components/layout/BrandMark";
 
 // Helper: time ago string
 function timeAgo(dateStr) {
@@ -169,12 +170,7 @@ export default function HostInsights() {
     <div className="sticky top-0 z-20 bg-cream/95 backdrop-blur-sm border-b border-cream-dark">
       <div className="max-w-md mx-auto px-5 pt-4 pb-3">
         <div className="mb-2 flex items-center justify-between gap-2">
-          <h1
-            className="text-2xl font-bold tracking-tight"
-            style={{ fontFamily: "'Inter', sans-serif", color: "#8B3FE0" }}
-          >
-            Kiddaboo
-          </h1>
+          <BrandMark />
           {isHostPremium ? (
             <span className="flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1 flex-shrink-0">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="#D97706">
