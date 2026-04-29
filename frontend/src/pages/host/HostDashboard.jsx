@@ -388,9 +388,22 @@ export default function HostDashboard() {
             crowd the host's name on narrow screens. "(Host)" was
             redundant here: they're already on the host dashboard. */}
         <div className="flex items-center justify-between gap-2">
-          <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Inter', sans-serif", color: '#8B3FE0' }}>
-            Kiddaboo
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Inter', sans-serif", color: '#8B3FE0' }}>
+              Kiddaboo
+            </h1>
+            <div className="bg-sage-light flex flex-col items-center justify-center gap-0.5 p-1">
+              <div className="flex gap-0.5">
+                <div className="w-1.5 h-1.5" style={{ background: '#F4C9A8' }}></div>
+                <div className="w-1.5 h-1.5" style={{ background: '#D9A441' }}></div>
+                <div className="w-1.5 h-1.5" style={{ background: '#B07A8B' }}></div>
+              </div>
+              <div className="flex gap-0.5">
+                <div className="w-1.5 h-1.5" style={{ background: '#B7A5E5' }}></div>
+                <div className="w-1.5 h-1.5" style={{ background: '#5C8C7E' }}></div>
+              </div>
+            </div>
+          </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             {isHostPremium ? (
               <span className="flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1">
