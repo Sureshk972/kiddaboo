@@ -388,12 +388,12 @@ export default function HostDashboard() {
         {/* Brand row — greeting moved below so the Premium pill can't
             crowd the host's name on narrow screens. "(Host)" was
             redundant here: they're already on the host dashboard. */}
-        <div className="flex items-center justify-between gap-2">
-          <BrandMark />
+        <div className="flex items-center justify-between gap-2 bg-sage rounded-xl px-3 py-3 my-2">
+          <BrandMark onDark />
           <div className="flex items-center gap-2 flex-shrink-0">
             {isHostPremium ? (
-              <span className="flex items-center gap-1 text-[11px] font-bold" style={{ color: '#6B21D4' }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="#6B21D4">
+              <span className="flex items-center gap-1 text-[11px] font-bold text-white">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="#FFFFFF">
                   <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
                 </svg>
                 Premium
@@ -412,7 +412,7 @@ export default function HostDashboard() {
             )}
             {profile && (
               <div
-                className="w-9 h-9 rounded-full bg-sage-light flex items-center justify-center overflow-hidden cursor-pointer border-2 border-sage/30"
+                className="w-9 h-9 rounded-full bg-sage-light flex items-center justify-center overflow-hidden cursor-pointer border-2 border-white/40"
                 onClick={() => navigate("/my-profile")}
                 role="button"
                 aria-label="Go to profile"
