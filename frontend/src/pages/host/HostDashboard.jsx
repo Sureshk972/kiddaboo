@@ -962,7 +962,7 @@ export default function HostDashboard() {
         {/* Reviews */}
         <div ref={reviewsRef} className="scroll-mt-24">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-base font-heading font-bold text-charcoal">
+            <h3 className="text-base font-heading font-bold" style={{ color: '#8B3FE0' }}>
               Reviews
               {ratings.count > 0 && (
                 <span className="ml-2 text-xs bg-sage-light text-sage-dark px-2 py-0.5 rounded-full font-body font-normal">
