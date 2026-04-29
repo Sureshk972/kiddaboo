@@ -1075,10 +1075,10 @@ export default function HostDashboard() {
               <button
                 key={i}
                 onClick={action.disabled ? undefined : action.onClick}
-                className={`bg-white rounded-2xl p-4 border border-cream-dark flex flex-col items-center gap-2 transition-colors text-taupe-dark ${
+                className={`bg-sage hover:bg-sage-dark active:scale-[0.98] text-white p-4 border-none flex flex-col items-center gap-2 transition-all duration-150 ${
                   action.disabled
                     ? "opacity-50 cursor-default"
-                    : "cursor-pointer hover:border-sage-light"
+                    : "cursor-pointer"
                 }`}
               >
                 {action.icon}
