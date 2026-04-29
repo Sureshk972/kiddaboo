@@ -593,7 +593,7 @@ export default function HostDashboard() {
             aria-label="View members"
             className="bg-white rounded-2xl p-4 border border-cream-dark text-center cursor-pointer transition-all hover:border-sage-light hover:shadow-sm active:scale-[0.98]"
           >
-            <p className="text-2xl font-heading font-bold text-charcoal">
+            <p className="text-2xl font-heading font-bold" style={{ color: '#8B3FE0' }}>
               {pg.memberCount}
             </p>
             <p className="text-[11px] text-taupe mt-0.5">
@@ -611,7 +611,7 @@ export default function HostDashboard() {
                 : "bg-white border-cream-dark hover:border-sage-light hover:shadow-sm"
             }`}
           >
-            <p className="text-2xl font-heading font-bold text-charcoal">
+            <p className="text-2xl font-heading font-bold" style={{ color: '#8B3FE0' }}>
               {activeRequests.length}
             </p>
             <p className="text-[11px] text-taupe mt-0.5">pending requests</p>
@@ -626,10 +626,10 @@ export default function HostDashboard() {
             className="bg-white rounded-2xl p-4 border border-cream-dark text-center cursor-pointer transition-all hover:border-sage-light hover:shadow-sm active:scale-[0.98]"
           >
             <div className="flex items-center justify-center gap-1">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="#5C6B52">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#8B3FE0">
                 <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
               </svg>
-              <p className="text-2xl font-heading font-bold text-charcoal">
+              <p className="text-2xl font-heading font-bold" style={{ color: '#8B3FE0' }}>
                 {ratings.count > 0 ? ratings.overall.toFixed(1) : "—"}
               </p>
             </div>
