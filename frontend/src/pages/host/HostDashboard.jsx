@@ -406,8 +406,8 @@ export default function HostDashboard() {
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             {isHostPremium ? (
-              <span className="flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="#D97706">
+              <span className="flex items-center gap-1 text-[11px] font-bold" style={{ color: '#6B21D4' }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="#6B21D4">
                   <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
                 </svg>
                 Premium
