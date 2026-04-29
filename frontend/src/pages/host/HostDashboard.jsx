@@ -642,16 +642,16 @@ export default function HostDashboard() {
 
         {/* Host Premium analytics / upsell */}
         {isHostPremium ? (
-          <div className="bg-white rounded-2xl border border-amber-200 p-5">
+          <div className="bg-white rounded-2xl border border-cream-dark p-5">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base font-heading font-bold text-charcoal flex items-center gap-2">
+              <h3 className="text-base font-heading font-bold flex items-center gap-2" style={{ color: '#8B3FE0' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="#D97706" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  <circle cx="12" cy="12" r="3" stroke="#D97706" strokeWidth="1.5" />
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="#8B3FE0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="12" cy="12" r="3" stroke="#8B3FE0" strokeWidth="1.5" />
                 </svg>
                 Views This Week
               </h3>
-              <span className="text-2xl font-heading font-bold text-amber-600">{viewStats.thisWeek}</span>
+              <span className="text-2xl font-heading font-bold" style={{ color: '#8B3FE0' }}>{viewStats.thisWeek}</span>
             </div>
             {viewStats.recentViewers.length > 0 ? (
               <div className="space-y-2">
