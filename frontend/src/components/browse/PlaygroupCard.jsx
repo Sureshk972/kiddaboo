@@ -163,7 +163,7 @@ export default function PlaygroupCard({ group, onClick, featured = false, premiu
       onClick={onClick}
       className={`group bg-white rounded-2xl border overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer ${
         premium
-          ? "border-amber-300 hover:border-amber-400 ring-1 ring-amber-100"
+          ? "border-sage hover:border-sage-dark ring-1 ring-sage-light"
           : "border-cream-dark hover:border-sage-light"
       }`}
     >
@@ -183,7 +183,7 @@ export default function PlaygroupCard({ group, onClick, featured = false, premiu
         )}
         <div className="absolute top-3 left-3 right-3 flex flex-wrap gap-1.5">
           {premium && (
-            <span className="px-3 py-1 bg-amber-400/90 backdrop-blur-md rounded-full text-[10px] font-bold tracking-widest uppercase text-white">
+            <span className="px-3 py-1 bg-white/90 backdrop-blur-md rounded-full text-[10px] font-bold tracking-widest uppercase" style={{ color: '#6B21D4' }}>
               Premium
             </span>
           )}
@@ -195,8 +195,8 @@ export default function PlaygroupCard({ group, onClick, featured = false, premiu
           <span className={`px-3 py-1 backdrop-blur-md rounded-full text-[10px] font-bold tracking-widest uppercase ${
             group.accessType === "open"
               ? "bg-sage/90 text-white"
-              : "bg-white/90 text-terracotta"
-          }`}>
+              : "bg-white/90"
+          }`} style={group.accessType === "open" ? undefined : { color: '#6B21D4' }}>
             {ACCESS_LABELS[group.accessType]}
           </span>
         </div>
@@ -215,7 +215,7 @@ export default function PlaygroupCard({ group, onClick, featured = false, premiu
           ))}
         </div>
 
-        <h3 className="font-heading font-bold text-charcoal text-base mb-1 leading-tight">
+        <h3 className="font-heading font-bold text-base mb-1 leading-tight" style={{ color: '#8B3FE0' }}>
           {group.name}
         </h3>
 
@@ -259,10 +259,10 @@ export default function PlaygroupCard({ group, onClick, featured = false, premiu
             )}
           </div>
           <div className="flex items-center gap-1">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="#5C6B52">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="#8B3FE0">
               <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
             </svg>
-            <span className="text-xs font-bold text-charcoal">{group.rating}</span>
+            <span className="text-xs font-bold" style={{ color: '#8B3FE0' }}>{group.rating}</span>
           </div>
         </div>
 
