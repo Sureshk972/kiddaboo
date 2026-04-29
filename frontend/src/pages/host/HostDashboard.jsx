@@ -824,7 +824,7 @@ export default function HostDashboard() {
                         </svg>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-charcoal">
+                        <p className="text-sm font-medium" style={{ color: '#8B3FE0' }}>
                           {friendlyDate(session.scheduled_at)}
                         </p>
                         <p className="text-xs text-taupe">
