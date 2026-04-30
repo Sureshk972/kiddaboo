@@ -191,8 +191,8 @@ export default function TabBar({ badges = {} }) {
   const TABS = accountType === "organizer" ? ORGANIZER_TABS : PARENT_TABS;
 
   return (
-    <nav aria-label="Main navigation" className="sticky bottom-0 z-30 bg-sage shadow-[0_-2px_8px_rgba(0,0,0,0.04)] pb-[env(safe-area-inset-bottom)]">
-      <div className="max-w-md mx-auto flex items-center justify-around px-2 pt-2 pb-1">
+    <nav aria-label="Main navigation" className="fixed bottom-0 left-0 right-0 z-30 bg-sage shadow-[0_-2px_8px_rgba(0,0,0,0.04)] pb-[env(safe-area-inset-bottom)]">
+      <div className="max-w-md mx-auto flex items-center justify-around px-2 h-16">
         {TABS.map((tab) => {
           const isActive = tab.matchPaths
             ? tab.matchPaths.some((p) => location.pathname.startsWith(p))

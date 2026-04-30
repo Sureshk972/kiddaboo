@@ -172,8 +172,8 @@ export default function HostInsights() {
         <div className="mb-2 flex items-center justify-between gap-2">
           <BrandMark />
           {isHostPremium ? (
-            <span className="flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1 flex-shrink-0">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="#D97706">
+            <span className="flex items-center gap-1 text-[11px] font-bold text-white rounded-full px-3 py-1.5 flex-shrink-0" style={{ backgroundColor: '#8B3FE0' }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="#FFFFFF">
                 <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
               </svg>
               Premium
@@ -200,7 +200,7 @@ export default function HostInsights() {
           )}
         </div>
         <p className="text-[11px] text-taupe uppercase tracking-wide">Insights</p>
-        <h2 className="text-lg font-heading font-bold text-charcoal truncate">
+        <h2 className="text-lg font-heading font-bold truncate" style={{ color: '#8B3FE0' }}>
           {loading ? "Loading…" : playgroup ? playgroup.name : "No playgroup yet"}
         </h2>
       </div>
@@ -223,7 +223,7 @@ export default function HostInsights() {
       <div className="bg-cream flex-1 flex flex-col">
         {header}
         <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
-          <h2 className="font-heading font-bold text-charcoal text-xl mb-2">
+          <h2 className="font-heading font-bold text-xl mb-2" style={{ color: '#8B3FE0' }}>
             Nothing to measure yet
           </h2>
           <p className="text-taupe text-sm mb-6">
@@ -296,7 +296,7 @@ export default function HostInsights() {
             Views this week
           </p>
           <div className="flex items-baseline gap-3">
-            <p className="text-4xl font-heading font-bold text-charcoal">
+            <p className="text-4xl font-heading font-bold" style={{ color: '#8B3FE0' }}>
               {isHostPremium ? viewsThisWeek : "—"}
             </p>
             {isHostPremium && weekDeltaPct !== null && (
@@ -339,7 +339,7 @@ export default function HostInsights() {
 
         {/* Conversion funnel */}
         <div>
-          <h3 className="text-base font-heading font-bold text-charcoal mb-3">
+          <h3 className="text-base font-heading font-bold mb-3" style={{ color: '#8B3FE0' }}>
             Conversion
           </h3>
           <div className="bg-white rounded-2xl border border-cream-dark p-5 flex flex-col gap-4">
@@ -357,11 +357,11 @@ export default function HostInsights() {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-charcoal">Profile views</p>
+                  <p className="text-sm font-medium" style={{ color: '#8B3FE0' }}>Profile views</p>
                   <p className="text-[11px] text-taupe">This week</p>
                 </div>
               </div>
-              <p className="text-xl font-heading font-bold text-charcoal">
+              <p className="text-xl font-heading font-bold" style={{ color: '#8B3FE0' }}>
                 {isHostPremium ? viewsThisWeek : "—"}
               </p>
             </div>
@@ -398,11 +398,11 @@ export default function HostInsights() {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-charcoal">Join requests</p>
+                  <p className="text-sm font-medium" style={{ color: '#8B3FE0' }}>Join requests</p>
                   <p className="text-[11px] text-taupe">All time</p>
                 </div>
               </div>
-              <p className="text-xl font-heading font-bold text-charcoal">
+              <p className="text-xl font-heading font-bold" style={{ color: '#8B3FE0' }}>
                 {funnel.pending + funnel.approved + funnel.declined}
               </p>
             </div>
@@ -435,7 +435,7 @@ export default function HostInsights() {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-charcoal">Approved members</p>
+                  <p className="text-sm font-medium" style={{ color: '#8B3FE0' }}>Approved members</p>
                   <p className="text-[11px] text-taupe">
                     {funnel.pending > 0 && `${funnel.pending} pending · `}
                     {funnel.waitlisted > 0 && `${funnel.waitlisted} waitlisted`}
@@ -443,7 +443,7 @@ export default function HostInsights() {
                   </p>
                 </div>
               </div>
-              <p className="text-xl font-heading font-bold text-charcoal">
+              <p className="text-xl font-heading font-bold" style={{ color: '#8B3FE0' }}>
                 {funnel.approved}
               </p>
             </div>
@@ -452,7 +452,7 @@ export default function HostInsights() {
 
         {/* Recent viewers — premium only */}
         <div className="relative">
-          <h3 className="text-base font-heading font-bold text-charcoal mb-3">
+          <h3 className="text-base font-heading font-bold mb-3" style={{ color: '#8B3FE0' }}>
             Recent viewers
           </h3>
           <div className="bg-white rounded-2xl border border-cream-dark overflow-hidden relative">
@@ -477,7 +477,7 @@ export default function HostInsights() {
                     i < recentViewers.length - 1 ? "border-b border-cream-dark" : ""
                   }`}
                 >
-                  <span className="text-sm text-charcoal">{v.name}</span>
+                  <span className="text-sm" style={{ color: '#8B3FE0' }}>{v.name}</span>
                   <span className="text-[11px] text-taupe">{timeAgo(v.viewedAt)}</span>
                 </div>
               ))
@@ -491,7 +491,7 @@ export default function HostInsights() {
                       i < 4 ? "border-b border-cream-dark" : ""
                     }`}
                   >
-                    <span className="text-sm text-charcoal">{name}</span>
+                    <span className="text-sm" style={{ color: '#8B3FE0' }}>{name}</span>
                     <span className="text-[11px] text-taupe">{i + 1}h ago</span>
                   </div>
                 ))}

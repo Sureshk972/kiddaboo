@@ -115,14 +115,22 @@ export default function MyProfile() {
           {[
             isHost
               ? {
-                  icon: "\u2b50",
+                  icon: (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  ),
                   label: isHostPremium ? "Organizer Premium Member" : "Upgrade to Organizer Premium",
                   sublabel: isHostPremium ? null : "Priority placement, view analytics & more",
                   path: "/host/premium",
                   highlight: true,
                 }
               : {
-                  icon: "\u2b50",
+                  icon: (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  ),
                   label: isPremium ? "Premium Member" : "Upgrade to Premium",
                   sublabel: isPremium ? null : "Unlimited join requests & more",
                   path: "/premium",
@@ -130,19 +138,70 @@ export default function MyProfile() {
                 },
             ...(isHost
               ? [{
-                  icon: "\ud83d\udd0d",
+                  icon: (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.5" />
+                      <path d="M16 16L21 21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    </svg>
+                  ),
                   label: "Discover other playgroups",
                   sublabel: "Browse playgroups as a parent",
                   path: "/browse",
                 }]
               : []),
-            { icon: "\ud83d\udc64", label: "Edit Profile", path: "/edit-profile" },
+            {
+              icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.5" />
+                  <path d="M20 21C20 17.13 16.42 14 12 14C7.58 14 4 17.13 4 21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              ),
+              label: "Edit Profile",
+              path: "/edit-profile",
+            },
             ...(isHost
               ? []
-              : [{ icon: "\ud83d\udc76", label: "Manage Children", path: "/edit-profile#children" }]),
-            { icon: "\ud83d\udd14", label: "Notifications", path: "/notifications" },
-            { icon: "\ud83d\udcdc", label: "Terms of Service", path: "/terms" },
-            { icon: "\ud83d\udee1\ufe0f", label: "Privacy Policy", path: "/privacy" },
+              : [{
+                  icon: (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <circle cx="9" cy="7" r="3" stroke="currentColor" strokeWidth="1.5" />
+                      <circle cx="17" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.5" />
+                      <path d="M3 19c0-2.76 2.69-5 6-5s6 2.24 6 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      <path d="M14 18c.5-1.8 2.4-3 4-3s3.5 1.2 4 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    </svg>
+                  ),
+                  label: "Manage Children",
+                  path: "/edit-profile#children",
+                }]),
+            {
+              icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              ),
+              label: "Notifications",
+              path: "/notifications",
+            },
+            {
+              icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                  <path d="M14 2v6h6M8 13h8M8 17h8M8 9h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              ),
+              label: "Terms of Service",
+              path: "/terms",
+            },
+            {
+              icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                </svg>
+              ),
+              label: "Privacy Policy",
+              path: "/privacy",
+            },
           ].map((item, i, arr) => (
             <button
               key={item.label}
@@ -151,7 +210,9 @@ export default function MyProfile() {
                 i < arr.length - 1 ? "border-b border-cream-dark" : ""
               } ${item.comingSoon ? "opacity-50 cursor-default" : "cursor-pointer hover:bg-cream-dark/50"}`}
             >
-              <span className="text-base">{item.icon}</span>
+              <span className="w-9 h-9 rounded-xl bg-sage flex items-center justify-center text-white flex-shrink-0">
+                {item.icon}
+              </span>
               <div className="flex-1 flex flex-col">
                 <span className={`text-sm font-medium ${item.highlight ? "text-sage-dark" : "text-charcoal"}`}>
                   {item.label}

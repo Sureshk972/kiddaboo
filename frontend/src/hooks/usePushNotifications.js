@@ -40,11 +40,14 @@ export default function usePushNotifications(userId) {
 
   // Subscribe to push notifications
   const subscribe = useCallback(async () => {
+    console.log("[push] subscribe() called", { isSupported, userId });
     if (!isSupported || !userId) return false;
 
     try {
       // Request permission
+      console.log("[push] calling Notification.requestPermission()");
       const perm = await Notification.requestPermission();
+      console.log("[push] permission result:", perm);
       setPermission(perm);
 
       if (perm !== "granted") return false;
@@ -53,10 +56,12 @@ export default function usePushNotifications(userId) {
       const registration = await navigator.serviceWorker.ready;
 
       // Subscribe to push
+      console.log("[push] calling pushManager.subscribe()");
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
+      console.log("[push] subscription created:", !!subscription);
 
       // Extract keys from subscription
       const subJson = subscription.toJSON();
@@ -76,14 +81,15 @@ export default function usePushNotifications(userId) {
       );
 
       if (!error) {
+        console.log("[push] DB upsert ok, setting isSubscribed=true");
         setIsSubscribed(true);
         return true;
       }
 
-      console.error("Failed to store push subscription:", error);
+      console.error("[push] Failed to store push subscription:", error);
       return false;
     } catch (err) {
-      console.error("Push subscription failed:", err);
+      console.error("[push] subscription failed:", err);
       return false;
     }
   }, [isSupported, userId]);
