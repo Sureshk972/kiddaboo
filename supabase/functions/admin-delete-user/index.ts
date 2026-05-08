@@ -72,6 +72,20 @@ serve(async (req) => {
       );
     }
 
+    // Prevent deleting any admin account, not just self. UI hides the
+    // delete button on admin rows; this is the server-side backstop.
+    const { data: targetProfile } = await adminClient
+      .from("profiles")
+      .select("role")
+      .eq("id", userId)
+      .single();
+    if (targetProfile?.role === "admin") {
+      return new Response(
+        JSON.stringify({ error: "Admin accounts are protected from delete" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Delete all user data via existing RPC
     const { error: dataError } = await adminClient.rpc("delete_user_data", {
       target_user_id: userId,

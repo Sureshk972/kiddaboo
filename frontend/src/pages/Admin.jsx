@@ -321,6 +321,18 @@ export default function Admin() {
     setActionLoading(true);
     setAdminError("");
 
+    // Defense in depth — UsersTab hides Suspend on admin rows, but if
+    // any future surface forgets to gate, refuse here too. Server-side
+    // RLS would be a third layer; for now this + the UI gate cover the
+    // current attack surface.
+    const target = profiles.find((p) => p.id === userId);
+    if (target?.role === "admin") {
+      setAdminError("Admin accounts are protected from suspend.");
+      setActionLoading(false);
+      setConfirmAction(null);
+      return false;
+    }
+
     const { error: memErr } = await supabase
       .from("memberships")
       .delete()
@@ -389,6 +401,15 @@ export default function Admin() {
   async function deleteUser(userId) {
     setActionLoading(true);
     setAdminError("");
+
+    const target = profiles.find((p) => p.id === userId);
+    if (target?.role === "admin") {
+      setAdminError("Admin accounts are protected from delete.");
+      setActionLoading(false);
+      setConfirmAction(null);
+      return false;
+    }
+
     const { data: { session } } = await supabase.auth.getSession();
     const res = await fetch(
       `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-delete-user`,
