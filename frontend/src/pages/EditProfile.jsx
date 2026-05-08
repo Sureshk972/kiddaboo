@@ -9,6 +9,7 @@ import { uploadProfilePhoto } from "../lib/storage";
 import PhotoCropModal from "../components/ui/PhotoCropModal";
 import { PHILOSOPHY_TAGS, AGE_RANGES, PERSONALITY_TAGS } from "../data/mockData";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { invalidateChildCount } from "../hooks/useChildCount";
 
 // Shallow equality on the child fields that can be edited from this screen.
 // Used by handleSave to decide which rows actually need an UPDATE so we
@@ -180,12 +181,19 @@ export default function EditProfile() {
     // child has a name — otherwise the diff below would either silently
     // drop an existing child (data loss, #29) or try to insert a row
     // that violates the `name NOT NULL` constraint.
-    const blankChild = children.find((c) => !c.name.trim());
-    if (blankChild) {
-      setError(
-        "Every child needs a name. Use Remove to delete a child, or fill in the name field."
-      );
-      return;
+    //
+    // Hosts skip this entirely: the children section isn't rendered for
+    // them and the children write pipeline below is also gated, so the
+    // default blank row in initial state is meaningless and shouldn't
+    // block their save.
+    if (!isHost) {
+      const blankChild = children.find((c) => !c.name.trim());
+      if (blankChild) {
+        setError(
+          "Every child needs a name. Use Remove to delete a child, or fill in the name field."
+        );
+        return;
+      }
     }
 
     const trimmedBio = bio.trim();
@@ -248,6 +256,24 @@ export default function EditProfile() {
       // and it churned DB ids on every save (see #29). Now we compute a
       // diff against the snapshot captured at load time and only write
       // what actually changed.
+      //
+      // Hosts skip this entirely — they don't have a children section
+      // in the UI and shouldn't be writing to the children table from
+      // here. The default blank row in initial state would otherwise
+      // be inserted as their child, which is wrong.
+      if (isHost) {
+        setSaving(false);
+        if (photoUploadFailed) {
+          setError(
+            "Profile saved — but your new photo couldn't be uploaded. Please try again."
+          );
+          return;
+        }
+        setSaved(true);
+        setTimeout(() => navigate("/my-profile"), 800);
+        return;
+      }
+
       const initialSnap = initialChildrenRef.current;
 
       // Rows in state that carry an isExisting flag AND appear in the
@@ -333,6 +359,9 @@ export default function EditProfile() {
         }
       }
 
+      // Children may have been added/removed; let SessionCard's RSVP
+      // gate re-fetch the count next time it mounts.
+      invalidateChildCount(user.id);
       setSaving(false);
       if (photoUploadFailed) {
         setError(

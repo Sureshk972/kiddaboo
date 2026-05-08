@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import useRsvps from "../../hooks/useRsvps";
+import useChildCount from "../../hooks/useChildCount";
 import { useAuth } from "../../context/AuthContext";
 import { friendlyDate, formatSessionTime, formatDuration } from "../../lib/dateUtils";
 import { downloadIcs } from "../../lib/icsExport";
@@ -9,7 +10,7 @@ function AddToCalendarButton({ session, playgroupName }) {
   return (
     <button
       onClick={() => downloadIcs({ session, playgroupName })}
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer border bg-white text-taupe-dark border-cream-dark hover:border-sage"
+      className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer border bg-white text-taupe-dark border-cream-dark hover:border-sage"
       title="Add to your phone's calendar"
     >
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
@@ -25,6 +26,7 @@ function RsvpButtons({ session, playgroupName }) {
   const sessionId = session.id;
   const { profile } = useAuth();
   const { myRsvp, goingCount, upsertRsvp, deleteRsvp } = useRsvps(sessionId);
+  const childCount = useChildCount(profile?.id);
   const [saving, setSaving] = useState(false);
 
   // Verified-only sessions: server enforces via trigger, but we mirror
@@ -32,9 +34,14 @@ function RsvpButtons({ session, playgroupName }) {
   // instead of failing on click. Treat unloaded profile as not-verified
   // so we don't briefly enable the button before auth resolves.
   const verifiedGate = !!session.requires_verified && (!profile || !profile.is_verified);
+  // Children gate: a parent with zero children has no one to bring.
+  // Server enforces via a trigger on rsvps; mirror it here to disable
+  // the button with an inline link to add a child. Treat unloaded
+  // count (null) as gated to avoid a brief enabled flash.
+  const noChildrenGate = childCount === 0 || childCount === null;
 
   const handleRsvp = async (status) => {
-    if (verifiedGate && status === "going") return;
+    if (status === "going" && (verifiedGate || noChildrenGate)) return;
     setSaving(true);
     if (myRsvp?.status === status) {
       await deleteRsvp();
@@ -59,12 +66,20 @@ function RsvpButtons({ session, playgroupName }) {
           {verifiedGate && <span className="text-taupe">— request verification on your profile</span>}
         </div>
       )}
+      {noChildrenGate && childCount === 0 && (
+        <div className="flex items-center gap-1.5 text-[11px] text-taupe">
+          <span>Add a child to your profile to RSVP —</span>
+          <Link to="/edit-profile#children" className="underline underline-offset-2 text-sage-dark hover:text-sage">
+            Manage children
+          </Link>
+        </div>
+      )}
       <div className="flex items-center gap-2">
       <button
         onClick={() => handleRsvp("going")}
-        disabled={saving || verifiedGate}
-        title={verifiedGate ? "Verified parents only" : undefined}
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer border ${
+        disabled={saving || verifiedGate || noChildrenGate}
+        title={verifiedGate ? "Verified parents only" : noChildrenGate ? "Add a child to your profile first" : undefined}
+        className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer border ${
           isGoing
             ? "bg-sage text-white border-sage"
             : "bg-sage-light/50 text-sage-dark border-sage-light hover:border-sage"
@@ -85,7 +100,7 @@ function RsvpButtons({ session, playgroupName }) {
       <button
         onClick={() => handleRsvp("not_going")}
         disabled={saving}
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer border ${
+        className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer border ${
           isNotGoing
             ? "bg-terracotta-light text-terracotta border-terracotta"
             : "bg-cream-dark/50 text-taupe border-cream-dark hover:border-taupe"
