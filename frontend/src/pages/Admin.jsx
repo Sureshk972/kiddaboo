@@ -98,7 +98,13 @@ export default function Admin() {
       .order("created_at", { ascending: false });
     if (!error && data) {
       setProfiles(data);
-      setStats((prev) => ({ ...prev, totalUsers: data.length }));
+      // Exclude admins from the headline user count — they're staff, not
+      // users of the product. UsersTab still lists them (with the
+      // "protected" pill) so admin profiles remain visible there.
+      setStats((prev) => ({
+        ...prev,
+        totalUsers: data.filter((p) => p.role !== "admin").length,
+      }));
     }
   }
 
@@ -568,6 +574,9 @@ export default function Admin() {
     let both = 0;
     let inactive = 0;
     for (const p of profiles) {
+      // Admins are staff, not users — exclude from the cohort breakdown
+      // so the buckets sum to the same total shown above the divider.
+      if (p.role === "admin") continue;
       const isHost = hostIds.has(p.id);
       const isParent = parentIds.has(p.id);
       if (isHost && isParent) both++;
