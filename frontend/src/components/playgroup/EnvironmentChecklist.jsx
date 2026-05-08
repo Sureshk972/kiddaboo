@@ -28,7 +28,7 @@ function CheckItem({ label, checked, detail }) {
     <div className="flex items-start gap-2.5 py-2">
       <div className="mt-0.5">{checked ? <CheckIcon /> : <CrossIcon />}</div>
       <div>
-        <p className="text-sm text-charcoal font-medium">{label}</p>
+        <p className="text-sm font-medium" style={{ color: '#8B3FE0' }}>{label}</p>
         {detail && <p className="text-xs text-taupe mt-0.5">{detail}</p>}
       </div>
     </div>
@@ -93,7 +93,7 @@ export default function EnvironmentChecklist({ environment }) {
 
   return (
     <div className="bg-white rounded-2xl p-5 border border-cream-dark">
-      <h3 className="font-heading font-bold text-charcoal mb-3">
+      <h3 className="font-heading font-bold mb-3" style={{ color: '#8B3FE0' }}>
         Environment
       </h3>
       <div className="grid grid-cols-2 gap-x-4">

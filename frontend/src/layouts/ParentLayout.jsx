@@ -27,7 +27,7 @@ export default function ParentLayout({ children }) {
             Parent
           </span>
         </div>
-        <div className="flex-1">{children}</div>
+        <div className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))]">{children}</div>
         <TabBar badges={badges} />
       </div>
     </div>

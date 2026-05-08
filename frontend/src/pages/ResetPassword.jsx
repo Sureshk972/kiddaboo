@@ -65,7 +65,31 @@ export default function ResetPassword() {
               Your password has been changed successfully.
             </p>
           </div>
-          <Button fullWidth onClick={() => navigate("/browse")}>
+          <Button
+            fullWidth
+            onClick={async () => {
+              // Route by account_type so organizers don't land on the
+              // parent-only /browse area. Mirrors the sign-in routing
+              // in PhoneVerification.handleSubmit.
+              const { data: { user } } = await supabase.auth.getUser();
+              if (!user) {
+                navigate("/welcome");
+                return;
+              }
+              const { data: prof } = await supabase
+                .from("profiles")
+                .select("first_name, account_type")
+                .eq("id", user.id)
+                .single();
+              if (!prof?.first_name) {
+                navigate("/profile");
+              } else if (prof?.account_type === "organizer") {
+                navigate("/host/dashboard");
+              } else {
+                navigate("/browse");
+              }
+            }}
+          >
             Continue to Kiddaboo
           </Button>
         </div>

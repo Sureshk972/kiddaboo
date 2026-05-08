@@ -17,6 +17,7 @@ import BrandMark from "../../components/layout/BrandMark";
 import { transformPlaygroup } from "../../lib/playgroupTransform";
 import { friendlyDate, formatSessionTime, formatDuration } from "../../lib/dateUtils";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
+import { useNotificationCounts } from "../../context/NotificationsContext";
 
 // Helper: time ago string
 function timeAgo(dateStr) {
@@ -194,6 +195,7 @@ export default function HostDashboard() {
   const [showInviteSheet, setShowInviteSheet] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
   const { isHostPremium } = useSubscription();
+  const { refetch: refetchNotificationCounts } = useNotificationCounts();
   const [viewStats, setViewStats] = useState({ thisWeek: 0, recentViewers: [] });
 
   // Fetch view analytics for premium hosts
@@ -321,6 +323,7 @@ export default function HostDashboard() {
         }),
       },
     ]);
+    refetchNotificationCounts();
   };
 
   const handleDecline = async (id) => {
@@ -343,6 +346,7 @@ export default function HostDashboard() {
     if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
     setUndoDecline({ id, name: firstName });
     undoTimerRef.current = setTimeout(() => setUndoDecline(null), 6000);
+    refetchNotificationCounts();
   };
 
   const handleUndoDecline = async () => {
@@ -364,6 +368,7 @@ export default function HostDashboard() {
       delete next[id];
       return next;
     });
+    refetchNotificationCounts();
   };
 
   const handleWaitlist = async (id) => {
@@ -377,7 +382,9 @@ export default function HostDashboard() {
     if (error) {
       console.error("Failed to waitlist membership:", error);
       rollback(id, `Couldn't waitlist ${firstName}. ${error.message || "Please try again."}`);
+      return;
     }
+    refetchNotificationCounts();
   };
 
   const activeRequests = requests.filter((r) => !actionedIds[r.id]);

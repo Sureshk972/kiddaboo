@@ -222,7 +222,7 @@ export default function PlaygroupDetail() {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center px-6">
         <div className="text-center">
-          <h2 className="text-xl font-heading font-bold text-charcoal mb-2">
+          <h2 className="text-xl font-heading font-bold mb-2" style={{ color: '#8B3FE0' }}>
             Playgroup not found
           </h2>
           <p className="text-taupe mb-4">This playgroup may no longer be active.</p>
@@ -307,9 +307,10 @@ export default function PlaygroupDetail() {
           </svg>
         </button>
         <h2
-          className={`font-heading font-bold text-charcoal text-sm truncate flex-1 transition-opacity duration-200 ${
+          className={`font-heading font-bold text-sm truncate flex-1 transition-opacity duration-200 ${
             titleScrolledOut ? "opacity-100" : "opacity-0"
           }`}
+          style={{ color: '#8B3FE0' }}
           aria-hidden={!titleScrolledOut}
         >
           {group.name}
@@ -329,7 +330,7 @@ export default function PlaygroupDetail() {
               <circle cx="12" cy="19" r="1.5" fill="#6B5E54"/>
             </svg>
           </div>
-        ) : user && group.host?.userId !== user.id && joinStatus !== "creator" && (
+        ) : user && group.host?.userId !== user.id && joinStatus !== "creator" && joinStatus !== "pending" && joinStatus !== "waitlisted" && (
           <button
             onClick={() =>
               setReportTarget({
@@ -395,7 +396,8 @@ export default function PlaygroupDetail() {
           <div className="flex items-start justify-between gap-3 mb-2">
             <h1
               ref={inPageTitleRef}
-              className="text-2xl font-heading font-bold text-charcoal"
+              className="text-2xl font-heading font-bold"
+              style={{ color: '#8B3FE0' }}
             >
               {group.name}
             </h1>
@@ -433,7 +435,7 @@ export default function PlaygroupDetail() {
 
         {/* Description */}
         <div className="mb-6">
-          <h3 className="font-heading font-bold text-charcoal mb-2">About</h3>
+          <h3 className="font-heading font-bold mb-2" style={{ color: '#8B3FE0' }}>About</h3>
           <p className="text-sm text-taupe-dark leading-relaxed">
             {group.description}
           </p>
@@ -454,7 +456,7 @@ export default function PlaygroupDetail() {
 
         {/* Schedule */}
         <div className="mb-6">
-          <h3 className="font-heading font-bold text-charcoal mb-3">
+          <h3 className="font-heading font-bold mb-3" style={{ color: '#8B3FE0' }}>
             Schedule
           </h3>
 
@@ -521,7 +523,7 @@ export default function PlaygroupDetail() {
 
         {/* Ratings & Reviews */}
         <div className="mb-6">
-          <h3 className="font-heading font-bold text-charcoal mb-4">
+          <h3 className="font-heading font-bold mb-4" style={{ color: '#8B3FE0' }}>
             Ratings & Reviews
           </h3>
           <RatingBreakdown ratings={ratings} />
@@ -597,7 +599,7 @@ export default function PlaygroupDetail() {
 
         {/* Members (unified, Organizer-first) */}
         <div className="mb-6">
-          <h3 className="font-heading font-bold text-charcoal mb-3">
+          <h3 className="font-heading font-bold mb-3" style={{ color: '#8B3FE0' }}>
             Members
           </h3>
           <div className="flex flex-col gap-2">
@@ -634,7 +636,7 @@ export default function PlaygroupDetail() {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <div className="font-bold text-sm text-charcoal">
+                        <div className="font-bold text-sm" style={{ color: '#8B3FE0' }}>
                           {m.first_name} {m.last_name}
                         </div>
                         <RoleBadge role={isOrganizer ? "organizer" : "parent"} />
@@ -766,7 +768,7 @@ export default function PlaygroupDetail() {
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                 </svg>
               </div>
-              <h3 className="font-heading font-bold text-charcoal text-lg mb-2">
+              <h3 className="font-heading font-bold text-lg mb-2" style={{ color: '#8B3FE0' }}>
                 {joinRequestLimit === 1
                   ? "You've used your free request this month"
                   : `You've used all ${joinRequestLimit} free requests this month`}

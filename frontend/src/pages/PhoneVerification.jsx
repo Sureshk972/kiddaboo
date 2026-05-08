@@ -271,6 +271,18 @@ export default function PhoneVerification() {
 
         <button
           onClick={() => {
+            if (mode === "signin") {
+              // Switching to signup. The user must go through ChooseRole
+              // first if they didn't already (i.e. landed here via the
+              // Welcome "Sign in" link with no role param). Otherwise
+              // they'd reach CreateProfile with parent-voice copy as a
+              // misleading default until the fail-closed guard kicks in.
+              const stashed = sessionStorage.getItem("kiddaboo.pendingAccountType");
+              if (stashed !== "parent" && stashed !== "organizer") {
+                navigate("/choose-role");
+                return;
+              }
+            }
             setMode(mode === "signup" ? "signin" : "signup");
             setEmailError("");
             setPasswordError("");
