@@ -5,6 +5,7 @@ import { supabase } from "../lib/supabase";
 import useGroupMessages from "../hooks/useGroupMessages";
 import useBlocks from "../hooks/useBlocks";
 import { markChatRead } from "../hooks/useNotifications";
+import { useNotificationCounts } from "../context/NotificationsContext";
 import MessageBubble from "../components/messages/MessageBubble";
 import ChatInput from "../components/messages/ChatInput";
 import ReportSheet from "../components/ui/ReportSheet";
@@ -26,6 +27,12 @@ export default function GroupChat() {
   const { messages, loading, sending, hasMore, sendMessage, loadMore } =
     useGroupMessages(playgroupId, user?.id);
   const { blockUser, submitReport, isBlocked } = useBlocks(user?.id);
+  // After marking the chat read we need the TabBar's unread badge to
+  // recount immediately. markChatRead only writes localStorage; the
+  // badge hook only re-reads it inside fetchCounts, which by default
+  // runs on mount or when a new message arrives. Without this refetch
+  // the badge stays stuck (e.g. "4") until a new message comes in.
+  const { refetch: refetchCounts } = useNotificationCounts();
 
   const [reportTarget, setReportTarget] = useState(null); // { userId, userName }
 
@@ -78,6 +85,7 @@ export default function GroupChat() {
 
     // Mark this chat as read
     markChatRead(playgroupId);
+    refetchCounts();
   }, [playgroupId, user]);
 
   // Auto-scroll to bottom on new messages
@@ -96,8 +104,12 @@ export default function GroupChat() {
       }
     }
     prevMessageCount.current = messages.length;
-    // Keep last-read timestamp fresh while viewing
-    if (messages.length > 0) markChatRead(playgroupId);
+    // Keep last-read timestamp fresh while viewing, and nudge the
+    // TabBar badge to recount so it doesn't lag behind by one message.
+    if (messages.length > 0) {
+      markChatRead(playgroupId);
+      refetchCounts();
+    }
   }, [messages.length, playgroupId]);
 
   // Handle send. Return the ok flag from sendMessage so ChatInput can
