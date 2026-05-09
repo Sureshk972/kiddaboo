@@ -112,7 +112,12 @@ export default function NotificationSettings() {
   useDocumentTitle("Notifications"); // #50
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { isPremium } = useSubscription();
+  // Premium-gated notifications (e.g. Session Reminders) unlock for
+  // any active premium tier. The previous code used only `isPremium`,
+  // which is joiner-only — host-premium subscribers got locked out of
+  // their own toggles with a misleading "Upgrade to enable" link.
+  const { isPremium: isJoinerPremium, isHostPremium } = useSubscription();
+  const isAnyPremium = isJoinerPremium || isHostPremium;
   const {
     isSupported,
     permission,
@@ -277,7 +282,7 @@ export default function NotificationSettings() {
           </h3>
           <div className="bg-white rounded-2xl border border-cream-dark overflow-hidden">
             {NOTIFICATION_TYPES.map((type, i) => {
-              const locked = type.premium && !isPremium;
+              const locked = type.premium && !isAnyPremium;
               const interactable = isSubscribed && !locked;
               return (
                 <div
