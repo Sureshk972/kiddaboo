@@ -81,17 +81,62 @@ export default function HostVerificationCard({ userId, isVerified }) {
     </span>
   );
 
+  // Icon must match the card's state — using a star for everything
+  // (including the not-yet-requested state) read as "already verified"
+  // alongside the "Request verification" CTA. Pick an icon per status:
+  //   verified  → star with the green sage tone (matches the badge)
+  //   pending   → clock
+  //   rejected  → caution triangle
+  //   default   → outlined shield (neutral, doesn't imply achievement)
+  let iconBg = "bg-cream-dark/40";
+  let iconStroke = "#7a6f60"; // taupe
+  let iconPath = (
+    // Shield outline — neutral "trust" connotation without claiming verified
+    <path
+      d="M12 3l8 3v6c0 4.5-3.5 8-8 9-4.5-1-8-4.5-8-9V6l8-3z"
+      stroke={iconStroke}
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+      strokeLinecap="round"
+    />
+  );
+  if (isVerified) {
+    iconBg = "bg-sage-light";
+    iconStroke = "#5C6B52";
+    iconPath = (
+      <path
+        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+        stroke={iconStroke}
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+    );
+  } else if (latest?.status === "pending") {
+    iconBg = "bg-amber-50";
+    iconStroke = "#b45309"; // amber-700
+    iconPath = (
+      <>
+        <circle cx="12" cy="12" r="9" stroke={iconStroke} strokeWidth="1.5" />
+        <path d="M12 7v5l3.5 2" stroke={iconStroke} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </>
+    );
+  } else if (latest?.status === "rejected") {
+    iconBg = "bg-cream-dark/40";
+    iconStroke = "#7a6f60";
+    iconPath = (
+      <>
+        <path d="M12 3l9.5 17h-19L12 3z" stroke={iconStroke} strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M12 10v5M12 17.5h.01" stroke={iconStroke} strokeWidth="1.5" strokeLinecap="round" />
+      </>
+    );
+  }
+
   return (
     <div className="bg-white rounded-2xl border border-cream-dark p-5">
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-              stroke="#1d4ed8"
-              strokeWidth="1.5"
-              strokeLinejoin="round"
-            />
+            {iconPath}
           </svg>
         </div>
         <div className="flex-1 min-w-0">
