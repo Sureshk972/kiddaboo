@@ -12,6 +12,7 @@ import OnboardingOnly from "./components/auth/OnboardingOnly";
 import ParentLayout from "./layouts/ParentLayout";
 import OrganizerLayout from "./layouts/OrganizerLayout";
 import RequireRole from "./components/auth/RequireRole";
+import UpdateBadge from "./components/UpdateBadge";
 
 // Lazy-load every non-landing page so the initial JS bundle stays
 // small. Welcome and the auth/role wrappers stay eager since they're
@@ -62,6 +63,7 @@ export default function App() {
       <OnboardingProvider>
         <HostProvider>
           <NotificationsProvider>
+          <UpdateBadge />
           <Suspense fallback={<RouteFallback />}>
           <Routes>
             {/* Public routes — no auth required */}

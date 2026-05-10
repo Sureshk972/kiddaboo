@@ -30,6 +30,14 @@
   }
 }
 
+/* iOS PWA: page-level sticky top-0 headers pin under the translucent
+   status bar. Extend their top padding by the safe-area inset so the
+   heading text clears the system clock. No-op on platforms where the
+   inset is 0 (desktop, Android). */
+.sticky.top-0 {
+  padding-top: env(safe-area-inset-top);
+}
+
 /* Tag shake animation when max reached */
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
