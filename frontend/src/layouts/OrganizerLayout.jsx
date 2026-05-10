@@ -20,7 +20,7 @@ export default function OrganizerLayout({ children }) {
         Kiddaboo is designed for mobile — open this on your phone for the best experience.
       </div>
       <div className="max-w-md mx-auto w-full flex-1 flex flex-col">
-        <div className="px-5 pt-3">
+        <div className="px-5 pt-[calc(0.75rem+env(safe-area-inset-top))]">
           <span className="text-[10px] font-bold tracking-[1.5px] uppercase" style={{ color: '#8B3FE0' }}>
             Organizer
           </span>
