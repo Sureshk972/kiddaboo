@@ -13,7 +13,7 @@ export default function Messages() {
   return (
     <div className="bg-cream min-h-screen">
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-cream/95 backdrop-blur-sm border-b border-cream-dark">
+      <div data-safe-top className="sticky top-0 z-20 bg-cream/95 backdrop-blur-sm border-b border-cream-dark">
         <div className="max-w-md mx-auto px-5 py-4">
           <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Inter', sans-serif", color: '#8B3FE0' }}>
             Messages

@@ -139,7 +139,7 @@ export default function SessionChat() {
 
   return (
     <div className="min-h-screen bg-cream flex flex-col h-screen">
-      <div className="sticky top-0 z-20 bg-cream/95 backdrop-blur-sm border-b border-cream-dark shrink-0">
+      <div data-safe-top className="sticky top-0 z-20 bg-cream/95 backdrop-blur-sm border-b border-cream-dark shrink-0">
         <div className="max-w-md mx-auto px-4 py-3 flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}

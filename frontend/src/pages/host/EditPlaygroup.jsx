@@ -130,7 +130,7 @@ export default function EditPlaygroup() {
   return (
     <div className="min-h-screen bg-cream pb-28">
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-cream/95 backdrop-blur-sm border-b border-cream-dark">
+      <div data-safe-top className="sticky top-0 z-20 bg-cream/95 backdrop-blur-sm border-b border-cream-dark">
         <div className="max-w-md mx-auto px-5 py-3 flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}

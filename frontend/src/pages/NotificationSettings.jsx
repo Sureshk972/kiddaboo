@@ -186,7 +186,7 @@ export default function NotificationSettings() {
   return (
     <div className="bg-cream min-h-screen">
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-cream/95 backdrop-blur-sm border-b border-cream-dark">
+      <div data-safe-top className="sticky top-0 z-20 bg-cream/95 backdrop-blur-sm border-b border-cream-dark">
         <div className="max-w-md mx-auto px-5 py-4 flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}

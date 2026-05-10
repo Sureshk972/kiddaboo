@@ -30,11 +30,12 @@
   }
 }
 
-/* iOS PWA: page-level sticky top-0 headers pin under the translucent
-   status bar. Extend their top padding by the safe-area inset so the
-   heading text clears the system clock. No-op on platforms where the
-   inset is 0 (desktop, Android). */
-.sticky.top-0 {
+/* iOS PWA: sticky headers on pages that are NOT wrapped by an
+   Organizer/Parent layout (e.g. Messages, GroupChat, EditProfile)
+   need to clear the translucent status bar themselves. Mark those
+   headers with `data-safe-top` and they get a top inset that's a
+   no-op on platforms where the safe area is 0. */
+[data-safe-top] {
   padding-top: env(safe-area-inset-top);
 }
 
