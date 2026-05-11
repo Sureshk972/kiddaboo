@@ -1204,7 +1204,7 @@ function MemberDetailPanel({ member, onClose }) {
       {/* Panel */}
       <div className="fixed top-0 right-0 bottom-0 w-full max-w-sm bg-cream z-50 shadow-xl overflow-y-auto animate-slideIn">
         {/* Header */}
-        <div className="sticky top-0 bg-cream/95 backdrop-blur-sm border-b border-cream-dark px-5 py-4 flex items-center gap-3 z-10">
+        <div data-safe-top className="sticky top-0 bg-cream/95 backdrop-blur-sm border-b border-cream-dark px-5 py-4 flex items-center gap-3 z-10">
           <button
             onClick={onClose}
             aria-label="Close panel"
