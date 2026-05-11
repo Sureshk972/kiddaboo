@@ -6,6 +6,7 @@
 //   - sessions INSERT (new session scheduled)
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { withSentry, captureException } from "../_shared/sentry.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -24,7 +25,7 @@ interface WebhookPayload {
   old_record?: Record<string, unknown>;
 }
 
-serve(async (req: Request) => {
+serve(withSentry("send-push", async (req: Request) => {
   try {
     const payload: WebhookPayload = await req.json();
     const { type, table, record, old_record } = payload;
@@ -472,13 +473,13 @@ serve(async (req: Request) => {
       { headers: { "Content-Type": "application/json" }, status: 200 }
     );
   } catch (err) {
-    console.error("Edge function error:", err);
+    console.error("Edge function error:", err); await captureException(err, "send-push");
     return new Response(JSON.stringify({ error: String(err) }), {
       headers: { "Content-Type": "application/json" },
       status: 500,
     });
   }
-});
+}));
 
 // ── Web Push Sending ──
 

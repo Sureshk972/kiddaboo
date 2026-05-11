@@ -15,6 +15,7 @@
 // live in one place.
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
+import { withSentry, captureException } from "../_shared/sentry.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -230,7 +231,7 @@ async function sendReminder(r: Reminder): Promise<boolean> {
   return res.ok;
 }
 
-serve(async (_req) => {
+serve(withSentry("send-session-reminders", async (_req) => {
   // Open a cron_run_log row up front so even a hard crash mid-run leaves
   // a started_at marker — drift detection just looks for stale rows
   // with completed_at IS NULL or a too-old most-recent started_at.
@@ -297,7 +298,7 @@ serve(async (_req) => {
     // Top-level guard so an unexpected throw (bad TZ string, network
     // hiccup mid-loop, malformed row) doesn't 502 the cron — the next
     // tick can recover the missed window since dedupe is per-(session,user,kind).
-    console.error("send-session-reminders top-level error:", err);
+    console.error("send-session-reminders top-level error:", err); await captureException(err, "send-session-reminders");
     if (runId) {
       await admin
         .from("cron_run_log")
@@ -312,4 +313,4 @@ serve(async (_req) => {
       { status: 500, headers: { "Content-Type": "application/json" } },
     );
   }
-});
+}));

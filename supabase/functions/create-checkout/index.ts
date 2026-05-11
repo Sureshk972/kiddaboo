@@ -2,6 +2,7 @@
 // Creates a Stripe Checkout session for parent premium subscriptions
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { withSentry, captureException } from "../_shared/sentry.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@14.14.0?target=deno";
 
@@ -63,7 +64,7 @@ async function getOrCreatePrice(plan: string): Promise<string> {
   return price.id;
 }
 
-serve(async (req) => {
+serve(withSentry("create-checkout", async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -171,9 +172,10 @@ serve(async (req) => {
     );
   } catch (err) {
     console.error("Checkout error:", err.message, err.stack || err);
+    await captureException(err, "create-checkout");
     return new Response(
       JSON.stringify({ error: err.message || "Failed to create checkout session" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
-});
+}));

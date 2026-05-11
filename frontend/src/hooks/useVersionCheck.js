@@ -1,3 +1,4 @@
+/* global __BUILD_ID__ */
 import { useEffect, useState } from "react";
 
 const CURRENT_BUILD_ID = typeof __BUILD_ID__ !== "undefined" ? __BUILD_ID__ : "dev";

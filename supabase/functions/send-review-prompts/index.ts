@@ -15,6 +15,7 @@
 // webhook payload, same pattern as send-session-reminders.
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
+import { withSentry, captureException } from "../_shared/sentry.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -174,7 +175,7 @@ async function sendPrompt(p: Prompt): Promise<boolean> {
   return res.ok;
 }
 
-serve(async (_req) => {
+serve(withSentry("send-review-prompts", async (_req) => {
   const { data: logRow } = await admin
     .from("cron_run_log")
     .insert({ function_name: "send-review-prompts" })
@@ -228,7 +229,7 @@ serve(async (_req) => {
       { status: 200, headers: { "Content-Type": "application/json" } },
     );
   } catch (err) {
-    console.error("send-review-prompts top-level error:", err);
+    console.error("send-review-prompts top-level error:", err); await captureException(err, "send-review-prompts");
     if (runId) {
       await admin
         .from("cron_run_log")
@@ -243,4 +244,4 @@ serve(async (_req) => {
       { status: 500, headers: { "Content-Type": "application/json" } },
     );
   }
-});
+}));

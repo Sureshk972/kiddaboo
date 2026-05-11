@@ -2,6 +2,7 @@
 // Handles subscription lifecycle events from Stripe
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { withSentry, captureException } from "../_shared/sentry.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@14.14.0?target=deno";
 
@@ -17,7 +18,7 @@ const stripe = new Stripe(STRIPE_SECRET_KEY, {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-serve(async (req) => {
+serve(withSentry("stripe-webhook", async (req) => {
   const signature = req.headers.get("stripe-signature");
   if (!signature) {
     return new Response("Missing stripe-signature header", { status: 400 });
@@ -179,7 +180,7 @@ serve(async (req) => {
       }
     }
   } catch (err) {
-    console.error("Error processing webhook:", err);
+    console.error("Error processing webhook:", err); await captureException(err, "stripe-webhook");
     return new Response(`Webhook handler error: ${err.message}`, { status: 500 });
   }
 
@@ -187,4 +188,4 @@ serve(async (req) => {
     status: 200,
     headers: { "Content-Type": "application/json" },
   });
-});
+}));

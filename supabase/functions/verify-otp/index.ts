@@ -9,6 +9,7 @@
 // revalidate the user's token here against a service-role client.
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
+import { withSentry, captureException } from "../_shared/sentry.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -47,7 +48,7 @@ async function twilioCheckVerification(phone: string, code: string) {
   return { ok: res.ok, status: res.status, body };
 }
 
-serve(async (req) => {
+serve(withSentry("verify-otp", async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -116,4 +117,4 @@ serve(async (req) => {
   }
 
   return json({ ok: true, verified_at: now });
-});
+}));
