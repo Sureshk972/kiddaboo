@@ -180,6 +180,19 @@ export default function Premium() {
               </div>
             </div>
 
+            {/* Primary CTA back to the app — without this, the "You're
+                Premium" screen is a dead end after a fresh upgrade.
+                The only other exit is the back arrow, which sends
+                users to wherever they came from (often onboarding or
+                a paywall) rather than into the experience they just
+                paid for. */}
+            <button
+              onClick={() => navigate("/browse")}
+              className="w-full bg-sage hover:bg-sage-dark text-white font-heading font-bold text-base py-4 rounded-2xl transition-colors cursor-pointer border-none"
+            >
+              Explore playgroups
+            </button>
+
             {/* Manage subscription. No Stripe billing-portal function
                 wired up yet, so cancellation is via email — but at
                 least surface that it's possible. Without this, "You're
