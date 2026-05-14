@@ -127,7 +127,7 @@ export default function PrivacyPolicy() {
         <section className="mb-8">
           <h2 className="font-heading font-bold text-charcoal text-sm mb-2">11. Contact Us</h2>
           <p className="text-sm text-taupe-dark leading-relaxed">
-            If you have questions about this Privacy Policy or your data, please contact us at privacy@kiddaboo.app.
+            If you have questions about this Privacy Policy or your data, please contact us at <a href="mailto:support@kiddaboo.com" className="underline text-sage-dark hover:text-sage">support@kiddaboo.com</a>.
           </p>
         </section>
       </div>

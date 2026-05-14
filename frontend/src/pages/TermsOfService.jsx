@@ -109,7 +109,7 @@ export default function TermsOfService() {
         <section className="mb-8">
           <h2 className="font-heading font-bold text-charcoal text-sm mb-2">11. Contact</h2>
           <p className="text-sm text-taupe-dark leading-relaxed">
-            If you have questions about these Terms, please contact us at support@kiddaboo.app.
+            If you have questions about these Terms, please contact us at <a href="mailto:support@kiddaboo.com" className="underline text-sage-dark hover:text-sage">support@kiddaboo.com</a>.
           </p>
         </section>
       </div>
