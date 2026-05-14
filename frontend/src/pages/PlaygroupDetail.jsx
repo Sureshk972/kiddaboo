@@ -20,6 +20,24 @@ import ReportSheet from "../components/ui/ReportSheet";
 import { friendlyDate, formatSessionTime, formatDuration } from "../lib/dateUtils";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
+// Strip street-level detail from a host's address for non-member views.
+// Hosts often paste a full mailing address into the playgroup location
+// field, which leaks the host's home address to anyone who opens the
+// detail page. Members get the full address; non-members see only the
+// city portion (and the zip, if present, is dropped).
+function redactAddress(addr) {
+  if (!addr) return "";
+  const parts = addr.split(",").map((s) => s.trim()).filter(Boolean);
+  if (parts.length === 0) return "";
+  const last = parts[parts.length - 1];
+  // If the last chunk is just a zip (e.g., "60640"), use the previous chunk.
+  if (/^\d{5}(-\d{4})?$/.test(last) && parts.length >= 2) {
+    return parts[parts.length - 2];
+  }
+  // Otherwise drop a trailing zip from the last chunk (e.g., "Chicago 60640" → "Chicago").
+  return last.replace(/\s+\d{5}(-\d{4})?\s*$/, "").trim();
+}
+
 const ACCESS_LABELS = {
   open: { text: "Open", color: "bg-sage-light text-sage-dark" },
   request: { text: "Request to Join", color: "bg-terracotta-light text-terracotta" },
@@ -209,6 +227,13 @@ export default function PlaygroupDetail() {
   }, [id, user?.id, previewMode]);
 
   const group = realGroup;
+  const canSeeFullAddress =
+    joinStatus === "member" || joinStatus === "creator";
+  const displayLocation = group
+    ? canSeeFullAddress
+      ? group.location
+      : redactAddress(group.location) || "Address shared with members"
+    : "";
 
   if (loading) {
     return (
@@ -417,7 +442,7 @@ export default function PlaygroupDetail() {
               />
               <circle cx="7" cy="6" r="1.5" stroke="currentColor" strokeWidth="1" />
             </svg>
-            {group.location}
+            {displayLocation}
           </p>
 
           {/* Vibe tags */}
@@ -465,7 +490,8 @@ export default function PlaygroupDetail() {
               {/* Next session - featured */}
               <SessionCard
                 session={nextSession}
-                location={group.location}
+                location={displayLocation}
+                canSeeFullAddress={canSeeFullAddress}
                 frequency={group.frequency}
                 ageRange={group.ageRange}
                 showRsvp={joinStatus === "member"}
@@ -478,7 +504,8 @@ export default function PlaygroupDetail() {
                 <SessionCard
                   key={session.id}
                   session={session}
-                  location={group.location}
+                  location={displayLocation}
+                  canSeeFullAddress={canSeeFullAddress}
                   frequency={group.frequency}
                   ageRange={group.ageRange}
                   showRsvp={joinStatus === "member"}

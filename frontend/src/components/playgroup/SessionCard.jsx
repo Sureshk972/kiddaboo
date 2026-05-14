@@ -74,7 +74,7 @@ function RsvpButtons({ session, playgroupName }) {
           </Link>
         </div>
       )}
-      <div className="flex items-center gap-2">
+      <div className="grid grid-cols-2 gap-2">
       <button
         onClick={() => handleRsvp("going")}
         disabled={saving || verifiedGate || noChildrenGate}
@@ -94,7 +94,7 @@ function RsvpButtons({ session, playgroupName }) {
             strokeLinejoin="round"
           />
         </svg>
-        Going{goingCount > 0 ? ` (${goingCount})` : ""}
+        Going
       </button>
 
       <button
@@ -138,12 +138,19 @@ function RsvpButtons({ session, playgroupName }) {
 export default function SessionCard({
   session,
   location,
+  canSeeFullAddress = false,
   frequency,
   ageRange,
   showRsvp = false,
   variant = "featured",
   playgroupName,
 }) {
+  // Per-session locations can also leak the host's address. Only honor
+  // session.location_name for users who've been approved into the group;
+  // everyone else falls back to the redacted playgroup-level location.
+  const displaySessionLocation = canSeeFullAddress
+    ? session.location_name || location
+    : location;
   if (variant === "compact") {
     return (
       <div className="bg-white rounded-xl p-3 border border-cream-dark">
@@ -160,7 +167,7 @@ export default function SessionCard({
               {friendlyDate(session.scheduled_at)} &middot; {formatSessionTime(session.scheduled_at)}
             </p>
             <p className="text-xs text-taupe">
-              {formatDuration(session.duration_minutes)} &middot; {session.location_name || location}
+              {formatDuration(session.duration_minutes)} &middot; {displaySessionLocation}
             </p>
           </div>
         </div>
@@ -188,7 +195,7 @@ export default function SessionCard({
             {formatDuration(session.duration_minutes)}
           </p>
           <p className="text-xs text-taupe">
-            {session.location_name || location}
+            {displaySessionLocation}
           </p>
         </div>
       </div>
