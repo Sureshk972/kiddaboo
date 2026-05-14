@@ -1,4 +1,5 @@
 import TabBar from "../components/layout/TabBar";
+import LegalFooter from "../components/LegalFooter";
 import { useNotificationCounts } from "../context/NotificationsContext";
 
 /**
@@ -25,7 +26,10 @@ export default function OrganizerLayout({ children }) {
             Organizer
           </span>
         </div>
-        <div className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))]">{children}</div>
+        <div className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))]">
+          {children}
+          <LegalFooter />
+        </div>
         <TabBar badges={badges} />
       </div>
     </div>

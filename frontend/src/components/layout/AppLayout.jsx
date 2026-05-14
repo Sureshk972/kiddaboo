@@ -6,6 +6,7 @@ import { useNotificationCounts } from "../../context/NotificationsContext";
 import usePushNotifications from "../../hooks/usePushNotifications";
 import PushPermissionPrompt from "../ui/PushPermissionPrompt";
 import PageTransition from "../ui/PageTransition";
+import LegalFooter from "../LegalFooter";
 
 export default function AppLayout({ children }) {
   const { user } = useAuth();
@@ -38,6 +39,7 @@ export default function AppLayout({ children }) {
         <PageTransition>
           {children}
         </PageTransition>
+        <LegalFooter />
       </div>
       <TabBar badges={badges} />
     </div>
