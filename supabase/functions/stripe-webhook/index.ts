@@ -38,7 +38,25 @@ serve(withSentry("stripe-webhook", async (req) => {
     return new Response(`Webhook Error: ${err.message}`, { status: 400 });
   }
 
-  console.log("Stripe event:", event.type);
+  console.log("Stripe event:", event.type, event.id);
+
+  // Whitelist of plan values that pass the DB CHECK constraint on
+  // subscriptions.plan. An unknown plan (e.g. an event from before the
+  // current pricing scheme, or a manually-created Stripe subscription)
+  // must be skipped here — letting it through would trip the CHECK and
+  // throw, returning 500 and triggering Stripe retries that can't ever
+  // succeed.
+  const KNOWN_PLANS = new Set(["monthly", "annual", "host_monthly", "host_annual"]);
+
+  // Skip non-retriable bad-data cases with 200 so Stripe stops retrying.
+  // Reserve 500 for transient DB/network failures Stripe should retry.
+  const skip = (reason: string) => {
+    console.warn(`stripe-webhook skipping ${event.type} ${event.id}: ${reason}`);
+    return new Response(JSON.stringify({ received: true, skipped: reason }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  };
 
   try {
     switch (event.type) {
@@ -48,26 +66,26 @@ serve(withSentry("stripe-webhook", async (req) => {
         const plan = session.metadata?.plan;
         const subscriptionType = session.metadata?.subscription_type || "joiner";
 
-        if (!userId || !plan) break;
+        if (!userId) return skip("missing supabase_user_id metadata");
+        if (!plan) return skip("missing plan metadata");
+        if (!KNOWN_PLANS.has(plan)) return skip(`unknown plan: ${plan}`);
+        if (!session.subscription) return skip("session has no subscription (one-time payment?)");
 
-        // Get subscription details from Stripe
         const subscription = await stripe.subscriptions.retrieve(
           session.subscription as string
         );
 
-        // Determine price from plan
         const priceCentsMap: Record<string, number> = {
-          monthly: 799, annual: 7999,
-          host_monthly: 799, host_annual: 7999,
+          monthly: 500, annual: 5000,
         };
 
-        await supabase.from("subscriptions").upsert(
+        const { error: dbErr } = await supabase.from("subscriptions").upsert(
           {
             user_id: userId,
             type: subscriptionType,
             plan,
             status: "active",
-            price_cents: priceCentsMap[plan] || 799,
+            price_cents: priceCentsMap[plan] || 500,
             started_at: new Date(subscription.current_period_start * 1000).toISOString(),
             current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
             stripe_customer_id: session.customer as string,
@@ -76,6 +94,7 @@ serve(withSentry("stripe-webhook", async (req) => {
           },
           { onConflict: "user_id,type" }
         );
+        if (dbErr) throw dbErr;
 
         console.log(`Subscription activated for user ${userId}, plan: ${plan}, type: ${subscriptionType}`);
         break;
@@ -83,17 +102,17 @@ serve(withSentry("stripe-webhook", async (req) => {
 
       case "invoice.payment_succeeded": {
         const invoice = event.data.object as Stripe.Invoice;
-        const subscriptionId = invoice.subscription as string;
+        const subscriptionId = invoice.subscription as string | null;
 
-        if (!subscriptionId) break;
+        if (!subscriptionId) return skip("invoice has no subscription");
 
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         const userId = subscription.metadata?.supabase_user_id;
         const subscriptionType = subscription.metadata?.subscription_type || "joiner";
 
-        if (!userId) break;
+        if (!userId) return skip("subscription missing supabase_user_id metadata");
 
-        await supabase
+        const { error: dbErr } = await supabase
           .from("subscriptions")
           .update({
             status: "active",
@@ -102,6 +121,7 @@ serve(withSentry("stripe-webhook", async (req) => {
           })
           .eq("user_id", userId)
           .eq("type", subscriptionType);
+        if (dbErr) throw dbErr;
 
         console.log(`Subscription renewed for user ${userId}, type: ${subscriptionType}`);
         break;
@@ -109,17 +129,17 @@ serve(withSentry("stripe-webhook", async (req) => {
 
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
-        const subscriptionId = invoice.subscription as string;
+        const subscriptionId = invoice.subscription as string | null;
 
-        if (!subscriptionId) break;
+        if (!subscriptionId) return skip("invoice has no subscription");
 
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         const userId = subscription.metadata?.supabase_user_id;
         const subscriptionType = subscription.metadata?.subscription_type || "joiner";
 
-        if (!userId) break;
+        if (!userId) return skip("subscription missing supabase_user_id metadata");
 
-        await supabase
+        const { error: dbErr } = await supabase
           .from("subscriptions")
           .update({
             status: "past_due",
@@ -127,6 +147,7 @@ serve(withSentry("stripe-webhook", async (req) => {
           })
           .eq("user_id", userId)
           .eq("type", subscriptionType);
+        if (dbErr) throw dbErr;
 
         console.log(`Payment failed for user ${userId}, type: ${subscriptionType}`);
         break;
@@ -137,9 +158,9 @@ serve(withSentry("stripe-webhook", async (req) => {
         const userId = subscription.metadata?.supabase_user_id;
         const subscriptionType = subscription.metadata?.subscription_type || "joiner";
 
-        if (!userId) break;
+        if (!userId) return skip("subscription missing supabase_user_id metadata");
 
-        await supabase
+        const { error: dbErr } = await supabase
           .from("subscriptions")
           .update({
             status: "cancelled",
@@ -148,6 +169,7 @@ serve(withSentry("stripe-webhook", async (req) => {
           })
           .eq("user_id", userId)
           .eq("type", subscriptionType);
+        if (dbErr) throw dbErr;
 
         console.log(`Subscription cancelled for user ${userId}, type: ${subscriptionType}`);
         break;
@@ -158,11 +180,11 @@ serve(withSentry("stripe-webhook", async (req) => {
         const userId = subscription.metadata?.supabase_user_id;
         const subscriptionType = subscription.metadata?.subscription_type || "joiner";
 
-        if (!userId) break;
+        if (!userId) return skip("subscription missing supabase_user_id metadata");
 
         const status = subscription.cancel_at_period_end ? "cancelled" : "active";
 
-        await supabase
+        const { error: dbErr } = await supabase
           .from("subscriptions")
           .update({
             status,
@@ -174,13 +196,23 @@ serve(withSentry("stripe-webhook", async (req) => {
           })
           .eq("user_id", userId)
           .eq("type", subscriptionType);
+        if (dbErr) throw dbErr;
 
         console.log(`Subscription updated for user ${userId}, type: ${subscriptionType}, status: ${status}`);
         break;
       }
+
+      default:
+        // Stripe sends many event types we don't care about (e.g.
+        // payment_intent.*, customer.*). Acknowledge them so Stripe
+        // stops retrying.
+        console.log(`stripe-webhook: ignoring ${event.type}`);
     }
   } catch (err) {
-    console.error("Error processing webhook:", err); await captureException(err, "stripe-webhook");
+    // Transient DB/network failure — return 500 so Stripe retries.
+    // Bad-data cases were already filtered above with skip()+200.
+    console.error("Error processing webhook:", event.type, event.id, err);
+    await captureException(err, "stripe-webhook");
     return new Response(`Webhook handler error: ${err.message}`, { status: 500 });
   }
 
