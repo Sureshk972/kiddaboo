@@ -36,7 +36,6 @@ const HostSuccess = lazy(() => import("./pages/host/HostSuccess"));
 const HostDashboard = lazy(() => import("./pages/host/HostDashboard"));
 const HostInsights = lazy(() => import("./pages/host/HostInsights"));
 const EditPlaygroup = lazy(() => import("./pages/host/EditPlaygroup"));
-const HostPremium = lazy(() => import("./pages/host/HostPremium"));
 const Admin = lazy(() => import("./pages/Admin"));
 const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
 const GroupChat = lazy(() => import("./pages/GroupChat"));
@@ -119,7 +118,6 @@ export default function App() {
               <Route path="/edit-profile" element={<RequireAuth><EditProfile /></RequireAuth>} />
               <Route path="/notifications" element={<RequireAuth><NotificationSettings /></RequireAuth>} />
               <Route path="/host/edit/:id" element={<RequireAuth><EditPlaygroup /></RequireAuth>} />
-              <Route path="/host/premium" element={<RequireAuth><HostPremium /></RequireAuth>} />
               <Route path="/premium" element={<RequireAuth><Premium /></RequireAuth>} />
 
               {/* Admin — requires auth + admin role, no tab bar */}

@@ -79,11 +79,11 @@ export default function Browse() {
     const fetchPlaygroups = async () => {
       setFetchError(false);
       setLoadingReal(true);
-      // Fetch playgroups, premium host IDs, and the current user's
-      // own memberships in parallel. The membership map lets us surface
-      // join status on each card so we don't show "Join Group" to
-      // someone who's already a member.
-      const [pgResult, premiumResult, myMembershipsResult] = await Promise.all([
+      // Fetch playgroups and the current user's own memberships in
+      // parallel. The membership map lets us surface join status on
+      // each card so we don't show "Join Group" to someone who's
+      // already a member.
+      const [pgResult, myMembershipsResult] = await Promise.all([
         supabase
           .from("playgroups")
           .select(`
@@ -93,12 +93,6 @@ export default function Browse() {
           `)
           .eq("is_active", true)
           .order("created_at", { ascending: false }),
-        supabase
-          .from("subscriptions")
-          .select("user_id")
-          .eq("type", "host_premium")
-          .eq("status", "active")
-          .gt("current_period_end", new Date().toISOString()),
         user
           ? supabase
               .from("memberships")
@@ -106,10 +100,6 @@ export default function Browse() {
               .eq("user_id", user.id)
           : Promise.resolve({ data: [] }),
       ]);
-
-      const premiumHostIds = new Set(
-        (premiumResult.data || []).map((s) => s.user_id)
-      );
 
       const myJoinStatusByPg = new Map(
         (myMembershipsResult.data || []).map((m) => [m.playgroup_id, m.role])
@@ -122,7 +112,6 @@ export default function Browse() {
         setRealPlaygroups(
           pgResult.data.map((pg, i) => ({
             ...transformPlaygroup(pg, i),
-            isHostPremium: premiumHostIds.has(pg.creator_id),
             joinStatus: myJoinStatusByPg.get(pg.id) || null,
           }))
         );
@@ -263,15 +252,6 @@ export default function Browse() {
         (a, b) =>
           b.maxFamilies - b.familyCount - (a.maxFamilies - a.familyCount)
       );
-    }
-
-    // Float premium hosts to the top, except when sorting by distance
-    if (sortBy !== "distance") {
-      list.sort((a, b) => {
-        if (a.isHostPremium && !b.isHostPremium) return -1;
-        if (!a.isHostPremium && b.isHostPremium) return 1;
-        return 0;
-      });
     }
 
     return list;
@@ -531,12 +511,10 @@ export default function Browse() {
         {!loadingReal && !fetchError && results.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {results.map((group, i) => (
+              {results.map((group) => (
                 <PlaygroupCard
                   key={group.id}
                   group={{ ...group, isOwnGroup: group.creatorId === user?.id }}
-                  featured={i === 0 && results.length > 1 && group.isHostPremium}
-                  premium={group.isHostPremium}
                   onClick={() => navigate(`/playgroup/${group.id}`)}
                 />
               ))}

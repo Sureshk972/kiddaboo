@@ -10,7 +10,7 @@ export default function MyProfile() {
   useDocumentTitle("My Profile"); // #50
   const navigate = useNavigate();
   const { user, profile, signOut, isHost } = useAuth();
-  const { isPremium, isHostPremium, subscription } = useSubscription();
+  const { isPremium, subscription } = useSubscription();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   // #54: inline error replaces jarring alert()
@@ -69,7 +69,7 @@ export default function MyProfile() {
                 Phone verified
               </span>
             )}
-            {(isPremium || isHostPremium) && (
+            {isPremium && (
               <span className="inline-flex items-center gap-1 text-[11px] font-bold text-white bg-amber-400 px-2 py-0.5 rounded-full">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
@@ -113,19 +113,9 @@ export default function MyProfile() {
         {/* Settings list */}
         <div className="bg-white rounded-2xl border border-cream-dark overflow-hidden">
           {[
-            isHost
-              ? {
-                  icon: (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  ),
-                  label: isHostPremium ? "Organizer Premium Member" : "Upgrade to Organizer Premium",
-                  sublabel: isHostPremium ? null : "Priority placement, view analytics & more",
-                  path: "/host/premium",
-                  highlight: true,
-                }
-              : {
+            ...(isHost
+              ? []
+              : [{
                   icon: (
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -135,7 +125,7 @@ export default function MyProfile() {
                   sublabel: isPremium ? null : "Unlimited join requests & more",
                   path: "/premium",
                   highlight: true,
-                },
+                }]),
             ...(isHost
               ? [{
                   icon: (

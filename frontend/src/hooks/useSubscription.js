@@ -10,7 +10,6 @@ const FREE_JOIN_LIMIT = 1;
 export function useSubscription() {
   const { user, profile } = useAuth();
   const [joinerSub, setJoinerSub] = useState(null);
-  const [hostSub, setHostSub] = useState(null);
   const [usage, setUsage] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -38,12 +37,8 @@ export function useSubscription() {
     const activeJoiner = subs.find(
       (s) => s.type === "joiner" && s.status === "active" && new Date(s.current_period_end) > now
     );
-    const activeHost = subs.find(
-      (s) => s.type === "host_premium" && s.status === "active" && new Date(s.current_period_end) > now
-    );
 
     setJoinerSub(activeJoiner || null);
-    setHostSub(activeHost || null);
     setLoading(false);
   }
 
@@ -93,8 +88,10 @@ export function useSubscription() {
   const isPremium = !!joinerSub;
   const isJoinerPremium = isPremium;
 
-  // Host premium
-  const isHostPremium = !!hostSub;
+  // Hosts get the full feature suite for free — no paid host tier.
+  // Gate on account_type so organizers get full features the moment
+  // they sign up, before they've created their first playgroup.
+  const isHostPremium = profile?.account_type === "organizer";
 
   const joinRequestsUsed = usage?.request_count || 0;
   const joinRequestsRemaining = isPremium ? Infinity : Math.max(0, FREE_JOIN_LIMIT - joinRequestsUsed);
@@ -111,8 +108,8 @@ export function useSubscription() {
     canSendJoinRequest,
     incrementUsage,
 
-    // Host
-    hostSubscription: hostSub,
+    // Host — no paid tier; all hosts get full features.
+    hostSubscription: null,
     isHostPremium,
 
     // General
