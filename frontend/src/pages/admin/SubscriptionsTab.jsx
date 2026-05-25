@@ -32,8 +32,8 @@ import StatusBadge from "./StatusBadge";
 // fires for rows with a missing price_cents, so the drift risk is
 // limited to historical rows.
 const LEGACY_PRICES = {
-  monthly: 799,
-  annual: 7999,
+  monthly: 500,
+  annual: 5000,
   host_monthly: 799,
   host_annual: 7999,
 };

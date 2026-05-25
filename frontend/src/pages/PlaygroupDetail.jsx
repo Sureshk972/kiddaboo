@@ -810,7 +810,7 @@ export default function PlaygroupDetail() {
                 }}
                 className="w-full bg-sage hover:bg-sage-dark text-white font-heading font-bold text-sm py-3 rounded-xl transition-colors cursor-pointer border-none mb-2"
               >
-                View Premium — $7.99/mo
+                View Premium — $5/mo
               </button>
               <button
                 onClick={() => setShowUpgradePrompt(false)}

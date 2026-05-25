@@ -24,10 +24,8 @@ const corsHeaders = {
 
 // Price lookup — we create products/prices on first use and cache the IDs
 const PRICES: Record<string, { amount: number; interval: string; name: string; type: string }> = {
-  monthly:      { amount: 799,  interval: "month", name: "Kiddaboo Premium Monthly",      type: "joiner" },
-  annual:       { amount: 7999, interval: "year",  name: "Kiddaboo Premium Annual",       type: "joiner" },
-  host_monthly: { amount: 799,  interval: "month", name: "Kiddaboo Host Premium Monthly", type: "host_premium" },
-  host_annual:  { amount: 7999, interval: "year",  name: "Kiddaboo Host Premium Annual",  type: "host_premium" },
+  monthly: { amount: 500,  interval: "month", name: "Kiddaboo Premium Monthly", type: "joiner" },
+  annual:  { amount: 5000, interval: "year",  name: "Kiddaboo Premium Annual",  type: "joiner" },
 };
 
 async function getOrCreatePrice(plan: string): Promise<string> {
@@ -38,7 +36,7 @@ async function getOrCreatePrice(plan: string): Promise<string> {
   // current price tier — bump it when amounts change so we create a new
   // Stripe price instead of reusing a stale one (Stripe forbids
   // mutating unit_amount on an existing price).
-  const priceV = "2";
+  const priceV = "3";
   const prices = await stripe.prices.search({
     query: `metadata["kiddaboo_plan"]:"${plan}" metadata["kiddaboo_price_v"]:"${priceV}" active:"true"`,
   });

@@ -9,18 +9,18 @@ const PLANS = [
   {
     key: "monthly",
     label: "Monthly",
-    price: "$7.99",
+    price: "$5.00",
     period: "/mo",
-    priceCents: 799,
+    priceCents: 500,
     description: "Cancel anytime",
   },
   {
     key: "annual",
     label: "Annual",
-    price: "$79.99",
+    price: "$50.00",
     period: "/yr",
-    priceCents: 7999,
-    description: "2 months free — just $6.67/mo",
+    priceCents: 5000,
+    description: "2 months free — just $4.17/mo",
     badge: "Best Value",
   },
 ];
