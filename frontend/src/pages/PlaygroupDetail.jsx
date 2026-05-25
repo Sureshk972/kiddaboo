@@ -44,6 +44,16 @@ const ACCESS_LABELS = {
   invite: { text: "Invite Only", color: "bg-cream-dark text-taupe" },
 };
 
+// Once the viewer is in the group, the pill reflects their relationship
+// to the group rather than its access type — "Request to Join" on a
+// playgroup you already belong to is misleading.
+const MEMBERSHIP_LABELS = {
+  creator: { text: "Hosting", color: "bg-sage-light text-sage-dark" },
+  member: { text: "Joined", color: "bg-sage-light text-sage-dark" },
+  pending: { text: "Request Pending", color: "bg-cream-dark text-taupe" },
+  waitlisted: { text: "Waitlisted", color: "bg-cream-dark text-taupe" },
+};
+
 // Maps server-side error codes from the submit-join-request edge
 // function to user-facing copy.
 function joinErrorMessage(code) {
@@ -259,7 +269,10 @@ export default function PlaygroupDetail() {
     );
   }
 
-  const access = ACCESS_LABELS[group.accessType] || ACCESS_LABELS.request;
+  const access =
+    MEMBERSHIP_LABELS[joinStatus] ||
+    ACCESS_LABELS[group.accessType] ||
+    ACCESS_LABELS.request;
 
   const handleJoinClick = async () => {
     if (!user) {
