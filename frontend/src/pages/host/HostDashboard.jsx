@@ -3,7 +3,6 @@ import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
-import { useSubscription } from "../../hooks/useSubscription";
 import RequestCard from "../../components/host/RequestCard";
 import ScheduleSessionSheet from "../../components/host/ScheduleSessionSheet";
 import CancelSessionSheet from "../../components/playgroup/CancelSessionSheet";
@@ -194,13 +193,12 @@ export default function HostDashboard() {
   const [showScheduleSheet, setShowScheduleSheet] = useState(false);
   const [showInviteSheet, setShowInviteSheet] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
-  const { isHostPremium } = useSubscription();
   const { refetch: refetchNotificationCounts } = useNotificationCounts();
   const [viewStats, setViewStats] = useState({ thisWeek: 0, recentViewers: [] });
 
-  // Fetch view analytics for premium hosts
+  // Fetch view analytics
   useEffect(() => {
-    if (!isHostPremium || !realPlaygroup) return;
+    if (!realPlaygroup) return;
     const fetchViews = async () => {
       const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
       const { data, count } = await supabase
@@ -220,7 +218,7 @@ export default function HostDashboard() {
       });
     };
     fetchViews();
-  }, [isHostPremium, realPlaygroup]);
+  }, [realPlaygroup]);
 
   // Session scheduling
   const {
@@ -392,31 +390,12 @@ export default function HostDashboard() {
   const header = (
     <div className="sticky top-0 z-20 bg-cream/95 backdrop-blur-sm border-b border-cream-dark">
       <div className="max-w-md mx-auto px-5 pt-4 pb-3">
-        {/* Brand row — greeting moved below so the Premium pill can't
-            crowd the host's name on narrow screens. "(Host)" was
-            redundant here: they're already on the host dashboard. */}
+        {/* Brand row — "(Host)" was redundant here: they're already
+            on the host dashboard. Premium badge removed since hosts
+            no longer have a paid tier. */}
         <div className="flex items-center justify-between gap-2 bg-sage rounded-xl px-3 py-3 my-2">
           <BrandMark onDark />
           <div className="flex items-center gap-2 flex-shrink-0">
-            {isHostPremium ? (
-              <span className="flex items-center gap-1 text-[11px] font-bold text-white">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="#FFFFFF">
-                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-                </svg>
-                Premium
-              </span>
-            ) : (
-              <button
-                onClick={() => navigate("/host/premium")}
-                className="flex items-center gap-1 text-[11px] font-bold text-white bg-gradient-to-r from-amber-500 to-amber-600 rounded-full px-3 py-1.5 cursor-pointer border-none hover:from-amber-600 hover:to-amber-700 transition-all shadow-sm"
-                aria-label="Upgrade to Premium"
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
-                Go Premium
-              </button>
-            )}
             {profile && (
               <div
                 className="w-9 h-9 rounded-full bg-sage-light flex items-center justify-center overflow-hidden cursor-pointer border-2 border-white/40"
@@ -573,7 +552,6 @@ export default function HostDashboard() {
               hostProfile: profile,
               memberCount: realMembers.filter((m) => m.role !== "host").length,
             })}
-            premium={isHostPremium}
             onClick={() => navigate(`/playgroup/${realPlaygroup.id}?preview=true`)}
           />
         </div>
@@ -633,55 +611,32 @@ export default function HostDashboard() {
           </button>
         </div>
 
-        {/* Host Premium analytics / upsell */}
-        {isHostPremium ? (
-          <div className="bg-white rounded-2xl border border-cream-dark p-5">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base font-heading font-bold flex items-center gap-2" style={{ color: '#8B3FE0' }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="#8B3FE0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  <circle cx="12" cy="12" r="3" stroke="#8B3FE0" strokeWidth="1.5" />
-                </svg>
-                Views This Week
-              </h3>
-              <span className="text-2xl font-heading font-bold" style={{ color: '#8B3FE0' }}>{viewStats.thisWeek}</span>
-            </div>
-            {viewStats.recentViewers.length > 0 ? (
-              <div className="space-y-2">
-                <p className="text-xs text-taupe font-bold">Recent viewers</p>
-                {viewStats.recentViewers.slice(0, 5).map((v, i) => (
-                  <div key={i} className="flex items-center justify-between text-sm">
-                    <span style={{ color: '#8B3FE0' }}>{v.name}</span>
-                    <span className="text-xs text-taupe/60">{timeAgo(v.viewedAt)}</span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-taupe">No views yet this week. Share your playgroup to attract families!</p>
-            )}
+        {/* Views this week — host analytics. */}
+        <div className="bg-white rounded-2xl border border-cream-dark p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base font-heading font-bold flex items-center gap-2" style={{ color: '#8B3FE0' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="#8B3FE0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="12" cy="12" r="3" stroke="#8B3FE0" strokeWidth="1.5" />
+              </svg>
+              Views This Week
+            </h3>
+            <span className="text-2xl font-heading font-bold" style={{ color: '#8B3FE0' }}>{viewStats.thisWeek}</span>
           </div>
-        ) : (
-          <div
-            className="relative bg-white rounded-2xl border border-cream-dark p-5 overflow-hidden cursor-pointer"
-            onClick={() => navigate("/host/premium")}
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-amber-50/80 to-transparent pointer-events-none" />
-            <div className="relative flex items-center gap-4">
-              <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-bold text-charcoal">Go Organizer Premium</p>
-                <p className="text-xs text-taupe leading-relaxed">
-                  Get a Premium badge, priority placement, and see who's viewing your group.
-                </p>
-              </div>
-              <span className="text-amber-600 font-bold text-sm whitespace-nowrap">$4.99/mo</span>
+          {viewStats.recentViewers.length > 0 ? (
+            <div className="space-y-2">
+              <p className="text-xs text-taupe font-bold">Recent viewers</p>
+              {viewStats.recentViewers.slice(0, 5).map((v, i) => (
+                <div key={i} className="flex items-center justify-between text-sm">
+                  <span style={{ color: '#8B3FE0' }}>{v.name}</span>
+                  <span className="text-xs text-taupe/60">{timeAgo(v.viewedAt)}</span>
+                </div>
+              ))}
             </div>
-          </div>
-        )}
+          ) : (
+            <p className="text-sm text-taupe">No views yet this week. Share your playgroup to attract families!</p>
+          )}
+        </div>
 
         {/* Prominent CTA — hosts often miss the tiny "+ Add" inside the
             Next Session card header. Matches the visual weight of "Join

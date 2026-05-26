@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
-import { useSubscription } from "../../hooks/useSubscription";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import BrandMark from "../../components/layout/BrandMark";
 
@@ -26,7 +25,6 @@ export default function HostInsights() {
   useDocumentTitle("Organizer Insights"); // #50
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { isHostPremium } = useSubscription();
 
   const [playgroup, setPlaygroup] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -112,8 +110,8 @@ export default function HostInsights() {
         setFunnel(counts);
       }
 
-      // View analytics — only pull data if the user is premium; free tier sees blurred zeros
-      if (isHostPremium) {
+      // View analytics
+      {
         const now = new Date();
         const weekAgo = new Date(now.getTime() - 7 * 86400000);
         const twoWeeksAgo = new Date(now.getTime() - 14 * 86400000);
@@ -164,40 +162,13 @@ export default function HostInsights() {
       setLoading(false);
     };
     load();
-  }, [user, isHostPremium]);
+  }, [user]);
 
   const header = (
     <div className="sticky top-0 z-20 bg-cream/95 backdrop-blur-sm border-b border-cream-dark">
       <div className="max-w-md mx-auto px-5 pt-4 pb-3">
         <div className="mb-2 flex items-center justify-between gap-2">
           <BrandMark />
-          {isHostPremium ? (
-            <span className="flex items-center gap-1 text-[11px] font-bold text-white rounded-full px-3 py-1.5 flex-shrink-0" style={{ backgroundColor: '#8B3FE0' }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="#FFFFFF">
-                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-              </svg>
-              Premium
-            </span>
-          ) : (
-            <button
-              onClick={() => navigate("/host/premium")}
-              className="flex items-center gap-1 text-[11px] font-bold text-white bg-gradient-to-r from-amber-500 to-amber-600 rounded-full px-3 py-1.5 cursor-pointer border-none hover:from-amber-600 hover:to-amber-700 transition-all shadow-sm flex-shrink-0"
-            >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="white"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-              </svg>
-              Go Premium
-            </button>
-          )}
         </div>
         <p className="text-[11px] text-taupe uppercase tracking-wide">Insights</p>
         <h2 className="text-lg font-heading font-bold truncate" style={{ color: '#8B3FE0' }}>
@@ -270,36 +241,14 @@ export default function HostInsights() {
       <div className="max-w-md mx-auto px-5 py-5 flex flex-col gap-5">
         {/* Hero view count + week-over-week */}
         <div className="bg-white rounded-2xl border border-cream-dark p-5 relative overflow-hidden">
-          {!isHostPremium && (
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/70 backdrop-blur-sm">
-              <div className="bg-white rounded-2xl shadow-lg border border-amber-200 px-5 py-4 max-w-[260px] text-center">
-                <div className="flex items-center justify-center gap-1 mb-2">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="#D97706">
-                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-                  </svg>
-                  <p className="text-xs font-bold text-amber-700">Premium Insights</p>
-                </div>
-                <p className="text-xs text-taupe mb-3 leading-relaxed">
-                  See who&apos;s viewing your playgroup, how traffic is trending, and which
-                  days drive the most interest.
-                </p>
-                <button
-                  onClick={() => navigate("/host/premium")}
-                  className="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-bold rounded-xl py-2 cursor-pointer border-none hover:from-amber-600 hover:to-amber-700 transition-all"
-                >
-                  Unlock for $4.99/mo
-                </button>
-              </div>
-            </div>
-          )}
           <p className="text-xs text-taupe uppercase tracking-wide font-medium mb-1">
             Views this week
           </p>
           <div className="flex items-baseline gap-3">
             <p className="text-4xl font-heading font-bold" style={{ color: '#8B3FE0' }}>
-              {isHostPremium ? viewsThisWeek : "—"}
+              {viewsThisWeek}
             </p>
-            {isHostPremium && weekDeltaPct !== null && (
+            {weekDeltaPct !== null && (
               <span
                 className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                   weekDelta >= 0
@@ -310,15 +259,15 @@ export default function HostInsights() {
                 {weekDelta >= 0 ? "↑" : "↓"} {Math.abs(weekDeltaPct)}% vs last week
               </span>
             )}
-            {isHostPremium && weekDeltaPct === null && viewsThisWeek > 0 && (
+            {weekDeltaPct === null && viewsThisWeek > 0 && (
               <span className="text-xs text-taupe">new data</span>
             )}
           </div>
 
           {/* Mini daily bar chart */}
           <div className="mt-4 flex items-end justify-between gap-1.5 h-20">
-            {(isHostPremium ? dailyViews : Array.from({ length: 7 })).map((d, i) => {
-              const count = d?.count ?? Math.floor(Math.random() * 5) + 1; // placeholder bars for free
+            {dailyViews.map((d, i) => {
+              const count = d.count;
               const height = `${(count / maxDaily) * 100}%`;
               return (
                 <div key={i} className="flex-1 flex flex-col items-center gap-1 h-full">
@@ -362,7 +311,7 @@ export default function HostInsights() {
                 </div>
               </div>
               <p className="text-xl font-heading font-bold" style={{ color: '#8B3FE0' }}>
-                {isHostPremium ? viewsThisWeek : "—"}
+                {viewsThisWeek}
               </p>
             </div>
 
@@ -377,7 +326,7 @@ export default function HostInsights() {
                 />
               </svg>
               <span>
-                {isHostPremium && viewsThisWeek > 0
+                {viewsThisWeek > 0
                   ? `${viewToRequest}% of viewers requested to join`
                   : "of viewers requested to join"}
               </span>
@@ -450,26 +399,13 @@ export default function HostInsights() {
           </div>
         </div>
 
-        {/* Recent viewers — premium only */}
+        {/* Recent viewers */}
         <div className="relative">
           <h3 className="text-base font-heading font-bold mb-3" style={{ color: '#8B3FE0' }}>
             Recent viewers
           </h3>
           <div className="bg-white rounded-2xl border border-cream-dark overflow-hidden relative">
-            {!isHostPremium && (
-              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/70 backdrop-blur-sm px-6 text-center">
-                <p className="text-xs text-taupe mb-3">
-                  Premium hosts can see names of recent viewers.
-                </p>
-                <button
-                  onClick={() => navigate("/host/premium")}
-                  className="bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-bold rounded-xl px-4 py-2 cursor-pointer border-none hover:from-amber-600 hover:to-amber-700 transition-all"
-                >
-                  Unlock
-                </button>
-              </div>
-            )}
-            {isHostPremium && recentViewers.length > 0 ? (
+            {recentViewers.length > 0 ? (
               recentViewers.map((v, i) => (
                 <div
                   key={i}
@@ -482,27 +418,11 @@ export default function HostInsights() {
                 </div>
               ))
             ) : (
-              // Blurred placeholders for free tier, real empty state for premium
-              <>
-                {["Alex M.", "Priya R.", "Jordan K.", "Sam T.", "Riya P."].map((name, i) => (
-                  <div
-                    key={i}
-                    className={`flex items-center justify-between p-4 ${
-                      i < 4 ? "border-b border-cream-dark" : ""
-                    }`}
-                  >
-                    <span className="text-sm" style={{ color: '#8B3FE0' }}>{name}</span>
-                    <span className="text-[11px] text-taupe">{i + 1}h ago</span>
-                  </div>
-                ))}
-                {isHostPremium && (
-                  <div className="p-6 text-center">
-                    <p className="text-sm text-taupe">
-                      No views yet this week. Share your playgroup to attract families!
-                    </p>
-                  </div>
-                )}
-              </>
+              <div className="p-6 text-center">
+                <p className="text-sm text-taupe">
+                  No views yet this week. Share your playgroup to attract families!
+                </p>
+              </div>
             )}
           </div>
         </div>
@@ -512,12 +432,12 @@ export default function HostInsights() {
           <span className="text-base flex-shrink-0">💡</span>
           <div className="flex-1">
             <p className="text-sm font-medium text-charcoal mb-1">
-              {viewToRequest < 10 && isHostPremium
+              {viewToRequest < 10 && viewsThisWeek > 0
                 ? "Low view-to-request rate"
                 : "Grow your playgroup"}
             </p>
             <p className="text-xs text-taupe leading-relaxed">
-              {viewToRequest < 10 && isHostPremium
+              {viewToRequest < 10 && viewsThisWeek > 0
                 ? "Try sharper photos and a clearer description to turn more views into requests."
                 : "Post weekly on your social media, share the link with local parents, and keep photos fresh."}
             </p>
