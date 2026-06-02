@@ -100,8 +100,9 @@ export default function PrivacyPolicy() {
 
         <section className="mb-6">
           <h2 className="font-heading font-bold text-charcoal text-sm mb-2">7. Data Retention</h2>
+          {/* TODO: legal review */}
           <p className="text-sm text-taupe-dark leading-relaxed">
-            We retain your data for as long as your account is active. When you delete your account, we remove your personal information and profile. Booking records may be retained for a limited period as required for financial and legal compliance. <!-- TODO: legal review -->
+            We retain your data for as long as your account is active. When you delete your account, we remove your personal information and profile. Booking records may be retained for a limited period as required for financial and legal compliance.
           </p>
         </section>
 

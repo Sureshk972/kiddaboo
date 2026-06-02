@@ -51,8 +51,9 @@ export default function TermsOfService() {
 
         <section className="mb-6">
           <h2 className="font-heading font-bold text-charcoal text-sm mb-2">4. Bookings and Nanny Services</h2>
+          {/* TODO: legal review */}
           <p className="text-sm text-taupe-dark leading-relaxed">
-            Kiddaboo facilitates booking connections between parents and Nannies. We do not supervise, endorse, or guarantee the quality or safety of any Nanny or booking. Parents are solely responsible for verifying that a Nanny is suitable for their family and for the supervision and safety of their children. <!-- TODO: legal review -->
+            Kiddaboo facilitates booking connections between parents and Nannies. We do not supervise, endorse, or guarantee the quality or safety of any Nanny or booking. Parents are solely responsible for verifying that a Nanny is suitable for their family and for the supervision and safety of their children.
           </p>
         </section>
 
