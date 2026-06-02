@@ -44,6 +44,12 @@ export default function NannyDashboard() {
           <article key={b.id}>
             <div>{new Date(b.slot.starts_at).toLocaleString()}</div>
             <div>Confirmed</div>
+            <button onClick={async () => {
+              if (!confirm("Cancel this booking? Parent will receive a full refund.")) return;
+              const { error } = await supabase.functions.invoke("cancel-booking", { body: { booking_id: b.id }});
+              if (error) alert(error.message);
+              else window.location.reload();
+            }}>Cancel</button>
           </article>
         ))}
       </section>
