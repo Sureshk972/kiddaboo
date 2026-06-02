@@ -124,7 +124,7 @@ Single percentage, configurable via env var. Exact value not part of this spec.
 ### 6.1 Modified tables
 
 **`profiles`**
-- `account_type` enum: `'parent' | 'nanny'` (was `'parent' | 'host'`)
+- `account_type` enum: `'parent' | 'nanny'` (was `'parent' | 'organizer'` — note: code value was `'organizer'` though UI surface said "Host")
 - `verified_at timestamptz null` (nanny-only meaningful)
 - `stripe_connect_account_id text null` (nanny-only) — already exists, repurposed from host
 
