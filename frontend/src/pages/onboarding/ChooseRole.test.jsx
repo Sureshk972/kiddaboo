@@ -11,16 +11,23 @@ vi.mock("react-router-dom", async () => ({
 
 beforeEach(() => navigate.mockClear());
 
+test("offers Parent and Nanny options (not Host/Organizer)", () => {
+  render(<MemoryRouter><ChooseRole /></MemoryRouter>);
+  expect(screen.getByText(/I'm a Parent/i)).toBeInTheDocument();
+  expect(screen.getByText(/I'm a Nanny/i)).toBeInTheDocument();
+  expect(screen.queryByText(/Organizer/i)).not.toBeInTheDocument();
+});
+
 test("clicking Parent card routes to /verify?role=parent", () => {
   render(<MemoryRouter><ChooseRole /></MemoryRouter>);
   fireEvent.click(screen.getByRole("button", { name: /I'm a Parent/i }));
   expect(navigate).toHaveBeenCalledWith("/verify?role=parent");
 });
 
-test("clicking Organizer card routes to /verify?role=organizer", () => {
+test("clicking Nanny card routes to /verify?role=nanny", () => {
   render(<MemoryRouter><ChooseRole /></MemoryRouter>);
-  fireEvent.click(screen.getByRole("button", { name: /I'm an Organizer/i }));
-  expect(navigate).toHaveBeenCalledWith("/verify?role=organizer");
+  fireEvent.click(screen.getByRole("button", { name: /I'm a Nanny/i }));
+  expect(navigate).toHaveBeenCalledWith("/verify?role=nanny");
 });
 
 test("offers a sign-in link for returning users", () => {
