@@ -5,6 +5,8 @@ import { supabase } from "../../lib/supabase";
 export default function NannyEarnings() {
   const { user, profile } = useAuth();
   const [completedTotal, setCompletedTotal] = useState(0);
+  const [connecting, setConnecting] = useState(false);
+  const [connectError, setConnectError] = useState(null);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -20,8 +22,21 @@ export default function NannyEarnings() {
   }, [user?.id]);
 
   const onboard = async () => {
-    const { data } = await supabase.functions.invoke("stripe-connect-link");
-    if (data?.url) window.location.href = data.url;
+    setConnecting(true);
+    setConnectError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("stripe-connect-link");
+      if (error) {
+        const body = await error.context?.text?.().catch(() => null);
+        throw new Error(body || error.message || "Edge function failed");
+      }
+      if (!data?.url) throw new Error("No onboarding URL returned");
+      window.location.href = data.url;
+    } catch (e) {
+      console.error("[stripe-connect-link]", e);
+      setConnectError(e.message || String(e));
+      setConnecting(false);
+    }
   };
 
   const needsOnboarding = !profile?.stripe_connect_charges_enabled;
@@ -32,7 +47,14 @@ export default function NannyEarnings() {
       {needsOnboarding ? (
         <section>
           <p>Set up payouts to start accepting bookings.</p>
-          <button onClick={onboard}>Connect with Stripe</button>
+          <button onClick={onboard} disabled={connecting}>
+            {connecting ? "Opening Stripe…" : "Connect with Stripe"}
+          </button>
+          {connectError && (
+            <p role="alert" style={{ color: "crimson", marginTop: 12 }}>
+              Couldn't start Stripe onboarding: {connectError}
+            </p>
+          )}
         </section>
       ) : (
         <section>
