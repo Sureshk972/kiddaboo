@@ -1,8 +1,16 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
+/**
+ * Returns open slots in the window, grouped by nanny and sorted by
+ * average rating (highest first). Unrated nannies sort below rated
+ * ones. Within each group, slots are chronological.
+ *
+ * Shape of `groups`:
+ *   { nannyId, nanny, slots: [...], avgRating: number|null, ratingCount: number }
+ */
 export function useOpenSlots({ from, to, maxRateCents = null }) {
-  const [slots, setSlots] = useState([]);
+  const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -10,6 +18,7 @@ export function useOpenSlots({ from, to, maxRateCents = null }) {
     let cancelled = false;
     (async () => {
       setLoading(true);
+
       let q = supabase
         .from("nanny_slots")
         .select(
@@ -20,10 +29,68 @@ export function useOpenSlots({ from, to, maxRateCents = null }) {
         .lte("ends_at", to.toISOString())
         .order("starts_at", { ascending: true });
       if (maxRateCents != null) q = q.lte("rate_cents", maxRateCents);
-      const { data, error } = await q;
+
+      const { data: slots, error } = await q;
       if (cancelled) return;
-      if (error) console.error("[useOpenSlots]", error);
-      setSlots(error ? [] : data || []);
+      if (error) {
+        console.error("[useOpenSlots]", error);
+        setGroups([]);
+        setLoading(false);
+        return;
+      }
+
+      // Group slots by nanny.
+      const byNanny = new Map();
+      for (const s of slots || []) {
+        if (!s.nanny?.id) continue;
+        const id = s.nanny.id;
+        if (!byNanny.has(id)) {
+          byNanny.set(id, { nannyId: id, nanny: s.nanny, slots: [] });
+        }
+        byNanny.get(id).slots.push(s);
+      }
+
+      const nannyIds = [...byNanny.keys()];
+
+      // Fetch ratings in one shot, aggregate client-side.
+      let ratings = [];
+      if (nannyIds.length) {
+        const { data: rdata } = await supabase
+          .from("ratings")
+          .select("ratee_id, score")
+          .in("ratee_id", nannyIds)
+          .eq("direction", "parent_to_nanny");
+        ratings = rdata || [];
+      }
+      const ratingByNanny = new Map();
+      for (const r of ratings) {
+        const cur = ratingByNanny.get(r.ratee_id) || { sum: 0, n: 0 };
+        cur.sum += r.score;
+        cur.n += 1;
+        ratingByNanny.set(r.ratee_id, cur);
+      }
+
+      const out = [...byNanny.values()].map((g) => {
+        const r = ratingByNanny.get(g.nannyId);
+        return {
+          ...g,
+          avgRating: r ? r.sum / r.n : null,
+          ratingCount: r ? r.n : 0,
+        };
+      });
+
+      // Sort: rated first by avg desc, then unrated by earliest slot.
+      out.sort((a, b) => {
+        if (a.avgRating != null && b.avgRating != null) {
+          return b.avgRating - a.avgRating;
+        }
+        if (a.avgRating != null) return -1;
+        if (b.avgRating != null) return 1;
+        return new Date(a.slots[0].starts_at) - new Date(b.slots[0].starts_at);
+      });
+
+      if (cancelled) return;
+      setGroups(out);
       setLoading(false);
     })();
     return () => {
@@ -31,5 +98,5 @@ export function useOpenSlots({ from, to, maxRateCents = null }) {
     };
   }, [from?.toISOString(), to?.toISOString(), maxRateCents]);
 
-  return { slots, loading };
+  return { groups, loading };
 }

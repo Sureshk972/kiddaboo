@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useOpenSlots } from "../hooks/useOpenSlots";
 import FilterSheet from "../components/discovery/FilterSheet";
 import NannyCard from "../components/discovery/NannyCard";
@@ -13,7 +13,13 @@ export default function Discover() {
     maxRateCents: null,
   });
   const [view, setView] = useState("list");
-  const { slots, loading } = useOpenSlots(filters);
+  const { groups, loading } = useOpenSlots(filters);
+
+  // Map view still works on the flat slot list — flatten from groups.
+  const flatSlots = useMemo(
+    () => groups.flatMap((g) => g.slots.map((s) => ({ ...s, nanny: g.nanny }))),
+    [groups]
+  );
 
   const fmtForInput = (d) => {
     const tzOffset = d.getTimezoneOffset() * 60000;
@@ -61,21 +67,23 @@ export default function Discover() {
 
       {loading ? (
         <p className="text-sm text-taupe text-center py-8">Loading available nannies…</p>
-      ) : slots.length === 0 ? (
+      ) : groups.length === 0 ? (
         <div className="bg-white border border-cream-dark p-6 text-center">
           <p className="text-sm text-charcoal">No nannies available in that window.</p>
-          <p className="text-xs text-taupe mt-1">Try widening your date range or removing the max rate.</p>
+          <p className="text-xs text-taupe mt-1">
+            Try widening your date range or removing the max rate.
+          </p>
         </div>
       ) : view === "list" ? (
         <ul className="flex flex-col gap-3">
-          {slots.map((s) => (
-            <li key={s.id}>
-              <NannyCard slot={s} />
+          {groups.map((g) => (
+            <li key={g.nannyId}>
+              <NannyCard group={g} />
             </li>
           ))}
         </ul>
       ) : (
-        <MapView slots={slots} />
+        <MapView slots={flatSlots} />
       )}
     </div>
   );
