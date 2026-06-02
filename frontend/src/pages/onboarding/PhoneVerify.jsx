@@ -21,9 +21,7 @@ const VERIFY_ERROR_COPY = {
  * OTP step. Two stages:
  *   1. Ask for E.164 phone → "Send code"
  *   2. Show 6-digit input → "Verify"
- * On verify success, navigate to the next onboarding step (/children
- * for Parents, /host/create for Organizers). The caller route decides
- * where `next` points; we read it from history state.
+ * On verify success, navigate to /success for both parents and nannies.
  */
 export default function PhoneVerify() {
   const navigate = useNavigate();
@@ -71,10 +69,8 @@ export default function PhoneVerify() {
       // sees the stale flag and bounces back here, creating a loop.
       if (user) await fetchProfile(user.id);
       const role = sessionStorage.getItem("kiddaboo.pendingAccountType");
-      // Parent already entered children before being routed here, so
-      // skip /children and go straight to /success. Organizers still
-      // need to create their first playgroup.
-      navigate(role === "organizer" ? "/host/create" : "/success");
+      // Both parents and nannies go to /success after phone verification.
+      navigate("/success");
     }
   }
 

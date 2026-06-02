@@ -33,7 +33,7 @@ export default function PhoneVerification() {
   // the user navigates back and forth).
   useEffect(() => {
     const role = searchParams.get("role");
-    if (role === "parent" || role === "organizer") {
+    if (role === "parent" || role === "nanny") {
       sessionStorage.setItem("kiddaboo.pendingAccountType", role);
       // Mark the onboarding flow as active so OnboardingOnly lets the
       // user finish the multi-step signup even after setProfile() has
@@ -79,11 +79,8 @@ export default function PhoneVerification() {
         return;
       }
 
-      // Check if profile is complete and host status, redirect
-      // accordingly. Route by account_type — not just by membership
-      // count — so an organizer who hasn't created their first group
-      // yet still lands on /host/dashboard (which has the empty-state
-      // "Create your first playgroup" CTA), not on /browse.
+      // Route by account_type — Nannies go to their dashboard,
+      // parents go to discovery.
       if (data?.user) {
         const { data: prof } = await supabase
           .from("profiles")
@@ -101,10 +98,10 @@ export default function PhoneVerification() {
 
         if (!prof?.first_name) {
           navigate("/profile");
-        } else if (prof?.account_type === "organizer") {
-          navigate("/host/dashboard");
+        } else if (prof?.account_type === "nanny") {
+          navigate("/nanny/dashboard");
         } else {
-          navigate("/browse");
+          navigate("/");
         }
       }
     }
@@ -220,7 +217,7 @@ export default function PhoneVerification() {
           </h1>
           <p className="text-taupe leading-relaxed">
             {mode === "signup"
-              ? "Sign up to find or host curated playgroups."
+              ? "Sign up to book a Nanny or offer childcare."
               : "Sign in to continue."}
           </p>
         </div>
@@ -278,7 +275,7 @@ export default function PhoneVerification() {
               // they'd reach CreateProfile with parent-voice copy as a
               // misleading default until the fail-closed guard kicks in.
               const stashed = sessionStorage.getItem("kiddaboo.pendingAccountType");
-              if (stashed !== "parent" && stashed !== "organizer") {
+              if (stashed !== "parent" && stashed !== "nanny") {
                 navigate("/choose-role");
                 return;
               }

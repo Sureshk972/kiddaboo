@@ -1,7 +1,7 @@
 {
   "name": "Kiddaboo",
   "short_name": "Kiddaboo",
-  "description": "Find your people. Find your playgroup.",
+  "description": "Book trusted childcare, on your schedule.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ECE3FB",
