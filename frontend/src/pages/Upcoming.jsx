@@ -33,8 +33,8 @@ export default function Upcoming() {
     (async () => {
       const ids = bookings.map(b => b.nanny.id);
       if (!ids.length) return;
-      const { data } = await supabase.from("profiles").select("id, phone").in("id", ids);
-      setPhones(Object.fromEntries((data || []).map(p => [p.id, p.phone])));
+      const { data } = await supabase.from("profiles").select("id, phone_number").in("id", ids);
+      setPhones(Object.fromEntries((data || []).map(p => [p.id, p.phone_number])));
     })();
   }, [bookings.length]);
 
