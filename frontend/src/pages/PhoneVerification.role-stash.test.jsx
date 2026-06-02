@@ -9,13 +9,13 @@ vi.mock("../context/AuthContext", () => ({
 
 beforeEach(() => sessionStorage.clear());
 
-test("stashes role=organizer from query param on mount", () => {
+test("stashes role=nanny from query param on mount", () => {
   render(
-    <MemoryRouter initialEntries={["/verify?role=organizer"]}>
+    <MemoryRouter initialEntries={["/verify?role=nanny"]}>
       <PhoneVerification />
     </MemoryRouter>
   );
-  expect(sessionStorage.getItem("kiddaboo.pendingAccountType")).toBe("organizer");
+  expect(sessionStorage.getItem("kiddaboo.pendingAccountType")).toBe("nanny");
 });
 
 test("stashes role=parent from query param on mount", () => {
