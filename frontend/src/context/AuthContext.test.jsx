@@ -21,7 +21,7 @@ test("AuthContext exposes accountType from the profiles row", async () => {
   // fetchHostStatus (memberships select → eq → eq → limit). Each .eq()
   // returns the same chain so either call shape resolves cleanly.
   const eqChain = {
-    single: () => Promise.resolve({ data: { id: "u1", first_name: "A", account_type: "organizer" }, error: null }),
+    single: () => Promise.resolve({ data: { id: "u1", first_name: "A", account_type: "nanny" }, error: null }),
     limit: () => Promise.resolve({ data: [], error: null }),
   };
   eqChain.eq = () => eqChain;
@@ -35,5 +35,5 @@ test("AuthContext exposes accountType from the profiles row", async () => {
     </AuthProvider>
   );
 
-  await waitFor(() => expect(screen.getByText("type=organizer")).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText("type=nanny")).toBeInTheDocument());
 });

@@ -6,7 +6,6 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [isHost, setIsHost] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Listen for auth state changes
@@ -16,7 +15,6 @@ export function AuthProvider({ children }) {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id);
-        fetchHostStatus(session.user.id);
       } else {
         setLoading(false);
       }
@@ -29,10 +27,8 @@ export function AuthProvider({ children }) {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id);
-        fetchHostStatus(session.user.id);
       } else {
         setProfile(null);
-        setIsHost(false);
         setLoading(false);
       }
     });
@@ -69,25 +65,6 @@ export function AuthProvider({ children }) {
       }
     }
     setLoading(false);
-  };
-
-  // Host = user has at least one membership with role "creator"
-  const fetchHostStatus = async (userId) => {
-    const { data, error } = await supabase
-      .from("memberships")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("role", "creator")
-      .limit(1);
-    if (error) {
-      console.error("Failed to fetch host status:", error);
-      return;
-    }
-    setIsHost(data && data.length > 0);
-  };
-
-  const refreshHostStatus = () => {
-    if (user) fetchHostStatus(user.id);
   };
 
   // Sign up with email (simpler than phone for now)
@@ -163,6 +140,8 @@ export function AuthProvider({ children }) {
   };
 
   const isAdmin = profile?.role === "admin";
+  const accountType = profile?.account_type ?? null;
+  const isNanny = accountType === "nanny";
 
   return (
     <AuthContext.Provider
@@ -171,9 +150,8 @@ export function AuthProvider({ children }) {
         profile,
         loading,
         isAdmin,
-        isHost,
-        accountType: profile?.account_type ?? null,
-        refreshHostStatus,
+        isNanny,
+        accountType,
         signUp,
         signIn,
         signOut,

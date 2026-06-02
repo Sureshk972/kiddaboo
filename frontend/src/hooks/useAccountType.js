@@ -10,7 +10,7 @@ export function useAccountType() {
   return {
     accountType,
     isParent: accountType === "parent",
-    isOrganizer: accountType === "organizer",
+    isNanny: accountType === "nanny",
     loading,
   };
 }

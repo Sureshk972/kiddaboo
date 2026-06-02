@@ -7,13 +7,13 @@ vi.mock("../context/AuthContext", () => ({
 }));
 import { useAuth } from "../context/AuthContext";
 
-test("returns parent/organizer booleans", () => {
-  useAuth.mockReturnValue({ accountType: "organizer", loading: false });
+test("returns parent/nanny booleans", () => {
+  useAuth.mockReturnValue({ accountType: "nanny", loading: false });
   const { result } = renderHook(() => useAccountType());
   expect(result.current).toEqual({
-    accountType: "organizer",
+    accountType: "nanny",
     isParent: false,
-    isOrganizer: true,
+    isNanny: true,
     loading: false,
   });
 });
@@ -22,6 +22,6 @@ test("returns null+false+false while loading", () => {
   useAuth.mockReturnValue({ accountType: null, loading: true });
   const { result } = renderHook(() => useAccountType());
   expect(result.current.isParent).toBe(false);
-  expect(result.current.isOrganizer).toBe(false);
+  expect(result.current.isNanny).toBe(false);
   expect(result.current.loading).toBe(true);
 });
