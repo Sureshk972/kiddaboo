@@ -4,23 +4,65 @@ import { supabase } from "../lib/supabase";
 
 function CancelButton({ booking }) {
   const [confirming, setConfirming] = useState(false);
+  const [working, setWorking] = useState(false);
+  const [err, setErr] = useState(null);
   const hoursUntil = (new Date(booking.slot.starts_at) - new Date()) / 3600_000;
   const inside24 = hoursUntil < 24;
 
   const cancel = async () => {
-    const { error } = await supabase.functions.invoke("cancel-booking", { body: { booking_id: booking.id } });
-    if (error) alert(error.message);
-    else window.location.reload();
+    setWorking(true);
+    setErr(null);
+    const { error } = await supabase.functions.invoke("cancel-booking", {
+      body: { booking_id: booking.id },
+    });
+    if (error) {
+      setErr(error.message);
+      setWorking(false);
+    } else {
+      window.location.reload();
+    }
   };
 
-  if (!confirming) return <button onClick={() => setConfirming(true)}>Cancel</button>;
+  if (!confirming) {
+    return (
+      <button
+        type="button"
+        onClick={() => setConfirming(true)}
+        className="text-xs font-medium text-terracotta hover:underline self-start"
+      >
+        Cancel booking
+      </button>
+    );
+  }
   return (
-    <div role="alertdialog">
-      {inside24
-        ? <p>Within 24h of the session — <strong>no refund</strong> will be issued.</p>
-        : <p>More than 24h away — you'll get a full refund.</p>}
-      <button onClick={cancel}>Confirm cancel</button>
-      <button onClick={() => setConfirming(false)}>Keep booking</button>
+    <div role="alertdialog" className="border border-cream-dark bg-cream/60 p-3 flex flex-col gap-2">
+      {inside24 ? (
+        <p className="text-xs text-charcoal">
+          Within 24h of the session — <strong>no refund</strong> will be issued.
+        </p>
+      ) : (
+        <p className="text-xs text-charcoal">
+          More than 24h away — you'll get a full refund.
+        </p>
+      )}
+      {err && <p className="text-xs text-terracotta">{err}</p>}
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={cancel}
+          disabled={working}
+          className="flex-1 text-xs font-medium bg-terracotta text-white py-2 disabled:opacity-50"
+        >
+          {working ? "Cancelling…" : "Confirm cancel"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setConfirming(false)}
+          className="flex-1 text-xs font-medium bg-white border border-cream-dark text-charcoal py-2"
+        >
+          Keep booking
+        </button>
+      </div>
     </div>
   );
 }
@@ -31,30 +73,72 @@ export default function Upcoming() {
 
   useEffect(() => {
     (async () => {
-      const ids = bookings.map(b => b.nanny.id);
+      const ids = bookings.map((b) => b.nanny.id);
       if (!ids.length) return;
-      const { data } = await supabase.from("profiles").select("id, phone_number").in("id", ids);
-      setPhones(Object.fromEntries((data || []).map(p => [p.id, p.phone_number])));
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, phone_number")
+        .in("id", ids);
+      setPhones(Object.fromEntries((data || []).map((p) => [p.id, p.phone_number])));
     })();
   }, [bookings.length]);
 
-  if (loading) return <p>Loading…</p>;
-  if (bookings.length === 0) return <p>No upcoming bookings.</p>;
   return (
-    <ul>{bookings.map(b => (
-      <li key={b.id}>
-        <article>
-          <h3>{b.nanny.full_name}</h3>
-          <div>{new Date(b.slot.starts_at).toLocaleString()}</div>
-          {phones[b.nanny.id] && (
-            <>
-              <a href={`tel:${phones[b.nanny.id]}`}>Call</a>{" · "}
-              <a href={`sms:${phones[b.nanny.id]}`}>Text</a>
-            </>
-          )}
-          <CancelButton booking={b} />
-        </article>
-      </li>
-    ))}</ul>
+    <div className="px-5 py-4 flex flex-col gap-4">
+      <h1 className="text-2xl font-heading font-bold tracking-tight text-sage-dark">
+        Upcoming
+      </h1>
+
+      {loading ? (
+        <p className="text-sm text-taupe text-center py-8">Loading…</p>
+      ) : bookings.length === 0 ? (
+        <div className="bg-white border border-cream-dark p-6 text-center">
+          <p className="text-sm text-charcoal">No upcoming bookings.</p>
+          <p className="text-xs text-taupe mt-1">
+            Confirmed sessions will appear here with the nanny's contact info.
+          </p>
+        </div>
+      ) : (
+        <ul className="flex flex-col gap-3">
+          {bookings.map((b) => (
+            <li key={b.id}>
+              <article className="bg-white border border-cream-dark p-4 flex flex-col gap-2.5">
+                <div>
+                  <h3 className="text-base font-heading font-bold text-charcoal">
+                    {b.nanny.full_name}
+                  </h3>
+                  <div className="text-xs text-taupe mt-0.5">
+                    {new Date(b.slot.starts_at).toLocaleString([], {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
+                  </div>
+                </div>
+                {phones[b.nanny.id] && (
+                  <div className="flex gap-2">
+                    <a
+                      href={`tel:${phones[b.nanny.id]}`}
+                      className="flex-1 text-center text-sm font-medium bg-sage text-white py-2"
+                    >
+                      Call
+                    </a>
+                    <a
+                      href={`sms:${phones[b.nanny.id]}`}
+                      className="flex-1 text-center text-sm font-medium bg-white border border-sage text-sage-dark py-2"
+                    >
+                      Text
+                    </a>
+                  </div>
+                )}
+                <CancelButton booking={b} />
+              </article>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
