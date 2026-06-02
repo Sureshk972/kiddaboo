@@ -4,6 +4,7 @@ import { Elements, CardElement, useStripe, useElements } from "@stripe/react-str
 import { loadStripe } from "@stripe/stripe-js";
 import { supabase } from "../lib/supabase";
 import Button from "../components/ui/Button";
+import { formatProfileName } from "../lib/profileName";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
@@ -71,13 +72,13 @@ function BookForm({ slot }) {
           <span className="text-sage-dark">${(total / 100).toFixed(2)}</span>
         </div>
         <p className="text-[11px] text-taupe mt-2">
-          Card is authorized now and charged when {slot.nanny.full_name} accepts.
+          Card is authorized now and charged when {formatProfileName(slot.nanny)} accepts.
         </p>
       </div>
 
       <label className="flex flex-col gap-2">
         <span className="text-sm font-medium text-charcoal">
-          Note to {slot.nanny.full_name}
+          Note to {formatProfileName(slot.nanny)}
         </span>
         <textarea
           value={note}
@@ -115,7 +116,7 @@ export default function Book() {
     (async () => {
       const { data } = await supabase
         .from("nanny_slots")
-        .select("*, nanny:profiles!nanny_slots_nanny_id_fkey(id, full_name, bio, avatar_url)")
+        .select("*, nanny:profiles!nanny_slots_nanny_id_fkey(id, first_name, last_name, bio, photo_url)")
         .eq("id", slotId)
         .single();
       setSlot(data);
@@ -139,7 +140,7 @@ export default function Book() {
           </Link>
           <header className="mb-5">
             <h1 className="text-2xl font-heading font-bold text-sage-dark tracking-tight">
-              Book {slot.nanny.full_name}
+              Book {formatProfileName(slot.nanny)}
             </h1>
             <div className="text-sm text-taupe mt-1">
               {new Date(slot.starts_at).toLocaleString([], {

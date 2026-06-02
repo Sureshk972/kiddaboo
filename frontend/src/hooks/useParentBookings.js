@@ -13,7 +13,7 @@ export function useParentBookings(statuses) {
     (async () => {
       const { data } = await supabase
         .from("bookings")
-        .select("*, slot:nanny_slots(starts_at, ends_at), nanny:profiles!bookings_nanny_id_fkey(id, full_name, avatar_url)")
+        .select("*, slot:nanny_slots(starts_at, ends_at), nanny:profiles!bookings_nanny_id_fkey(id, first_name, last_name, photo_url)")
         .eq("parent_id", user.id)
         .in("status", statuses)
         .order("requested_at", { ascending: false });

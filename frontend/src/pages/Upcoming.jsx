@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParentBookings } from "../hooks/useParentBookings";
 import { supabase } from "../lib/supabase";
+import { formatProfileName } from "../lib/profileName";
 
 function CancelButton({ booking }) {
   const [confirming, setConfirming] = useState(false);
@@ -105,7 +106,7 @@ export default function Upcoming() {
               <article className="bg-white border border-cream-dark p-4 flex flex-col gap-2.5">
                 <div>
                   <h3 className="text-base font-heading font-bold text-charcoal">
-                    {b.nanny.full_name}
+                    {formatProfileName(b.nanny)}
                   </h3>
                   <div className="text-xs text-taupe mt-0.5">
                     {new Date(b.slot.starts_at).toLocaleString([], {

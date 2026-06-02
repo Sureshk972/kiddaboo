@@ -15,7 +15,7 @@ export function useNannyInbox() {
     (async () => {
       const { data } = await supabase
         .from("bookings")
-        .select("*, slot:nanny_slots(starts_at, ends_at), parent:profiles!bookings_parent_id_fkey(id, full_name)")
+        .select("*, slot:nanny_slots(starts_at, ends_at), parent:profiles!bookings_parent_id_fkey(id, first_name, last_name)")
         .eq("nanny_id", user.id)
         .in("status", ["pending", "confirmed", "completed"]);
       if (cancelled) return;

@@ -11,7 +11,7 @@ export function useNannyProfile(id) {
     let cancelled = false;
     (async () => {
       const [{ data: p }, { data: r }] = await Promise.all([
-        supabase.from("profiles").select("id, full_name, avatar_url, bio, verified_at").eq("id", id).single(),
+        supabase.from("profiles").select("id, first_name, last_name, photo_url, bio, verified_at").eq("id", id).single(),
         supabase.from("ratings").select("score, text, created_at").eq("ratee_id", id).eq("direction", "parent_to_nanny").order("created_at", { ascending: false }),
       ]);
       if (cancelled) return;

@@ -1,4 +1,5 @@
 import { useParentBookings } from "../hooks/useParentBookings";
+import { formatProfileName } from "../lib/profileName";
 
 export default function Requests() {
   const { bookings, loading } = useParentBookings(["pending", "pending_payment_retry"]);
@@ -25,7 +26,7 @@ export default function Requests() {
               <article className="bg-white border border-cream-dark p-4 flex flex-col gap-1.5">
                 <div className="flex items-baseline justify-between gap-2">
                   <h3 className="text-base font-heading font-bold text-charcoal truncate">
-                    {b.nanny.full_name}
+                    {formatProfileName(b.nanny)}
                   </h3>
                   <span className="text-sm font-bold text-sage-dark whitespace-nowrap">
                     ${(b.rate_cents / 100).toFixed(0)}

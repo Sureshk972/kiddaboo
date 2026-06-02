@@ -88,7 +88,7 @@ export default function NannyDashboard() {
         {past.map(b => (
           <article key={b.id}>
             <div>{new Date(b.slot.starts_at).toLocaleString()}</div>
-            <div>with {b.parent?.full_name ?? "(parent)"}</div>
+            <div>with {b.parent ? `${b.parent.first_name ?? ""} ${b.parent.last_name ?? ""}`.trim() || "(parent)" : "(parent)"}</div>
             <div>Status: {b.status}</div>
             {b.status === "confirmed" && (
               <button onClick={async () => {

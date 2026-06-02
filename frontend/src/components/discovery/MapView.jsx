@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { Link } from "react-router-dom";
+import { formatProfileName } from "../../lib/profileName";
 
 // Center of the contiguous US — only used if geolocation is denied/unavailable
 // AND no nanny in the current result set has coordinates.
@@ -60,7 +61,7 @@ export default function MapView({ slots }) {
           >
             <Popup>
               <Link to={`/book/${s.id}`} className="text-sage-dark font-medium">
-                {s.nanny.full_name} — ${(s.rate_cents / 100).toFixed(0)}/hr
+                {formatProfileName(s.nanny)} — ${(s.rate_cents / 100).toFixed(0)}/hr
               </Link>
             </Popup>
           </Marker>

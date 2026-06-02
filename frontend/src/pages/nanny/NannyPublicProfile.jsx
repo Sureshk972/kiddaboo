@@ -1,5 +1,6 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useNannyProfile } from "../../hooks/useNannyProfile";
+import { formatProfileName, profileInitial } from "../../lib/profileName";
 
 function StarRow({ score }) {
   const full = Math.round(score);
@@ -34,7 +35,8 @@ export default function NannyPublicProfile() {
     );
   }
 
-  const initial = (profile.full_name || "?").charAt(0).toUpperCase();
+  const initial = profileInitial(profile);
+  const displayName = formatProfileName(profile);
 
   return (
     <div className="min-h-screen bg-cream">
@@ -49,9 +51,9 @@ export default function NannyPublicProfile() {
 
         <header className="bg-white border border-cream-dark p-5 flex flex-col items-center text-center">
           <div className="w-20 h-20 bg-sage-light flex items-center justify-center mb-3 overflow-hidden">
-            {profile.avatar_url ? (
+            {profile.photo_url ? (
               <img
-                src={profile.avatar_url}
+                src={profile.photo_url}
                 alt=""
                 className="w-full h-full object-cover"
               />
@@ -62,7 +64,7 @@ export default function NannyPublicProfile() {
             )}
           </div>
           <h1 className="text-xl font-heading font-bold text-charcoal">
-            {profile.full_name}
+            {displayName}
           </h1>
           <div className="flex items-center gap-2 mt-1.5">
             {profile.verified_at && (

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useParentBookings } from "../hooks/useParentBookings";
 import RatingSheet from "../components/booking/RatingSheet";
+import { formatProfileName } from "../lib/profileName";
 
 const STATUS_LABEL = {
   completed: "Completed",
@@ -87,7 +88,7 @@ export default function History() {
               <article className="bg-white border border-cream-dark p-4 flex flex-col gap-2">
                 <div className="flex items-baseline justify-between gap-2">
                   <h3 className="text-base font-heading font-bold text-charcoal truncate">
-                    {b.nanny.full_name}
+                    {formatProfileName(b.nanny)}
                   </h3>
                   <span
                     className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 whitespace-nowrap ${STATUS_TONE[b.status] || "bg-cream-dark text-taupe-dark"}`}

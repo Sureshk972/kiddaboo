@@ -13,7 +13,7 @@ export default function Discover() {
     maxRateCents: null,
   });
   const [view, setView] = useState("list");
-  const { slots, loading, debug } = useOpenSlots(filters);
+  const { slots, loading } = useOpenSlots(filters);
 
   const fmtForInput = (d) => {
     const tzOffset = d.getTimezoneOffset() * 60000;
@@ -30,18 +30,6 @@ export default function Discover() {
       <h1 className="text-2xl font-heading font-bold tracking-tight text-sage-dark">
         Find a nanny
       </h1>
-
-      {debug && (
-        <pre className="bg-white border border-cream-dark p-3 text-[10px] text-charcoal whitespace-pre-wrap break-all">
-{`DEBUG
-authed:    ${debug.authed}
-userId:    ${debug.userId || "—"}
-bareSlots: ${debug.bareCount}${debug.bareErr ? " err=" + debug.bareErr : ""}
-embedRows: ${debug.embedRows}${debug.embedErr ? " err=" + debug.embedErr : ""}
-from:      ${debug.from}
-to:        ${debug.to}`}
-        </pre>
-      )}
 
       <FilterSheet
         initial={{

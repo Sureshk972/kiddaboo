@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
 
   const { data: parent } = await supabase
     .from("profiles")
-    .select("id, full_name, stripe_customer_id")
+    .select("id, first_name, last_name, stripe_customer_id")
     .eq("id", user.id)
     .single();
 
