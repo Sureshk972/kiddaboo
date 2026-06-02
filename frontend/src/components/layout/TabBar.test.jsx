@@ -4,29 +4,34 @@ import TabBar from "./TabBar";
 import { vi } from "vitest";
 
 vi.mock("../../context/AuthContext");
+vi.mock("../../hooks/useAccountType");
 import { useAuth } from "../../context/AuthContext";
+import { useAccountType } from "../../hooks/useAccountType";
 
-const setAuth = (accountType) =>
-  useAuth.mockReturnValue({
-    signOut: vi.fn(),
-    isHost: accountType === "organizer",
+const setAuth = (accountType) => {
+  useAuth.mockReturnValue({ signOut: vi.fn() });
+  useAccountType.mockReturnValue({
     accountType,
+    isParent: accountType === "parent",
+    isNanny: accountType === "nanny",
+    loading: false,
   });
+};
 
-test("parent sees Browse / My Groups / Messages / Profile", () => {
+test("parent sees Discover / Requests / Upcoming / Profile", () => {
   setAuth("parent");
   render(<MemoryRouter><TabBar /></MemoryRouter>);
-  expect(screen.getByLabelText("Browse")).toBeInTheDocument();
-  expect(screen.getByLabelText("My Groups")).toBeInTheDocument();
-  expect(screen.queryByLabelText("My Group")).not.toBeInTheDocument();
+  expect(screen.getByLabelText("Discover")).toBeInTheDocument();
+  expect(screen.getByLabelText("Requests")).toBeInTheDocument();
+  expect(screen.getByLabelText("Upcoming")).toBeInTheDocument();
+  expect(screen.queryByLabelText("Inbox")).not.toBeInTheDocument();
 });
 
-test("organizer sees My Group / Members / Messages / Profile", () => {
-  setAuth("organizer");
+test("nanny sees Inbox / Availability / Earnings / Profile", () => {
+  setAuth("nanny");
   render(<MemoryRouter><TabBar /></MemoryRouter>);
-  expect(screen.getByLabelText("My Group")).toBeInTheDocument();
-  expect(screen.getByLabelText("Members")).toBeInTheDocument();
-  expect(screen.queryByLabelText("Browse")).not.toBeInTheDocument();
-  expect(screen.queryByLabelText("Dashboard")).not.toBeInTheDocument();
-  expect(screen.queryByLabelText("Insights")).not.toBeInTheDocument();
+  expect(screen.getByLabelText("Inbox")).toBeInTheDocument();
+  expect(screen.getByLabelText("Availability")).toBeInTheDocument();
+  expect(screen.getByLabelText("Earnings")).toBeInTheDocument();
+  expect(screen.queryByLabelText("Discover")).not.toBeInTheDocument();
 });
