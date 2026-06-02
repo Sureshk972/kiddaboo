@@ -7,7 +7,6 @@ import { NotificationsProvider } from "./context/NotificationsContext";
 import AppLayout from "./components/layout/AppLayout";
 import Welcome from "./pages/Welcome";
 import RequireAuth from "./components/auth/RequireAuth";
-import RequireAdmin from "./components/auth/RequireAdmin";
 import OnboardingOnly from "./components/auth/OnboardingOnly";
 import ParentLayout from "./layouts/ParentLayout";
 import NannyLayout from "./layouts/NannyLayout";
@@ -21,7 +20,6 @@ const PhoneVerification = lazy(() => import("./pages/PhoneVerification"));
 const CreateProfile = lazy(() => import("./pages/CreateProfile"));
 const MyProfile = lazy(() => import("./pages/MyProfile"));
 const EditProfile = lazy(() => import("./pages/EditProfile"));
-const Admin = lazy(() => import("./pages/Admin"));
 const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
@@ -98,9 +96,6 @@ export default function App() {
               {/* Detail pages — requires auth, no tab bar */}
               <Route path="/edit-profile" element={<RequireAuth><EditProfile /></RequireAuth>} />
               <Route path="/notifications" element={<RequireAuth><NotificationSettings /></RequireAuth>} />
-
-              {/* Admin — requires auth + admin role, no tab bar */}
-              <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
 
               {/* 404 catch-all */}
               <Route path="*" element={<NotFound />} />
