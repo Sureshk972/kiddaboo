@@ -18,9 +18,21 @@ export function useOpenSlots({ from, to, maxRateCents = null }) {
         .lte("ends_at", to.toISOString())
         .order("starts_at", { ascending: true });
       if (maxRateCents != null) q = q.lte("rate_cents", maxRateCents);
+      const { data: sessionData } = await supabase.auth.getSession();
       const { data, error } = await q;
       if (cancelled) return;
-      if (!error) setSlots(data || []);
+      if (error) {
+        console.error("[useOpenSlots] query failed", error);
+      } else {
+        console.log("[useOpenSlots] rows", data?.length ?? 0, {
+          authed: !!sessionData?.session,
+          userId: sessionData?.session?.user?.id ?? null,
+          from: from.toISOString(),
+          to: to.toISOString(),
+          maxRateCents,
+        });
+      }
+      setSlots(error ? [] : (data || []));
       setLoading(false);
     })();
     return () => { cancelled = true; };
