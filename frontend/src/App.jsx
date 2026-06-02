@@ -3,15 +3,13 @@ import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import LegalFooter from "./components/LegalFooter";
 import { AuthProvider } from "./context/AuthContext";
 import { OnboardingProvider } from "./context/OnboardingContext";
-import { HostProvider } from "./context/HostContext";
 import { NotificationsProvider } from "./context/NotificationsContext";
 import AppLayout from "./components/layout/AppLayout";
 import Welcome from "./pages/Welcome";
 import RequireAuth from "./components/auth/RequireAuth";
-import RequireAdmin from "./components/auth/RequireAdmin";
 import OnboardingOnly from "./components/auth/OnboardingOnly";
 import ParentLayout from "./layouts/ParentLayout";
-import OrganizerLayout from "./layouts/OrganizerLayout";
+import NannyLayout from "./layouts/NannyLayout";
 import RequireRole from "./components/auth/RequireRole";
 import UpdateBadge from "./components/UpdateBadge";
 
@@ -20,39 +18,33 @@ import UpdateBadge from "./components/UpdateBadge";
 // rendered immediately.
 const PhoneVerification = lazy(() => import("./pages/PhoneVerification"));
 const CreateProfile = lazy(() => import("./pages/CreateProfile"));
-const AddChildren = lazy(() => import("./pages/AddChildren"));
-const BrowseSuccess = lazy(() => import("./pages/BrowseSuccess"));
-const PlaygroupDetail = lazy(() => import("./pages/PlaygroupDetail"));
-const Browse = lazy(() => import("./pages/Browse"));
-const MyGroups = lazy(() => import("./pages/MyGroups"));
-const Messages = lazy(() => import("./pages/Messages"));
 const MyProfile = lazy(() => import("./pages/MyProfile"));
 const EditProfile = lazy(() => import("./pages/EditProfile"));
-const CreatePlaygroup = lazy(() => import("./pages/host/CreatePlaygroup"));
-const ScreeningQuestions = lazy(() => import("./pages/host/ScreeningQuestions"));
-const EnvironmentSetup = lazy(() => import("./pages/host/EnvironmentSetup"));
-const HostPhotos = lazy(() => import("./pages/host/HostPhotos"));
-const HostSuccess = lazy(() => import("./pages/host/HostSuccess"));
-const HostDashboard = lazy(() => import("./pages/host/HostDashboard"));
-const HostInsights = lazy(() => import("./pages/host/HostInsights"));
-const EditPlaygroup = lazy(() => import("./pages/host/EditPlaygroup"));
-const Admin = lazy(() => import("./pages/Admin"));
 const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
-const GroupChat = lazy(() => import("./pages/GroupChat"));
-const SessionChat = lazy(() => import("./pages/SessionChat"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
-const Premium = lazy(() => import("./pages/Premium"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ChooseRole = lazy(() => import("./pages/onboarding/ChooseRole"));
 const PhoneVerify = lazy(() => import("./pages/onboarding/PhoneVerify"));
 
+// Parent pages
+const Discover = lazy(() => import("./pages/Discover"));
+const Requests = lazy(() => import("./pages/Requests"));
+const Upcoming = lazy(() => import("./pages/Upcoming"));
+const History = lazy(() => import("./pages/History"));
+const Book = lazy(() => import("./pages/Book"));
+const NannyPublicProfile = lazy(() => import("./pages/nanny/NannyPublicProfile"));
+
+// Nanny pages
+const NannyDashboard = lazy(() => import("./pages/nanny/NannyDashboard"));
+const NannyAvailability = lazy(() => import("./pages/nanny/NannyAvailability"));
+const NannyEarnings = lazy(() => import("./pages/nanny/NannyEarnings"));
+
 // Shell for routes that don't use a TabBar layout. Renders the
 // page then a static legal footer below it, so the DBA notice is
 // reachable on every standalone page (auth, onboarding, details,
-// premium, etc.). Layouts handle their own footer placement above
-// the TabBar.
+// etc.). Layouts handle their own footer placement above the TabBar.
 function StandaloneShell() {
   return (
     <div className="flex flex-col min-h-screen bg-cream">
@@ -77,8 +69,7 @@ export default function App() {
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
       <OnboardingProvider>
-        <HostProvider>
-          <NotificationsProvider>
+        <NotificationsProvider>
           <UpdateBadge />
           <Suspense fallback={<RouteFallback />}>
           <Routes>
@@ -89,7 +80,7 @@ export default function App() {
             <Route element={<StandaloneShell />}>
               {/* Public routes — no auth required */}
               <Route path="/choose-role" element={<ChooseRole />} />
-              <Route path="/" element={<Welcome />} />
+              <Route path="/welcome" element={<Welcome />} />
               <Route path="/verify" element={<PhoneVerification />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/terms" element={<TermsOfService />} />
@@ -101,27 +92,10 @@ export default function App() {
                   profile / delete all children). */}
               <Route path="/profile" element={<OnboardingOnly><CreateProfile /></OnboardingOnly>} />
               <Route path="/verify-phone" element={<RequireAuth><PhoneVerify /></RequireAuth>} />
-              <Route path="/children" element={<OnboardingOnly><AddChildren /></OnboardingOnly>} />
-              <Route path="/success" element={<RequireAuth><BrowseSuccess /></RequireAuth>} />
-
-              {/* Host onboarding — requires auth, no tab bar */}
-              <Route path="/host/create" element={<RequireAuth><CreatePlaygroup /></RequireAuth>} />
-              <Route path="/host/screening" element={<RequireAuth><ScreeningQuestions /></RequireAuth>} />
-              <Route path="/host/environment" element={<RequireAuth><EnvironmentSetup /></RequireAuth>} />
-              <Route path="/host/photos" element={<RequireAuth><HostPhotos /></RequireAuth>} />
-              <Route path="/host/success" element={<RequireAuth><HostSuccess /></RequireAuth>} />
 
               {/* Detail pages — requires auth, no tab bar */}
-              <Route path="/playgroup/:id" element={<RequireAuth><PlaygroupDetail /></RequireAuth>} />
-              <Route path="/messages/:playgroupId" element={<RequireAuth><GroupChat /></RequireAuth>} />
-              <Route path="/messages/session/:sessionId" element={<RequireAuth><SessionChat /></RequireAuth>} />
               <Route path="/edit-profile" element={<RequireAuth><EditProfile /></RequireAuth>} />
               <Route path="/notifications" element={<RequireAuth><NotificationSettings /></RequireAuth>} />
-              <Route path="/host/edit/:id" element={<RequireAuth><EditPlaygroup /></RequireAuth>} />
-              <Route path="/premium" element={<RequireAuth><Premium /></RequireAuth>} />
-
-              {/* Admin — requires auth + admin role, no tab bar */}
-              <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
 
               {/* 404 catch-all */}
               <Route path="*" element={<NotFound />} />
@@ -129,16 +103,88 @@ export default function App() {
 
             {/* App pages — requires auth, with tab bar. Layouts embed
                 LegalFooter themselves above the TabBar. */}
-            <Route path="/browse" element={<RequireAuth><RequireRole role="parent"><ParentLayout><Browse /></ParentLayout></RequireRole></RequireAuth>} />
-            <Route path="/my-groups" element={<RequireAuth><RequireRole role="parent"><ParentLayout><MyGroups /></ParentLayout></RequireRole></RequireAuth>} />
-            <Route path="/messages" element={<RequireAuth><AppLayout><Messages /></AppLayout></RequireAuth>} />
             <Route path="/my-profile" element={<RequireAuth><AppLayout><MyProfile /></AppLayout></RequireAuth>} />
-            <Route path="/host/dashboard" element={<RequireAuth><RequireRole role="organizer"><OrganizerLayout><HostDashboard /></OrganizerLayout></RequireRole></RequireAuth>} />
-            <Route path="/host/insights" element={<RequireAuth><RequireRole role="organizer"><OrganizerLayout><HostInsights /></OrganizerLayout></RequireRole></RequireAuth>} />
+
+            {/* Parent tab routes — requires parent role + ParentLayout */}
+            <Route
+              path="/"
+              element={
+                <RequireAuth>
+                  <RequireRole role="parent">
+                    <ParentLayout><Discover /></ParentLayout>
+                  </RequireRole>
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/requests"
+              element={
+                <RequireAuth>
+                  <RequireRole role="parent">
+                    <ParentLayout><Requests /></ParentLayout>
+                  </RequireRole>
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/upcoming"
+              element={
+                <RequireAuth>
+                  <RequireRole role="parent">
+                    <ParentLayout><Upcoming /></ParentLayout>
+                  </RequireRole>
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/history"
+              element={
+                <RequireAuth>
+                  <RequireRole role="parent">
+                    <ParentLayout><History /></ParentLayout>
+                  </RequireRole>
+                </RequireAuth>
+              }
+            />
+
+            {/* Parent detail routes — requires auth, no layout */}
+            <Route path="/book/:slotId" element={<RequireAuth><Book /></RequireAuth>} />
+            <Route path="/nanny/:id" element={<RequireAuth><NannyPublicProfile /></RequireAuth>} />
+
+            {/* Nanny tab routes — requires nanny role + NannyLayout */}
+            <Route
+              path="/nanny/dashboard"
+              element={
+                <RequireAuth>
+                  <RequireRole role="nanny">
+                    <NannyLayout><NannyDashboard /></NannyLayout>
+                  </RequireRole>
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/nanny/availability"
+              element={
+                <RequireAuth>
+                  <RequireRole role="nanny">
+                    <NannyLayout><NannyAvailability /></NannyLayout>
+                  </RequireRole>
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/nanny/earnings"
+              element={
+                <RequireAuth>
+                  <RequireRole role="nanny">
+                    <NannyLayout><NannyEarnings /></NannyLayout>
+                  </RequireRole>
+                </RequireAuth>
+              }
+            />
           </Routes>
           </Suspense>
-          </NotificationsProvider>
-        </HostProvider>
+        </NotificationsProvider>
       </OnboardingProvider>
       </AuthProvider>
     </BrowserRouter>

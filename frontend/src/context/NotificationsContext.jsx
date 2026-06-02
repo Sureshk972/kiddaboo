@@ -1,12 +1,8 @@
 import { createContext, useContext } from "react";
-import { useAuth } from "./AuthContext";
-import useNotifications from "../hooks/useNotifications";
 
-// Single subscriber for unread/pending counts. Wrapped once around the
-// auth'd app so OrganizerLayout, ParentLayout, and AppLayout all read
-// from the same realtime channel — multiple subscribers were causing
-// the host-side TabBar to show no badges (it just rendered TabBar
-// without the AppLayout wrapper that previously held the hook).
+// Stub context — playgroup-era badge counts (unread messages, join
+// requests) are removed. Badge wiring for the nanny model will be
+// added when the Nanny dashboard inbox is built out.
 const NotificationsContext = createContext({
   unreadMessages: 0,
   pendingRequests: 0,
@@ -14,10 +10,8 @@ const NotificationsContext = createContext({
 });
 
 export function NotificationsProvider({ children }) {
-  const { user } = useAuth();
-  const value = useNotifications(user?.id);
   return (
-    <NotificationsContext.Provider value={value}>
+    <NotificationsContext.Provider value={{ unreadMessages: 0, pendingRequests: 0, refetch: () => {} }}>
       {children}
     </NotificationsContext.Provider>
   );

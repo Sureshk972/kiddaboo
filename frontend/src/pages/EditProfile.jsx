@@ -1,35 +1,18 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Input from "../components/ui/Input";
 import TagSelector from "../components/ui/TagSelector";
 import Button from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
-import { supabase } from "../lib/supabase";
 import { uploadProfilePhoto } from "../lib/storage";
 import PhotoCropModal from "../components/ui/PhotoCropModal";
-import { PHILOSOPHY_TAGS, AGE_RANGES, PERSONALITY_TAGS } from "../data/mockData";
+import { PHILOSOPHY_TAGS } from "../data/mockData";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
-import { invalidateChildCount } from "../hooks/useChildCount";
-
-// Shallow equality on the child fields that can be edited from this screen.
-// Used by handleSave to decide which rows actually need an UPDATE so we
-// don't issue pointless writes.
-function childFieldsDiffer(a, b) {
-  if (a.name !== b.name) return true;
-  if (a.ageRange !== b.ageRange) return true;
-  const at = a.personalityTags || [];
-  const bt = b.personalityTags || [];
-  if (at.length !== bt.length) return true;
-  for (let i = 0; i < at.length; i++) {
-    if (at[i] !== bt[i]) return true;
-  }
-  return false;
-}
 
 export default function EditProfile() {
-  useDocumentTitle("Edit Profile"); // #50
+  useDocumentTitle("Edit Profile");
   const navigate = useNavigate();
-  const { user, profile, updateProfile, isHost } = useAuth();
+  const { user, profile, updateProfile } = useAuth();
 
   // Profile fields
   const [firstName, setFirstName] = useState("");
@@ -42,17 +25,6 @@ export default function EditProfile() {
   // Tracks an explicit "Remove photo" tap so handleSave clears
   // photo_url even though no new file was uploaded.
   const [photoCleared, setPhotoCleared] = useState(false);
-
-  // Children
-  const [children, setChildren] = useState([
-    { id: crypto.randomUUID(), name: "", ageRange: "", personalityTags: [], isExisting: false },
-  ]);
-  const [loadingChildren, setLoadingChildren] = useState(true);
-
-  // Snapshot of children as last loaded from the DB. Used by handleSave to
-  // compute a diff (added / removed / changed) instead of the old
-  // destructive wipe-and-reinsert pattern (see #29). Keyed by DB id.
-  const initialChildrenRef = useRef(new Map());
 
   // Save state
   const [saving, setSaving] = useState(false);
@@ -90,110 +62,10 @@ export default function EditProfile() {
     setPhotoCleared(true);
   };
 
-  // Fetch children
-  useEffect(() => {
-    if (!user) {
-      setLoadingChildren(false);
-      return;
-    }
-    const fetchChildren = async () => {
-      const { data } = await supabase
-        .from("children")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: true });
-
-      if (data && data.length > 0) {
-        const loaded = data.map((c) => ({
-          id: c.id,
-          name: c.name || "",
-          ageRange: c.age_range || "",
-          personalityTags: c.personality_tags || [],
-          isExisting: true,
-        }));
-        setChildren(loaded);
-        // Snapshot each row (keyed by DB id) for later diffing. Clone the
-        // personalityTags array so later edits to state don't mutate the
-        // snapshot.
-        const snap = new Map();
-        for (const c of loaded) {
-          snap.set(c.id, {
-            name: c.name,
-            ageRange: c.ageRange,
-            personalityTags: [...c.personalityTags],
-          });
-        }
-        initialChildrenRef.current = snap;
-      } else {
-        setChildren([
-          { id: crypto.randomUUID(), name: "", ageRange: "", personalityTags: [], isExisting: false },
-        ]);
-        initialChildrenRef.current = new Map();
-      }
-      setLoadingChildren(false);
-      // Deep-link support: /edit-profile#children scrolls straight to
-      // the children section. MyProfile's "Manage Children" entry
-      // uses this so the two menu items don't both navigate to
-      // top-of-page (#31). Scrolling lives here because (a) this is
-      // the moment we know the children list has its real height and
-      // (b) running it off a useLocation-dependent effect proved
-      // unreliable — the effect wouldn't fire in some client-side
-      // navigation paths. Instant (not smooth) scroll because smooth
-      // scrollIntoView no-ops in some renderer contexts. We defer
-      // one tick so React has committed the post-load DOM before we
-      // try to measure.
-      if (window.location.hash === "#children") {
-        setTimeout(() => {
-          const el = document.getElementById("children");
-          if (el) el.scrollIntoView({ behavior: "auto", block: "start" });
-        }, 50);
-      }
-    };
-    fetchChildren();
-  }, [user]);
-
-  const addChild = () => {
-    setChildren((prev) => [
-      ...prev,
-      { id: crypto.randomUUID(), name: "", ageRange: "", personalityTags: [], isExisting: false },
-    ]);
-  };
-
-  const removeChild = (id) => {
-    setChildren((prev) => prev.filter((c) => c.id !== id));
-  };
-
-  const updateChild = (id, key, value) => {
-    setChildren((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, [key]: value } : c))
-    );
-  };
-
   const handleSave = async () => {
     if (!firstName.trim()) {
       setError("First name is required");
       return;
-    }
-
-    // Guard: any child row in state with a blank name is ambiguous. The
-    // supported way to delete a child is the Remove button on the card,
-    // not clearing the Name field. Refuse to save until every visible
-    // child has a name — otherwise the diff below would either silently
-    // drop an existing child (data loss, #29) or try to insert a row
-    // that violates the `name NOT NULL` constraint.
-    //
-    // Hosts skip this entirely: the children section isn't rendered for
-    // them and the children write pipeline below is also gated, so the
-    // default blank row in initial state is meaningless and shouldn't
-    // block their save.
-    if (!isHost) {
-      const blankChild = children.find((c) => !c.name.trim());
-      if (blankChild) {
-        setError(
-          "Every child needs a name. Use Remove to delete a child, or fill in the name field."
-        );
-        return;
-      }
     }
 
     const trimmedBio = bio.trim();
@@ -248,120 +120,6 @@ export default function EditProfile() {
         return;
       }
 
-      // 3. Reconcile children via diff instead of wipe-and-reinsert.
-      //
-      // Previously this block ran a DELETE on every row keyed to user_id
-      // and then INSERTed the current state. That was non-atomic — a
-      // failure between the delete and the insert wiped every child row —
-      // and it churned DB ids on every save (see #29). Now we compute a
-      // diff against the snapshot captured at load time and only write
-      // what actually changed.
-      //
-      // Hosts skip this entirely — they don't have a children section
-      // in the UI and shouldn't be writing to the children table from
-      // here. The default blank row in initial state would otherwise
-      // be inserted as their child, which is wrong.
-      if (isHost) {
-        setSaving(false);
-        if (photoUploadFailed) {
-          setError(
-            "Profile saved — but your new photo couldn't be uploaded. Please try again."
-          );
-          return;
-        }
-        setSaved(true);
-        setTimeout(() => navigate("/my-profile"), 800);
-        return;
-      }
-
-      const initialSnap = initialChildrenRef.current;
-
-      // Rows in state that carry an isExisting flag AND appear in the
-      // initial snapshot are existing DB rows. Rows with !isExisting are
-      // newly added via "Add another child". Rows that were in the
-      // snapshot but not in state have been removed via the Remove
-      // button.
-      const stateExistingIds = new Set(
-        children.filter((c) => c.isExisting).map((c) => c.id)
-      );
-
-      const toDeleteIds = [];
-      for (const id of initialSnap.keys()) {
-        if (!stateExistingIds.has(id)) toDeleteIds.push(id);
-      }
-
-      const toInsertRows = children
-        .filter((c) => !c.isExisting)
-        .map((c) => ({
-          user_id: user.id,
-          name: c.name.trim(),
-          age_range: c.ageRange || null,
-          personality_tags: c.personalityTags,
-        }));
-
-      const toUpdate = children
-        .filter((c) => c.isExisting)
-        .map((c) => {
-          const prev = initialSnap.get(c.id);
-          const current = {
-            name: c.name.trim(),
-            ageRange: c.ageRange || "",
-            personalityTags: c.personalityTags,
-          };
-          if (!prev || childFieldsDiffer(prev, current)) {
-            return { id: c.id, current };
-          }
-          return null;
-        })
-        .filter(Boolean);
-
-      // Execute in an order that minimises blast radius on partial
-      // failure: inserts first (purely additive), updates next
-      // (idempotent), deletes last (destructive).
-      if (toInsertRows.length > 0) {
-        const { error: insertError } = await supabase
-          .from("children")
-          .insert(toInsertRows);
-        if (insertError) {
-          setError("Profile saved but new children could not be added.");
-          setSaving(false);
-          return;
-        }
-      }
-
-      for (const { id, current } of toUpdate) {
-        const { error: updateError } = await supabase
-          .from("children")
-          .update({
-            name: current.name,
-            age_range: current.ageRange || null,
-            personality_tags: current.personalityTags,
-          })
-          .eq("id", id)
-          .eq("user_id", user.id); // defense in depth; RLS is the real gate
-        if (updateError) {
-          setError("Profile saved but some children could not be updated.");
-          setSaving(false);
-          return;
-        }
-      }
-
-      if (toDeleteIds.length > 0) {
-        const { error: deleteError } = await supabase
-          .from("children")
-          .delete()
-          .in("id", toDeleteIds)
-          .eq("user_id", user.id); // defense in depth
-        if (deleteError) {
-          setError("Profile saved but some children could not be removed.");
-          setSaving(false);
-          return;
-        }
-      }
-
-      // Children may have been added/removed; let SessionCard's RSVP
-      // gate re-fetch the count next time it mounts.
-      invalidateChildCount(user.id);
       setSaving(false);
       if (photoUploadFailed) {
         setError(
@@ -377,14 +135,6 @@ export default function EditProfile() {
       setSaving(false);
     }
   };
-
-  if (loadingChildren) {
-    return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-sage border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-cream pb-8">
@@ -498,84 +248,6 @@ export default function EditProfile() {
           onChange={setPhilosophyTags}
           maxSelections={4}
         />
-
-        {/* Divider — only when the children section will render below */}
-        {!isHost && <div className="h-px bg-cream-dark" />}
-
-        {/* Children section — hidden for hosts. Children belong to a
-            parent's profile only; hosts shouldn't be entering kids on
-            an organizer account. The MyProfile menu already hides the
-            "Manage Children" link for hosts; this closes the loophole
-            of navigating directly to /edit-profile#children. */}
-        {!isHost && (
-        <div id="children" style={{ scrollMarginTop: "80px" }}>
-          <h2 className="text-lg font-bold tracking-tight mb-1" style={{ fontFamily: "'Inter', sans-serif", color: '#8B3FE0' }}>
-            Your little ones
-          </h2>
-          <p className="text-sm text-taupe mb-4">
-            Update your children's info for better playgroup matching.
-          </p>
-
-          <div className="flex flex-col gap-4">
-            {children.map((child, index) => (
-              <div
-                key={child.id}
-                className="bg-white rounded-2xl p-5 border border-cream-dark"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm font-medium text-sage">
-                    Child {index + 1}
-                  </span>
-                  {children.length > 1 && (
-                    <button
-                      onClick={() => removeChild(child.id)}
-                      className="text-xs text-terracotta hover:text-terracotta/80 cursor-pointer bg-transparent border-none transition-colors"
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-4">
-                  <Input
-                    label="Name"
-                    value={child.name}
-                    onChange={(val) => updateChild(child.id, "name", val)}
-                    placeholder="First name"
-                  />
-
-                  <TagSelector
-                    label="Age range"
-                    options={AGE_RANGES}
-                    selected={child.ageRange ? [child.ageRange] : []}
-                    onChange={(tags) =>
-                      updateChild(child.id, "ageRange", tags[tags.length - 1] || "")
-                    }
-                    maxSelections={1}
-                  />
-
-                  <TagSelector
-                    label="Personality"
-                    options={PERSONALITY_TAGS}
-                    selected={child.personalityTags}
-                    onChange={(tags) =>
-                      updateChild(child.id, "personalityTags", tags)
-                    }
-                    maxSelections={3}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <button
-            onClick={addChild}
-            className="w-full mt-3 py-3 rounded-xl border border-dashed border-sage-light text-sm text-sage font-medium cursor-pointer bg-transparent hover:bg-sage-light/20 transition-colors"
-          >
-            + Add another child
-          </button>
-        </div>
-        )}
 
         {/* Error / Success */}
         {error && <p className="text-sm text-red-500">{error}</p>}

@@ -1,26 +1,53 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useSubscription } from "../hooks/useSubscription";
 import { supabase } from "../lib/supabase";
 import usePushNotifications from "../hooks/usePushNotifications";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { useAccountType } from "../hooks/useAccountType";
 
-const NOTIFICATION_TYPES = [
+// Notification types for parents
+const PARENT_NOTIFICATION_TYPES = [
   {
-    key: "messages",
-    label: "New Messages",
-    description: "When someone sends a message in your playgroup",
+    key: "booking_accepted",
+    label: "Booking Accepted",
+    description: "When a Nanny accepts your booking request",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M22 4L12 14.01l-3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
   },
   {
-    key: "join_requests",
-    label: "Join Requests",
-    description: "When a family requests to join your playgroup",
+    key: "booking_cancelled_by_nanny",
+    label: "Nanny Cancelled",
+    description: "When a Nanny cancels your confirmed booking",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
+        <path d="M15 9L9 15M9 9l6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+  {
+    key: "rate_nanny",
+    label: "Rate Your Nanny",
+    description: "A reminder to rate your Nanny after the session",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+      </svg>
+    ),
+  },
+];
+
+// Notification types for nannies
+const NANNY_NOTIFICATION_TYPES = [
+  {
+    key: "new_booking_request",
+    label: "New Booking Request",
+    description: "When a parent requests to book one of your available slots",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
         <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -30,54 +57,20 @@ const NOTIFICATION_TYPES = [
     ),
   },
   {
-    key: "membership_updates",
-    label: "Membership Updates",
-    description: "When your join request is approved or declined",
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M22 4L12 14.01l-3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-  },
-  {
-    key: "sessions",
-    label: "New Sessions",
-    description: "When a new session is scheduled in your playgroup",
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M3 10h18M8 2v4M16 2v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      </svg>
-    ),
-  },
-  {
-    key: "rsvps",
-    label: "Session RSVPs",
-    description: "When families RSVP to your sessions",
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M14 2v6h6M9 15l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-  },
-  {
-    key: "session_reminders",
-    label: "Session Reminders",
-    description: "Reminders 24h and 2h before each session you've RSVP'd to",
-    premium: true,
+    key: "booking_cancelled_by_parent",
+    label: "Parent Cancelled",
+    description: "When a parent cancels a confirmed booking",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
         <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M15 9L9 15M9 9l6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
       </svg>
     ),
   },
   {
-    key: "verifications",
-    label: "Verification Updates",
-    description: "When your host verification request is approved or declined",
+    key: "rate_parent",
+    label: "Rate the Parent",
+    description: "A reminder to rate the parent after the session",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
@@ -85,39 +78,38 @@ const NOTIFICATION_TYPES = [
     ),
   },
   {
-    key: "reviews",
-    label: "Review Reminders",
-    description: "A nudge to leave a review a few hours after a session you attended",
+    key: "payout_sent",
+    label: "Payout Sent",
+    description: "When a payout has been sent to your Stripe account",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M8 10h8M8 13h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <rect x="1" y="4" width="22" height="16" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+        <path d="M1 10h22" stroke="currentColor" strokeWidth="1.5"/>
       </svg>
     ),
   },
 ];
 
-const DEFAULT_PREFS = {
-  messages: true,
-  join_requests: true,
-  membership_updates: true,
-  sessions: true,
-  rsvps: true,
-  session_reminders: true,
-  verifications: true,
-  reviews: true,
+const DEFAULT_PARENT_PREFS = {
+  booking_accepted: true,
+  booking_cancelled_by_nanny: true,
+  rate_nanny: true,
+};
+
+const DEFAULT_NANNY_PREFS = {
+  new_booking_request: true,
+  booking_cancelled_by_parent: true,
+  rate_parent: true,
+  payout_sent: true,
 };
 
 export default function NotificationSettings() {
   useDocumentTitle("Notifications"); // #50
   const navigate = useNavigate();
   const { user } = useAuth();
-  // Premium-gated notifications (e.g. Session Reminders) unlock for
-  // any active premium tier. The previous code used only `isPremium`,
-  // which is joiner-only — host-premium subscribers got locked out of
-  // their own toggles with a misleading "Upgrade to enable" link.
-  const { isPremium: isJoinerPremium, isHostPremium } = useSubscription();
-  const isAnyPremium = isJoinerPremium || isHostPremium;
+  const { isNanny } = useAccountType();
+  const notificationTypes = isNanny ? NANNY_NOTIFICATION_TYPES : PARENT_NOTIFICATION_TYPES;
+  const defaultPrefs = isNanny ? DEFAULT_NANNY_PREFS : DEFAULT_PARENT_PREFS;
   const {
     isSupported,
     permission,
@@ -127,7 +119,7 @@ export default function NotificationSettings() {
     loading: pushLoading,
   } = usePushNotifications(user?.id);
 
-  const [prefs, setPrefs] = useState(DEFAULT_PREFS);
+  const [prefs, setPrefs] = useState(defaultPrefs);
   const [saving, setSaving] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -142,7 +134,7 @@ export default function NotificationSettings() {
         .eq("id", user.id)
         .single();
       if (data?.notification_prefs) {
-        setPrefs({ ...DEFAULT_PREFS, ...data.notification_prefs });
+        setPrefs({ ...defaultPrefs, ...data.notification_prefs });
       }
     };
     loadPrefs();
@@ -248,7 +240,7 @@ export default function NotificationSettings() {
                   ? "Notifications are turned off for Kiddaboo on this device."
                   : isSubscribed
                   ? "You'll receive push notifications on this device."
-                  : "Enable to get notified about messages, join requests, and sessions."}
+                  : "Enable to get notified about booking requests, acceptances, and more."}
               </p>
 
               {pushBlocked && (
@@ -281,42 +273,23 @@ export default function NotificationSettings() {
             Notification Types
           </h3>
           <div className="bg-white rounded-2xl border border-cream-dark overflow-hidden">
-            {NOTIFICATION_TYPES.map((type, i) => {
-              const locked = type.premium && !isAnyPremium;
-              const interactable = isSubscribed && !locked;
+            {notificationTypes.map((type, i) => {
+              const interactable = isSubscribed;
               return (
                 <div
                   key={type.key}
                   className={`flex items-center gap-3 px-4 py-4 ${
-                    i < NOTIFICATION_TYPES.length - 1 ? "border-b border-cream-dark" : ""
+                    i < notificationTypes.length - 1 ? "border-b border-cream-dark" : ""
                   }`}
                 >
                   <div className="w-9 h-9 bg-cream rounded-lg flex items-center justify-center flex-shrink-0 text-taupe">
                     {type.icon}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <p className="text-sm text-charcoal font-medium">{type.label}</p>
-                      {type.premium && (
-                        <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-white bg-amber-400 px-1.5 py-0.5 rounded-full">
-                          <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                          </svg>
-                          Premium
-                        </span>
-                      )}
-                    </div>
+                    <p className="text-sm text-charcoal font-medium">{type.label}</p>
                     <p className="text-[11px] text-taupe mt-0.5 leading-relaxed">
                       {type.description}
                     </p>
-                    {locked && (
-                      <button
-                        onClick={() => navigate("/premium")}
-                        className="text-[11px] text-sage-dark font-medium underline mt-1 bg-transparent border-none cursor-pointer p-0"
-                      >
-                        Upgrade to enable
-                      </button>
-                    )}
                   </div>
                   {/* Toggle */}
                   <button

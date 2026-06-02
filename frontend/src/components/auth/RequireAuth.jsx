@@ -26,7 +26,7 @@ export default function RequireAuth({ children }) {
   }
 
   if (!user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/welcome" replace />;
   }
 
   // If the profile has loaded and phone is not yet verified, funnel

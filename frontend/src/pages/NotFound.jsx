@@ -19,13 +19,13 @@ export default function NotFound() {
         Page not found
       </h1>
       <p className="text-sm text-taupe text-center leading-relaxed max-w-xs mb-6">
-        Looks like this page wandered off. Let's get you back to finding playgroups.
+        Looks like this page wandered off. Let's get you back home.
       </p>
       <button
-        onClick={() => navigate("/browse")}
+        onClick={() => navigate("/")}
         className="bg-sage text-white font-medium text-sm rounded-2xl px-8 py-3 cursor-pointer border-none hover:bg-sage-dark transition-colors"
       >
-        Back to Browse
+        Back to Home
       </button>
     </div>
   );

@@ -31,7 +31,7 @@ export default function CreateProfile() {
   const [pendingAccountType] = useState(() =>
     sessionStorage.getItem("kiddaboo.pendingAccountType")
   );
-  const isOrganizer = pendingAccountType === "organizer";
+  const isNanny = pendingAccountType === "nanny";
 
   const handlePhotoChange = (e) => {
     const raw = e.target.files?.[0];
@@ -58,7 +58,7 @@ export default function CreateProfile() {
       // send the user back to pick one. The ChooseRole page is the
       // only authorized entry into signup, so we should never get
       // here without it — but guard anyway.
-      if (pendingAccountType !== "parent" && pendingAccountType !== "organizer") {
+      if (pendingAccountType !== "parent" && pendingAccountType !== "nanny") {
         navigate("/choose-role");
         return;
       }
@@ -66,9 +66,8 @@ export default function CreateProfile() {
       setSaving(true);
 
       // Upload profile photo if selected
-      // #56: block navigation on upload failure instead of silently
-      // continuing with a blank avatar — hosts use the photo to decide
-      // whether to approve join requests.
+      // Block navigation on upload failure instead of silently
+      // continuing with a blank avatar.
       let photoUrl = null;
       if (photoFile && user) {
         setUploadingPhoto(true);
@@ -105,8 +104,8 @@ export default function CreateProfile() {
       }
 
       // Don't clear pendingAccountType yet — PhoneVerify reads it to
-      // decide where to go next (/children vs /host/create). The flag
-      // gets cleared at the end of the flow (BrowseSuccess / HostSuccess).
+      // decide where to go next (/success vs /nanny/dashboard). The flag
+      // gets cleared at the end of the flow.
       navigate("/verify-phone");
     }
   };
@@ -119,9 +118,9 @@ export default function CreateProfile() {
             Tell us about you
           </h1>
           <p className="text-taupe leading-relaxed">
-            {isOrganizer
-              ? "Parents will see this when they consider joining your playgroup."
-              : "Other families will see this when you request to join a playgroup."}
+            {isNanny
+              ? "Parents will see this when browsing Nannies."
+              : "Nannies will see this when you send a booking request."}
           </p>
         </div>
 
@@ -161,11 +160,11 @@ export default function CreateProfile() {
             <p className={`text-xs text-center mt-2 ${errors.photo ? "text-red-500 font-medium" : "text-taupe/60"}`}>
               {errors.photo || "Add photo (required)"}
             </p>
-            {/* #58: trust microcopy — parents worry about photo visibility */}
+            {/* trust microcopy */}
             <p className="text-[11px] text-taupe/50 text-center mt-1">
-              {isOrganizer
-                ? "Shown to parents considering your playgroup. Helps build trust."
-                : "Only shown to organizers and members of groups you join. Never public."}
+              {isNanny
+                ? "Shown to parents searching for a Nanny. Helps build trust."
+                : "Shown to Nannies when you make a booking request."}
             </p>
           </label>
         </div>
@@ -189,9 +188,9 @@ export default function CreateProfile() {
           />
         </div>
 
-        {/* Zip code — parent only. Organizers set their playgroup
-            location in /host/create, so asking here is noise. */}
-        {!isOrganizer && (
+        {/* Zip code — parents use it to find nearby Nannies.
+            Nannies set their service area separately in availability. */}
+        {!isNanny && (
           <>
             <Input
               label="Zip code"
@@ -203,7 +202,7 @@ export default function CreateProfile() {
               inputMode="numeric"
             />
             <p className="text-[11px] text-taupe/50 -mt-4">
-              Helps us show you playgroups nearby. Never shared publicly.
+              Helps us show you Nannies nearby. Never shared publicly.
             </p>
           </>
         )}
@@ -212,7 +211,7 @@ export default function CreateProfile() {
         <div className="flex flex-col gap-1.5">
           <div className="flex items-baseline justify-between">
             <label className="text-sm font-medium text-taupe">
-              {isOrganizer ? "About you" : "About you & your family"}
+              {isNanny ? "About you" : "About you & your family"}
             </label>
             <span className="text-[11px] text-taupe/60">200 char max</span>
           </div>
@@ -220,9 +219,9 @@ export default function CreateProfile() {
             value={data.bio}
             onChange={(e) => updateField("bio", e.target.value)}
             placeholder={
-              isOrganizer
-                ? "Why you're starting this playgroup, your experience with kids, what parents should know about you..."
-                : "A little about your family, your values, and what you're looking for in a playgroup..."
+              isNanny
+                ? "Your experience with kids, certifications, availability preferences, and anything else parents should know..."
+                : "A little about your family and what you're looking for in a Nanny..."
             }
             maxLength={200}
             rows={3}
@@ -238,11 +237,8 @@ export default function CreateProfile() {
           </span>
         </div>
 
-        {/* Philosophy tags — parent only. These are parenting styles
-            parents use to find a compatible playgroup; organizers
-            describe their group's philosophy on the playgroup itself
-            in /host/create. */}
-        {!isOrganizer && (
+        {/* Philosophy tags — parent only. Nannies don't need these. */}
+        {!isNanny && (
           <TagSelector
             label="Parenting philosophy"
             options={PHILOSOPHY_TAGS}

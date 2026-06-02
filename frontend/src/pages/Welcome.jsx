@@ -12,8 +12,8 @@ export default function Welcome() {
     if (!loading && user) {
       if (!profile?.first_name) {
         navigate("/profile");
-      } else if (profile.account_type === "organizer") {
-        navigate("/host/dashboard");
+      } else if (profile.account_type === "nanny") {
+        navigate("/nanny/dashboard");
       } else {
         navigate("/browse");
       }
@@ -52,7 +52,7 @@ export default function Welcome() {
 
         {/* Tagline */}
         <p className="text-lg text-center leading-relaxed max-w-xs" style={{ color: '#8B3FE0' }}>
-          Find your people.<br />Find your playgroup.
+          Find your Nanny.<br />Book trusted childcare, on your schedule.
         </p>
       </div>
 
@@ -68,7 +68,7 @@ export default function Welcome() {
             <div className="w-8 h-8 rounded-full" style={{ background: '#B7A5E5' }}></div>
             <div className="w-8 h-8 rounded-full" style={{ background: '#5C8C7E' }}></div>
           </div>
-          <p className="text-xs text-taupe/60 mt-2">Curated playgroups for your family</p>
+          <p className="text-xs text-taupe/60 mt-2">Trusted Nannies near you</p>
         </div>
       </div>
 

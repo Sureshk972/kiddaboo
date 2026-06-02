@@ -31,7 +31,7 @@ export default function TermsOfService() {
         <section className="mb-6">
           <h2 className="font-heading font-bold text-charcoal text-sm mb-2">1. Acceptance of Terms</h2>
           <p className="text-sm text-taupe-dark leading-relaxed">
-            By accessing or using the Kiddaboo application ("App"), you agree to be bound by these Terms of Service. If you do not agree, please do not use the App. Kiddaboo is intended for parents and caregivers to discover and organize playgroups for children.
+            By accessing or using the Kiddaboo application ("App"), you agree to be bound by these Terms of Service. If you do not agree, please do not use the App. Kiddaboo is a Nanny booking marketplace that connects parents and caregivers with Nannies.
           </p>
         </section>
 
@@ -50,9 +50,10 @@ export default function TermsOfService() {
         </section>
 
         <section className="mb-6">
-          <h2 className="font-heading font-bold text-charcoal text-sm mb-2">4. Playgroup Participation</h2>
+          <h2 className="font-heading font-bold text-charcoal text-sm mb-2">4. Bookings and Nanny Services</h2>
+          {/* TODO: legal review */}
           <p className="text-sm text-taupe-dark leading-relaxed">
-            Kiddaboo facilitates connections between families for playgroup activities. We do not supervise, endorse, or guarantee the safety of any playgroup, host, or participant. Parents and caregivers are solely responsible for the supervision and safety of their children during all playgroup activities.
+            Kiddaboo facilitates booking connections between parents and Nannies. We do not supervise, endorse, or guarantee the quality or safety of any Nanny or booking. Parents are solely responsible for verifying that a Nanny is suitable for their family and for the supervision and safety of their children.
           </p>
         </section>
 
@@ -74,7 +75,7 @@ export default function TermsOfService() {
         <section className="mb-6">
           <h2 className="font-heading font-bold text-charcoal text-sm mb-2">6. Content</h2>
           <p className="text-sm text-taupe-dark leading-relaxed">
-            You retain ownership of content you post on Kiddaboo (photos, reviews, messages). By posting, you grant Kiddaboo a non-exclusive, royalty-free license to use, display, and distribute your content within the App. We may remove content that violates these terms.
+            You retain ownership of content you post on Kiddaboo (photos, ratings, profile information). By posting, you grant Kiddaboo a non-exclusive, royalty-free license to use, display, and distribute your content within the App. We may remove content that violates these terms.
           </p>
         </section>
 
@@ -88,7 +89,7 @@ export default function TermsOfService() {
         <section className="mb-6">
           <h2 className="font-heading font-bold text-charcoal text-sm mb-2">8. Limitation of Liability</h2>
           <p className="text-sm text-taupe-dark leading-relaxed">
-            Kiddaboo is provided "as is" without warranties of any kind. We are not liable for any damages arising from your use of the App, interactions with other users, or participation in playgroup activities. You use the App at your own risk.
+            Kiddaboo is provided "as is" without warranties of any kind. We are not liable for any damages arising from your use of the App, interactions with other users, or any Nanny booking or session. You use the App at your own risk.
           </p>
         </section>
 

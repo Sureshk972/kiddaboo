@@ -2,8 +2,8 @@ import { Navigate } from "react-router-dom";
 import { useAccountType } from "../../hooks/useAccountType";
 
 const HOME_FOR = {
-  parent: "/browse",
-  organizer: "/host/dashboard",
+  parent: "/",
+  nanny: "/nanny/dashboard",
 };
 
 /**

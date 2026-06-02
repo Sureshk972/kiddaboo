@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useAccountType } from "../../hooks/useAccountType";
 
 // Icons
 const BrowseIcon = (active) => (
@@ -161,34 +162,25 @@ const ProfileIcon = (active) => (
 );
 
 const PARENT_TABS = [
-  { path: "/browse", label: "Browse", icon: BrowseIcon },
-  {
-    path: "/my-groups",
-    matchPaths: ["/my-groups"],
-    label: "My Groups",
-    icon: GroupsIcon,
-  },
-  { path: "/messages", label: "Messages", icon: MessagesIcon },
+  { path: "/", label: "Discover", icon: BrowseIcon },
+  { path: "/requests", label: "Requests", icon: GroupsIcon },
+  { path: "/upcoming", label: "Upcoming", icon: DashboardIcon },
   { path: "/my-profile", label: "Profile", icon: ProfileIcon },
 ];
 
-const ORGANIZER_TABS = [
-  {
-    path: "/host/dashboard",
-    matchPaths: ["/host/dashboard", "/my-groups"],
-    label: "My Group",
-    icon: DashboardIcon,
-  },
-  { path: "/host/insights", label: "Members", icon: InsightsIcon },
-  { path: "/messages", label: "Messages", icon: MessagesIcon },
+const NANNY_TABS = [
+  { path: "/nanny/dashboard", label: "Inbox", icon: DashboardIcon },
+  { path: "/nanny/availability", label: "Availability", icon: InsightsIcon },
+  { path: "/nanny/earnings", label: "Earnings", icon: MessagesIcon },
   { path: "/my-profile", label: "Profile", icon: ProfileIcon },
 ];
 
 export default function TabBar({ badges = {} }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signOut, accountType } = useAuth();
-  const TABS = accountType === "organizer" ? ORGANIZER_TABS : PARENT_TABS;
+  const { signOut } = useAuth();
+  const { isNanny } = useAccountType();
+  const TABS = isNanny ? NANNY_TABS : PARENT_TABS;
 
   return (
     <nav aria-label="Main navigation" className="fixed bottom-0 left-0 right-0 z-30 bg-sage shadow-[0_-2px_8px_rgba(0,0,0,0.04)] pb-[env(safe-area-inset-bottom)]">

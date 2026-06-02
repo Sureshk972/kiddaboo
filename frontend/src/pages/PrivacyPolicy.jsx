@@ -35,9 +35,9 @@ export default function PrivacyPolicy() {
           </p>
           <ul className="text-sm text-taupe-dark leading-relaxed list-disc pl-5 space-y-1">
             <li><strong>Account information:</strong> name, phone number, email address, profile photo</li>
-            <li><strong>Children's information:</strong> first names, age ranges (no exact birthdates)</li>
-            <li><strong>Playgroup data:</strong> locations (zip code or address), schedules, photos, reviews</li>
-            <li><strong>Messages:</strong> group chat messages within playgroups</li>
+            <li><strong>Booking notes:</strong> free-form notes you provide when requesting a Nanny (e.g. child details, preferences)</li>
+            <li><strong>Nanny profile data:</strong> service area, availability, bio, photos, ratings</li>
+            <li><strong>Booking data:</strong> booking requests, confirmations, cancellations, payment records</li>
             <li><strong>Device information:</strong> push notification tokens, browser type</li>
             <li><strong>Location data:</strong> only when you use the "Near Me" feature (not stored permanently)</li>
           </ul>
@@ -47,9 +47,10 @@ export default function PrivacyPolicy() {
           <h2 className="font-heading font-bold text-charcoal text-sm mb-2">2. How We Use Your Information</h2>
           <ul className="text-sm text-taupe-dark leading-relaxed list-disc pl-5 space-y-1">
             <li>Create and manage your account</li>
-            <li>Connect you with playgroups and other families</li>
-            <li>Send notifications about playgroup activity (join requests, messages, sessions)</li>
-            <li>Display playgroup locations on maps</li>
+            <li>Connect parents with available Nannies</li>
+            <li>Send notifications about booking activity (requests, acceptances, cancellations, ratings)</li>
+            <li>Display Nanny locations and service areas on maps</li>
+            <li>Process payments and payouts via Stripe</li>
             <li>Process reports and maintain community safety</li>
             <li>Improve the App's features and user experience</li>
           </ul>
@@ -58,7 +59,7 @@ export default function PrivacyPolicy() {
         <section className="mb-6">
           <h2 className="font-heading font-bold text-charcoal text-sm mb-2">3. Children's Privacy</h2>
           <p className="text-sm text-taupe-dark leading-relaxed">
-            Kiddaboo takes children's privacy seriously. We only collect children's first names and age ranges — never full names, photos, exact birthdates, or other identifying information of children. Children's information is only visible to members of playgroups the parent has joined. Children cannot create accounts or use the App directly.
+            Kiddaboo takes children's privacy seriously. We do not store child profiles. Any details about your children (name, age, allergies, preferences) are provided only in the free-form note field when making a booking request, and are shared solely with the Nanny you are booking. Children cannot create accounts or use the App directly.
           </p>
         </section>
 
@@ -68,7 +69,8 @@ export default function PrivacyPolicy() {
             We do not sell your personal information. We share information only in these circumstances:
           </p>
           <ul className="text-sm text-taupe-dark leading-relaxed list-disc pl-5 space-y-1">
-            <li><strong>With other users:</strong> Your profile, reviews, and messages are visible to playgroup members</li>
+            <li><strong>With other users:</strong> Your public profile and ratings are visible to other users. Booking notes are shared only with the Nanny you book.</li>
+            <li><strong>Payment processors:</strong> We use Stripe for payment processing. Stripe's privacy policy governs their handling of your payment data.</li>
             <li><strong>Service providers:</strong> We use Supabase for data storage and authentication</li>
             <li><strong>Legal requirements:</strong> We may disclose information if required by law or to protect safety</li>
           </ul>
@@ -98,15 +100,16 @@ export default function PrivacyPolicy() {
 
         <section className="mb-6">
           <h2 className="font-heading font-bold text-charcoal text-sm mb-2">7. Data Retention</h2>
+          {/* TODO: legal review */}
           <p className="text-sm text-taupe-dark leading-relaxed">
-            We retain your data for as long as your account is active. When you delete your account, we remove your personal information, profile, and children's data. Some information (such as messages sent in group chats) may remain visible to other members but will no longer be associated with your identity.
+            We retain your data for as long as your account is active. When you delete your account, we remove your personal information and profile. Booking records may be retained for a limited period as required for financial and legal compliance.
           </p>
         </section>
 
         <section className="mb-6">
           <h2 className="font-heading font-bold text-charcoal text-sm mb-2">8. Push Notifications</h2>
           <p className="text-sm text-taupe-dark leading-relaxed">
-            We send push notifications for playgroup activity such as new messages, join requests, and session reminders. You can control which notifications you receive in your Notification Settings, or disable them entirely. We store your push subscription token securely and only use it for app notifications.
+            We send push notifications for booking activity such as new booking requests, acceptances, cancellations, and rating prompts. You can control which notifications you receive in your Notification Settings, or disable them entirely. We store your push subscription token securely and only use it for app notifications.
           </p>
         </section>
 
