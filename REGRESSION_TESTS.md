@@ -1,274 +1,396 @@
-# Kiddaboo Regression Test Script
+# Kiddaboo Regression Tests — Nanny Pivot
 
-Last updated: 2026-04-16
+Last updated: 2026-06-01
 
-## How to Use
-
-Each test case has:
-- **ID** for tracking
-- **Steps** to reproduce
-- **Expected** result
-- **Status** column: PASS / FAIL / SKIP
-
-Run all tests against the live site (https://kiddaboo.com) in a mobile viewport (375px-448px wide).
+Run all tests in a mobile viewport (375–448px wide) unless noted. Use Stripe test card `4242 4242 4242 4242`, expiry any future date, CVC any 3 digits.
 
 ---
 
-## 1. Welcome & Authentication
+## Test 1 — Nanny signup + role selection
 
-| ID | Test Case | Steps | Expected | Status |
-|----|-----------|-------|----------|--------|
-| AUTH-01 | Welcome page loads | Navigate to `/` while logged out | Shows Kiddaboo wordmark (ChunkFive, sage-dark), sprout icon, tagline, "Find Your Playgroup" + "Host a Playgroup" buttons, "Sign in" link, legal links | |
-| AUTH-02 | Sign up flow | Click "Find Your Playgroup" > enter new email + password > submit | Redirects to `/profile` (Create Profile page) | |
-| AUTH-03 | Sign in flow | Click "Sign in" > enter existing email + password > submit | Redirects to `/browse` (if profile complete) or `/profile` (if incomplete) | |
-| AUTH-04 | Invalid credentials | Enter wrong password | Shows error message, does not navigate | |
-| AUTH-05 | Password reset request | Click "Forgot password?" > enter email > submit | Shows confirmation message that reset email was sent | |
-| AUTH-06 | Password reset completion | Follow email link to `/reset-password` > enter new password + confirm > submit | Password updated, "Continue to Kiddaboo" button appears | |
-| AUTH-07 | Auth redirect (logged in) | Visit `/` while logged in with complete profile | Auto-redirects to `/browse` | |
-| AUTH-08 | Auth redirect (incomplete profile) | Visit `/` while logged in without profile | Auto-redirects to `/profile` | |
+**Setup:** New email address not previously used.
 
-## 2. Onboarding
+**Steps:**
+1. Open the app and tap **Sign Up**.
+2. Enter name, email, and password. Verify email via the link sent.
+3. On the role selection screen, tap **I'm a Nanny**, then **Continue**.
 
-| ID | Test Case | Steps | Expected | Status |
-|----|-----------|-------|----------|--------|
-| ONB-01 | Create Profile page | After signup, land on `/profile` | Shows photo upload, first/last name, bio (200 char limit), philosophy tags (max 4) | |
-| ONB-02 | Profile photo upload | Click "Add photo" > select image | Photo preview appears in avatar circle | |
-| ONB-03 | Philosophy tags max | Select 4 tags, try to select a 5th | 5th tag is not selectable or shows shake animation | |
-| ONB-04 | Profile submit | Fill required fields > click Continue | Navigates to `/verify-phone` (PhoneVerify step) | |
-| PHN-01 | PhoneVerify page loads | Land on `/verify-phone` | Shows phone-number input, "Send code" button, and flow copy | |
-| PHN-02 | Send OTP (bare US number) | Enter `4155551212` > tap Send | Edge function auto-prepends `+1`, returns success, code-entry state appears | |
-| PHN-03 | Verify correct OTP | Enter the 6-digit code sent via SMS > tap Verify | `phone_verified_at` set on profile, navigates to `/children` (parent) or `/host/create` (organizer) | |
-| PHN-04 | Verify wrong OTP | Enter wrong 6-digit code > tap Verify | Shows "Code doesn't match" error, attempt counter increments, does not navigate | |
-| PHN-05 | Resend OTP | On code-entry state, tap "Resend" | New SMS sent, prior code invalidated | |
-| PHN-06 | Unverified gate on join | As unverified user, attempt to send a join request | Blocked with a verify-phone prompt; request is NOT created | |
-| ONB-05 | Add Children page | Land on `/children` after phone verification | Shows child form (name, age range, personality tags) | |
-| ONB-06 | Add multiple children | Add first child > click "Add another child" | Second child form appears | |
-| ONB-07 | Remove child | Click remove on a child card | Child is removed from the list | |
-| ONB-08 | Children submit | Fill child info > click Continue | Navigates to `/success` (BrowseSuccess) | |
-| ONB-09 | BrowseSuccess page | Land on `/success` | Shows confetti animation, mini map preview, "Start Browsing" CTA | |
+**Expected:**
+- User lands on `/nanny/dashboard`.
+- Tab bar shows: Inbox, Availability, Earnings, Profile.
+- Dashboard displays "No pending requests" (empty state).
 
-## 3. Browse Page
-
-| ID | Test Case | Steps | Expected | Status |
-|----|-----------|-------|----------|--------|
-| BRW-01 | Browse page loads | Navigate to `/browse` | Shows Kiddaboo wordmark, search bar, filter/sort chips, playgroup cards, bottom tab bar | |
-| BRW-02 | Wordmark branding | Check header | "Kiddaboo" in ChunkFive font, sage-dark (#5C6B52) color | |
-| BRW-03 | Search filter | Type a playgroup name in search | Results filter in real-time (300ms debounce) | |
-| BRW-04 | Search clear | Click X button in search bar | Search clears, all results return | |
-| BRW-05 | Sort by Rated | Tap "Rated" | Results re-sort by rating, chip becomes active (sage-light background) | |
-| BRW-05a | Sort by Spots | Tap "Spots" | Results re-sort by spots-available, chip becomes active | |
-| BRW-06 | Sort chip feedback | Press and release a sort chip | Chip scales down briefly (active:scale-95) | |
-| BRW-07 | Nearest sort | Tap "Nearest" | Browser requests location permission, results sort by distance | |
-| BRW-08 | Location error | Deny location permission > tap "Nearest" | Error message appears below sort row | |
-| BRW-09 | Filter sheet | Tap "Filters" | Bottom sheet opens with vibe tags, age range, setting, access type filters | |
-| BRW-10 | Apply filters | Select filters > close sheet | Results filter, active filter count badge appears on Filters button | |
-| BRW-11 | Clear filters | Open filters > clear all | All filters removed, badge disappears | |
-| BRW-12 | Playgroup card display | View a card in list | Shows photo (or placeholder), tags on photo with gradient overlay, name, rating, location, distance (if available), host avatar/name, verified badge, age range, spots remaining, next session, access badge | |
-| BRW-13 | Card photo gradient | View card with photo | Tags at bottom of photo strip are readable over dark images (gradient overlay) | |
-| BRW-14 | Card tap | Tap a playgroup card | Navigates to `/playgroup/:id` | |
-| BRW-21 | Skeleton loading | Hard refresh Browse page, observe load | Shows 3 skeleton card placeholders (pulse animation) before data loads | |
-| BRW-22 | Empty state (no results) | Search for nonexistent name | Shows "No playgroups found" with "Clear all filters" link | |
-| BRW-23 | Empty state (no playgroups) | Remove all playgroups from DB | Shows "No playgroups yet" with "Host a Playgroup" CTA | |
-| BRW-24 | Few results hosting prompt | Have <=3 playgroups, no active search | Shows "Share Your Space, Grow Your Community." card with "Become a Host" CTA below the list | |
-| BRW-25 | Result count | View results | Shows "N playgroup(s) found" text | |
-| BRW-26 | Page transition | Navigate to Browse from another tab | Page fades up smoothly (page-transition animation) | |
-
-## 4. Playgroup Detail
-
-| ID | Test Case | Steps | Expected | Status |
-|----|-----------|-------|----------|--------|
-| DET-01 | Detail page loads | Tap a playgroup card | Shows photo carousel, title, access badge, location, vibe tags, description | |
-| DET-02 | Photo carousel (with photos) | View playgroup with photos | Shows photos, swipeable, dot navigation for multiple | |
-| DET-03 | Photo placeholder | View playgroup without photos | Shows branded placeholder hero (gradient + icon + "photos coming soon") | |
-| DET-04 | Single photo | View playgroup with 1 photo | Shows photo, no dot navigation | |
-| DET-05 | Host card | Scroll to host section | Shows host avatar, name, verified badge, "Host since [date]" (formatted), trust score, bio, philosophy tags | |
-| DET-06 | Host since format | Check host card date | Shows "Host since MMM YYYY" (e.g. "Host since Mar 2026"), not raw ISO string | |
-| DET-07 | Environment checklist | Scroll to environment | Shows setting, safety features, pets info, supervision ratio | |
-| DET-08 | Session cards | Scroll to schedule | Shows upcoming sessions with date/time, RSVP count | |
-| DET-09 | Rating breakdown | Scroll to ratings | Shows aggregate ratings for environment, organization, compatibility, reliability | |
-| DET-10 | Review cards | Scroll to reviews | Shows individual reviews with name, ratings, comment, date | |
-| DET-11 | Member avatars | View member section | Shows member initials in circles | |
-| DET-12 | Join CTA (non-member, open) | View open playgroup as non-member | Sticky bottom button to join immediately | |
-| DET-13 | Join CTA (non-member, request) | View request-access playgroup | Sticky bottom button opens JoinRequestSheet | |
-| DET-14 | Join request sheet | Tap "Request to Join" | Sheet with intro message field + screening questions (if any) | |
-| DET-15 | Join limit (free user) | Send 3 join requests in a month > try 4th | Shows upgrade prompt modal | |
-| DET-16 | Chat CTA (member) | View playgroup as member | Sticky bottom button "Group Chat" navigates to `/messages/:id` | |
-| DET-17 | Write review | Tap "Write a Review" (if eligible) | Opens ReviewFormSheet with 4 rating categories + comment | |
-| DET-18 | Report/block | Tap report icon | Opens ReportSheet with report types and block option | |
-| DET-19 | Back navigation | Tap back arrow | Returns to previous page | |
-| DET-20 | Page transition | Navigate to detail | Page fades up smoothly | |
-
-## 5. My Groups
-
-| ID | Test Case | Steps | Expected | Status |
-|----|-----------|-------|----------|--------|
-| GRP-01 | My Groups loads | Tap "My Groups" tab | Shows hosted playgroup (if any) + joined groups list | |
-| GRP-02 | Hosted group card | View as host | Shows playgroup with color strip, location, member count, pending requests badge | |
-| GRP-03 | Hosted group tap | Tap hosted group | Navigates to Host Dashboard | |
-| GRP-04 | Joined group status | View joined groups | Shows status badges (member/pending/waitlisted) | |
-| GRP-05 | Joined group tap | Tap joined group | Navigates to playgroup detail | |
-| GRP-06 | Empty state (no groups) | User with no groups | Shows branded empty state (overlapping family circles, "Your playgroup family awaits", browse CTA) | |
-| GRP-07 | Page transition | Navigate to My Groups | Smooth fade-up animation | |
-
-## 6. Messages
-
-| ID | Test Case | Steps | Expected | Status |
-|----|-----------|-------|----------|--------|
-| MSG-01 | Messages list loads | Tap "Messages" tab | Shows conversation list with playgroup names, last message preview, timestamps | |
-| MSG-02 | Unread count | Receive new messages | Unread badge appears on conversation | |
-| MSG-03 | Conversation tap | Tap a conversation | Navigates to `/messages/:playgroupId` group chat | |
-| MSG-04 | Empty state | User with no conversations | Shows branded empty state (chat bubbles with typing dots + heart, "Conversations start here", browse CTA) | |
-| MSG-05 | Group chat loads | Navigate to group chat | Shows message history with sender names/avatars, date separators | |
-| MSG-06 | Send message | Type message > tap send | Message appears in thread immediately | |
-| MSG-07 | Realtime messages | Another user sends a message | Message appears in thread without refresh | |
-| MSG-08 | Load more | Scroll to top of long conversation | "Load more" button loads older messages | |
-| MSG-09 | Blocked user messages | Block a user > view chat | Blocked user's messages are hidden | |
-| MSG-10 | Report from chat | Long press / tap report on a message | ReportSheet opens | |
-| MSG-11 | Page transition | Navigate to messages | Smooth fade-up animation | |
-
-## 7. Profile & Settings
-
-| ID | Test Case | Steps | Expected | Status |
-|----|-----------|-------|----------|--------|
-| PRF-01 | Profile page loads | Tap "Profile" tab | Shows avatar, name, email, bio, philosophy tags, settings menu | |
-| PRF-02 | Premium link | Tap "Upgrade to Premium" | Navigates to `/premium` | |
-| PRF-03 | Edit Profile | Tap "Edit Profile" | Navigates to `/edit-profile` with current values pre-filled | |
-| PRF-04 | Edit Profile save | Change bio > save | Returns to profile, changes persisted | |
-| PRF-05 | Manage Children | Tap "Manage Children" | Navigates to edit profile with children section | |
-| PRF-06 | Notifications | Tap "Notifications" | Navigates to notification settings with master toggle + per-type toggles | |
-| PRF-07 | Push notification subscribe | Enable master push toggle | Browser requests notification permission, subscription saved | |
-| PRF-08 | Per-type notification toggles | Toggle individual notification types | Preferences saved to Supabase | |
-| PRF-09 | Terms of Service | Tap "Terms of Service" | Navigates to `/terms`, shows full legal document | |
-| PRF-10 | Privacy Policy | Tap "Privacy Policy" | Navigates to `/privacy`, shows full legal document | |
-| PRF-11 | Help & Support (dimmed) | View Help & Support row | Appears dimmed (opacity-50), shows "Soon" label, not clickable | |
-| PRF-12 | Sign out | Tap "Sign out" | Signs out, redirects to Welcome page | |
-| PRF-13 | Delete account modal | Tap "Delete my account" | Confirmation modal appears with warning and cancel/delete buttons | |
-| PRF-14 | Delete account cancel | Click "Cancel" in modal | Modal closes, account unchanged | |
-| PRF-15 | Delete account confirm | Click "Yes, delete everything" | Account deleted, redirected to Welcome | |
-| PRF-16 | Page transition | Navigate to profile | Smooth fade-up animation | |
-
-## 8. Premium & Payments
-
-| ID | Test Case | Steps | Expected | Status |
-|----|-----------|-------|----------|--------|
-| PAY-01 | Premium page loads | Navigate to `/premium` | Shows hero, plan selection (Monthly $7.99/mo, Annual $79.99/yr), feature comparison, subscribe CTA | |
-| PAY-02 | Annual plan display | Check annual plan | Shows "$79.99/yr", "2 months free -- just $6.67/mo", "Best Value" badge | |
-| PAY-03 | Plan selection | Tap Monthly/Annual | Selected plan highlights (sage border), subscribe button updates price | |
-| PAY-04 | Subscribe (not logged in) | Tap subscribe while logged out | Redirects to `/verify` | |
-| PAY-05 | Subscribe (logged in) | Tap subscribe while logged in | Redirects to Stripe Checkout with correct amount | |
-| PAY-06 | Stripe callback success | Return from Stripe with `?success=true` | Shows success message, premium status active | |
-| PAY-07 | Already premium view | Visit `/premium` as premium user | Shows "You're Premium!" card with plan type, renewal date, benefits list | |
-| PAY-08 | Join limit enforcement | Free user exceeds 3 monthly joins | Upgrade prompt appears with link to Premium | |
-| PAY-09 | Premium badge | Premium user views profile | Premium status shown in settings menu | |
-| PAY-10 | Page transition | Navigate to premium | Smooth fade-up animation | |
-
-## 9. Host Flow
-
-| ID | Test Case | Steps | Expected | Status |
-|----|-----------|-------|----------|--------|
-| HST-01 | Create playgroup step 1 | Navigate to `/host/create` | Form: name, description, vibe tags (max 4), location, age range, max families slider (2-15), frequency, access type | |
-| HST-02 | Vibe tags max | Select 4 tags, try 5th | 5th not selectable / shake animation | |
-| HST-03 | Max families slider | Drag slider | Value updates (2-15 range) | |
-| HST-04 | Step 2: Screening | Continue to `/host/screening` | Add up to 5 screening questions with suggestions | |
-| HST-05 | Step 3: Environment | Continue to `/host/environment` | Setting toggles, safety features, pets, supervision ratio | |
-| HST-06 | Step 4: Photos | Continue to `/host/photos` | Upload up to 6 photos with tips | |
-| HST-07 | Step 5: Success | Continue to `/host/success` | Saves to Supabase, shows preview card, membership info, next steps | |
-| HST-08 | Geocoding (US zip) | Enter "60640" as location | Coordinates resolve to Chicago, IL (not Europe) | |
-| HST-09 | Geocoding (US address) | Enter "123 Main St, Austin TX" | Coordinates resolve to Austin, TX area | |
-| HST-10 | Host Dashboard | Navigate to dashboard | Shows stats (members, trust score, reviews), pending requests, active members, session scheduling | |
-| HST-11 | Approve join request | Tap approve on pending request | User becomes member, request removed from pending | |
-| HST-12 | Decline join request | Tap decline | User status becomes declined | |
-| HST-13 | Waitlist request | Tap waitlist | User status becomes waitlisted | |
-| HST-14 | Schedule session | Open schedule sheet > fill date/time > save | New session appears in list | |
-| HST-15 | Edit playgroup | Navigate to `/host/edit/:id` | Pre-filled form with current values, save updates Supabase | |
-
-## 10. Cross-Cutting Concerns
-
-| ID | Test Case | Steps | Expected | Status |
-|----|-----------|-------|----------|--------|
-| XCT-01 | Mobile viewport | View site at 375px wide | All content fits within max-w-md, no horizontal overflow | |
-| XCT-02 | Bottom tab bar | Navigate between tabs | Tab bar stays fixed at bottom, active tab highlighted in sage | |
-| XCT-03 | Tab bar hidden | View onboarding/detail pages | Tab bar not visible on non-app pages | |
-| XCT-04 | Sticky headers | Scroll down on Browse | Header with search/filters sticks to top | |
-| XCT-05 | Back button pages | Visit detail/edit/settings pages | Back button present and functional | |
-| XCT-06 | Page transitions | Navigate between any pages | Smooth fade-up animation (0.3s) | |
-| XCT-07 | Font loading | Hard refresh any page | Fraunces (headings), DM Sans (body), ChunkFive (wordmark) all load | |
-| XCT-08 | Color consistency | Review all pages | Sage (#7A8F6D), cream (#FAF7F2), taupe, terracotta used consistently | |
-| XCT-09 | Error states | Disconnect network > perform action | Graceful error handling, no blank screens | |
-| XCT-10 | Supabase realtime | Open two tabs, send message in one | Message appears in other tab in real-time | |
-| XCT-11 | Deep link | Visit `/playgroup/:id` directly | Page loads correctly without navigating from Browse | |
-| XCT-12 | 404 handling | Visit `/nonexistent-page` | Does not show blank page | |
-| XCT-13 | Legal pages transition | Navigate to Terms/Privacy | Pages have fade-up animation and back button | |
-
-## 11. Security & Data Protection
-
-| ID | Test Case | Steps | Expected | Status |
-|----|-----------|-------|----------|--------|
-| SEC-01 | XSS in bio field | Edit profile, enter `<script>alert('xss')</script>` as bio > save > reload | Script tag not executed, rendered as plain text or stripped | |
-| SEC-02 | XSS in playgroup name | Create playgroup with name `<img src=x onerror=alert(1)>` > view on Browse | Tag not rendered as HTML, shown as plain text or stripped | |
-| SEC-03 | XSS in chat message | Send message with `<script>document.cookie</script>` > view in chat | Script not executed, shown as text | |
-| SEC-04 | XSS in review comment | Submit review with HTML/script in comment field | Not rendered as HTML | |
-| SEC-05 | SQL injection in search | Type `'; DROP TABLE users; --` in Browse search bar | No error, returns empty results or ignores injection | |
-| SEC-06 | Phone/email not exposed | View another user's profile (host card, member list) | Phone and email never visible to other users | |
-| SEC-07 | Address hidden before join | View playgroup detail as non-member | Full street address not shown (only zip/city) | |
-| SEC-08 | Screening answers private | View a playgroup's pending requests as non-host | Screening answers not visible to non-hosts | |
-| SEC-09 | Auth token required | Open browser console > call Supabase API without auth | Returns 401 or RLS blocks data | |
-| SEC-10 | Expired token rejected | Use an expired JWT to make API call | Returns 401, not stale data | |
-| SEC-11 | RLS: can't edit other's profile | Via console, attempt `supabase.from('profiles').update({bio:'hacked'}).eq('id', other_user_id)` | Update fails (RLS policy blocks) | |
-| SEC-12 | RLS: can't delete other's playgroup | Via console, attempt to delete another user's playgroup | Delete fails (RLS policy blocks) | |
-| SEC-13 | RLS: can't read other's children | Via console, attempt to select from children table with another user's ID | Returns empty or error | |
-| SEC-14 | Photo upload: reject non-image | Upload a .pdf or .exe as profile photo | Upload rejected, error message shown | |
-| SEC-15 | Photo upload: reject oversized | Upload image > 5MB | Upload rejected with size error | |
-| SEC-16 | Rate limit: join requests (free) | As free user, send 3 join requests > attempt 4th | Blocked with upgrade prompt, not silently accepted | |
-| SEC-17 | Deleted account tokens invalid | Delete account > attempt to use old auth token | All API calls return 401 | |
-| SEC-18 | Block prevents messaging | Block a user > check group chat | Blocked user's messages hidden, cannot send to blocker | |
-| SEC-19 | OTP attempt counter not bypassable | Via console, attempt to reset `attempts` on `phone_otp_challenges` row | Update blocked by RLS; verify-otp still enforces attempt limit via optimistic locking | |
-| SEC-20 | send-otp rate limit | Call send-otp more than the configured rate in quick succession | Returns 429 / rate-limit error; does not send additional SMS via Twilio | |
-
-## 12. Vouching & Trust
-
-| ID | Test Case | Steps | Expected | Status |
-|----|-----------|-------|----------|--------|
-| VCH-01 | Trust score starts at zero | Create new account > view profile | Trust score shows 0 | |
-| VCH-02 | Trust score after review | Receive a positive review > check profile | Trust score increases from 0 | |
-| VCH-03 | Trust score visible on host card | View playgroup detail > check host card | Trust score displayed (e.g. "Trust score 4.2") | |
-| VCH-04 | Trust score visible on request card | As host, view pending join request | Requester's trust score visible on request card | |
-| VCH-05 | Trust score read-only | Via console, attempt to update own trust_score | Update blocked by RLS or ignored | |
-| VCH-06 | Verified badge display | View verified host's profile/card | Green verified badge with checkmark shown | |
-| VCH-07 | Verified badge absent for unverified | View unverified user's profile/card | No verified badge shown | |
-| VCH-08 | Review aggregate calculation | Submit multiple reviews for a host | Aggregate ratings (environment, organization, compatibility, reliability) calculated correctly | |
-| VCH-09 | Review only after session | As member with no past sessions, try to write review | "Write Review" button not available or disabled | |
+**DB check:**
+```sql
+select account_type from profiles where email = '<test email>';
+-- expected: 'nanny'
+```
 
 ---
 
-## Test Summary
+## Test 2 — Nanny adds a weekly availability block
 
-| Section | Test Count |
-|---------|-----------|
-| Authentication | 8 |
-| Onboarding | 15 |
-| Browse | 21 |
-| Playgroup Detail | 20 |
-| My Groups | 7 |
-| Messages | 11 |
-| Profile & Settings | 16 |
-| Premium & Payments | 10 |
-| Host Flow | 15 |
-| Cross-Cutting | 13 |
-| Security & Data Protection | 20 |
-| Vouching & Trust | 9 |
-| **Total** | **165** |
+**Setup:** Logged in as a verified Nanny (set `verified_at` directly in DB if needed for test environment).
+
+**Steps:**
+1. Tap the **Availability** tab → lands on `/nanny/availability`.
+2. Tap **Add block**.
+3. Set Day = Wednesday, Start = 9:00 AM, End = 1:00 PM, Rate = $80.
+4. Tap **Save**.
+
+**Expected:**
+- Wednesday block appears in the availability list showing "9:00 AM–1:00 PM · $80".
+- No error toast.
+
+**DB check:**
+```sql
+select day_of_week, start_time, end_time, rate_cents, active
+from nanny_availability_blocks
+where nanny_id = '<nanny user id>';
+-- expected: row with day_of_week=3, start_time='09:00', end_time='13:00', rate_cents=8000, active=true
+```
 
 ---
 
-## Notes
+## Test 3 — Nanny initiates Stripe Connect onboarding
 
-- Run tests on both Safari (iOS) and Chrome (Android) for mobile coverage
-- Tests marked SKIP should include a reason
-- For Stripe tests (PAY-05, PAY-06), use Stripe test mode card `4242 4242 4242 4242`
-- For realtime tests (MSG-07, XCT-10), use two browser sessions
-- Geocoding tests (HST-08, HST-09) verify the Nominatim US-restriction fix
-- Security tests (SEC-11 through SEC-13, SEC-19) require browser console access to test RLS policies directly
-- Trust/vouching tests depend on having review data in the database
-- PhoneVerify tests (PHN-01 through PHN-06) require a real phone that can receive SMS unless the `send-otp` edge function is run in stub mode (`OTP_STUB=1`), which logs the code instead of dispatching via Twilio
-- As of 2026-04-09 the Browse page no longer has a map view — BRW-15 through BRW-20 were removed in commit `4ff661b` ("Map removal from Browse")
+**Setup:** Logged in as a Nanny with no connected Stripe account.
+
+**Steps:**
+1. Tap the **Earnings** tab → lands on `/nanny/earnings`.
+2. Tap **Connect with Stripe**.
+
+**Expected:**
+- Browser redirects to a Stripe-hosted Express onboarding URL (stripe.com domain).
+- The URL contains the Nanny's Connect account ID or an onboarding link parameter.
+
+**DB check (pre-completion):**
+```sql
+select stripe_connect_account_id from profiles where id = '<nanny user id>';
+-- expected: non-null value (account created even before onboarding is finished)
+```
+
+---
+
+## Test 4 — Nanny dashboard shows "ready to accept" after Connect onboarding
+
+**Setup:** Complete Stripe Express onboarding in test mode (use Stripe test SSN `000-00-0000` and test bank `000123456789`).
+
+**Steps:**
+1. Return to the app after completing Stripe onboarding.
+2. Tap the **Earnings** tab.
+
+**Expected:**
+- Earnings tab shows "Ready to accept bookings" (or equivalent confirmed-state copy).
+- No "Connect with Stripe" button visible.
+
+**DB check:**
+```sql
+select stripe_connect_charges_enabled, stripe_connect_payouts_enabled
+from profiles where id = '<nanny user id>';
+-- expected: both true (populated by Stripe webhook)
+```
+
+---
+
+## Test 5 — Parent signup + role selection → lands on Discover
+
+**Setup:** New email address not previously used.
+
+**Steps:**
+1. Open the app and tap **Sign Up**.
+2. Enter name, email, and password. Verify email.
+3. On the role selection screen, tap **I'm a Parent**, then **Continue**.
+
+**Expected:**
+- User lands on `/` (Discover screen).
+- Tab bar shows: Discover, Requests, Upcoming, Profile.
+- Filter sheet is visible with a default date window.
+
+**DB check:**
+```sql
+select account_type from profiles where email = '<test email>';
+-- expected: 'parent'
+```
+
+---
+
+## Test 6 — Parent filters by date window → sees only matching open slots
+
+**Setup:** At least one Nanny has a materialized open slot on a known date. Run `materialize-nanny-slots` if needed.
+
+**Steps:**
+1. Log in as a Parent and go to `/`.
+2. In the filter sheet, set From = the known slot date at its start time, To = same date at its end time.
+3. Tap **Apply**.
+
+**Expected:**
+- The feed shows the Nanny card for the matching slot.
+- Slots outside the window are not shown.
+
+**DB check:**
+```sql
+select id, starts_at, ends_at, status from nanny_slots
+where status = 'open'
+  and starts_at >= '<from>'
+  and ends_at <= '<to>';
+-- results should match what the UI renders
+```
+
+---
+
+## Test 7 — Parent toggles list ↔ map view
+
+**Setup:** Parent is on Discover with at least one result showing.
+
+**Steps:**
+1. Results visible in list view.
+2. Tap the **Map** button.
+3. Tap the **List** button.
+
+**Expected:**
+- Map view renders Leaflet map with pin(s) for each result that has a service area location.
+- Tapping List returns to card list.
+- The number of results is the same in both views.
+
+---
+
+## Test 8 — Parent taps a slot → /book/:slotId loads correctly
+
+**Setup:** Parent is on Discover with at least one open slot visible.
+
+**Steps:**
+1. Tap a Nanny card.
+2. On the Nanny profile, tap an open slot.
+
+**Expected:**
+- URL is `/book/<slotId>`.
+- Page shows the Nanny's name, photo, and slot time.
+- Note field is present and editable.
+- Stripe Elements card input is present.
+
+---
+
+## Test 9 — Parent submits request → pending entry in /requests
+
+**Setup:** Open slot exists. Parent is on `/book/:slotId`.
+
+**Steps:**
+1. Enter a note: "My daughter Emma, 4 years old, no allergies."
+2. Enter test card `4242 4242 4242 4242`, any future expiry, any CVC.
+3. Tap **Send Request**.
+
+**Expected:**
+- Redirected to `/requests`.
+- New entry visible with status **Pending** and a countdown timer.
+- No charge has been captured yet (only an authorization hold).
+
+**DB check:**
+```sql
+select status, stripe_payment_intent_id from bookings
+where parent_id = '<parent user id>'
+order by requested_at desc limit 1;
+-- expected: status='pending', stripe_payment_intent_id non-null
+```
+
+**Stripe check:** In Stripe Dashboard → Payments, find the PaymentIntent. Status should be `requires_capture`.
+
+---
+
+## Test 10 — Nanny accepts request → booking confirmed, parent sees phone reveal
+
+**Setup:** Booking is in `pending` state from Test 9. Logged in as the Nanny on a separate session.
+
+**Steps (Nanny):**
+1. Go to `/nanny/dashboard`.
+2. Locate the pending request. Verify the parent's note is visible.
+3. Tap **Accept**.
+
+**Expected (Nanny):**
+- Entry moves from Pending to **Upcoming** section.
+- Parent contact info visible in the booking.
+
+**Expected (Parent):**
+- In `/upcoming`, booking status shows **Confirmed**.
+- Nanny's phone number is visible with tap-to-call and tap-to-SMS links.
+
+**DB check:**
+```sql
+select status, responded_at from bookings where id = '<booking id>';
+-- expected: status='confirmed', responded_at non-null
+```
+
+**Stripe check:** PaymentIntent status should be `succeeded` (captured).
+
+---
+
+## Test 11 — Parent cancels confirmed booking more than 24h before start → full refund
+
+**Setup:** Confirmed booking with slot start time > 24h from now.
+
+**Steps:**
+1. Log in as Parent, go to `/upcoming`.
+2. Open the booking and tap **Cancel**.
+3. Confirm the cancellation.
+
+**Expected:**
+- Booking removed from Upcoming.
+- Success message indicates a full refund was issued.
+- Slot is visible again as open in Discover.
+
+**DB check:**
+```sql
+select status, cancelled_by, cancelled_at from bookings where id = '<booking id>';
+-- expected: status='cancelled_refunded', cancelled_by='parent'
+
+select status from nanny_slots where id = '<slot id>';
+-- expected: 'open'
+```
+
+**Stripe check:** A Refund object should exist on the PaymentIntent with `status=succeeded`.
+
+---
+
+## Test 12 — Parent cancels confirmed booking less than 24h before start → no refund
+
+**Setup:** Confirmed booking with slot start time < 24h from now (manually adjust `starts_at` in DB if needed for testing).
+
+**Steps:**
+1. Log in as Parent, go to `/upcoming`.
+2. Open the booking and tap **Cancel**.
+
+**Expected:**
+- A warning modal appears: "Less than 24 hours before your booking — no refund will be issued."
+- Tap **Cancel anyway** to proceed.
+- Booking removed from Upcoming.
+
+**DB check:**
+```sql
+select status, cancelled_by from bookings where id = '<booking id>';
+-- expected: status='cancelled_no_refund', cancelled_by='parent'
+```
+
+**Stripe check:** No Refund object on the PaymentIntent.
+
+---
+
+## Test 13 — Nanny cancels confirmed booking → parent gets full refund
+
+**Setup:** Confirmed booking with any slot time.
+
+**Steps:**
+1. Log in as Nanny, go to `/nanny/dashboard` → Upcoming.
+2. Open the booking and tap **Cancel**.
+3. Confirm.
+
+**Expected:**
+- Booking disappears from Nanny Upcoming.
+- Parent's `/upcoming` removes the booking.
+- Refund issued regardless of how close the slot is.
+
+**DB check:**
+```sql
+select status, cancelled_by from bookings where id = '<booking id>';
+-- expected: status='cancelled_refunded', cancelled_by='nanny'
+```
+
+**Stripe check:** Refund with `status=succeeded` on the PaymentIntent.
+
+---
+
+## Test 14 — Nanny marks booking complete
+
+**Setup:** Confirmed booking whose slot end time has passed (adjust `ends_at` in DB if needed).
+
+**Steps:**
+1. Log in as Nanny, go to `/nanny/dashboard` → Upcoming.
+2. Open the booking and tap **Mark Complete**.
+
+**Expected:**
+- Booking moves out of Upcoming.
+- Rating prompt appears.
+
+**DB check:**
+```sql
+select status, completed_at from bookings where id = '<booking id>';
+-- expected: status='completed', completed_at non-null
+```
+
+**Stripe check:** A Connect transfer to the Nanny's connected account should exist (minus platform fee).
+
+---
+
+## Test 15 — Parent rates Nanny
+
+**Setup:** Booking in `completed` status for the parent's account.
+
+**Steps:**
+1. Log in as Parent, go to `/history`.
+2. Find the completed booking. Tap **Rate**.
+3. Select 5 stars, write "Wonderful experience!", tap **Submit**.
+
+**Expected:**
+- History entry shows a checkmark or "Rated" indicator.
+- Rating prompt disappears.
+
+**DB check:**
+```sql
+select score, text, direction from ratings
+where booking_id = '<booking id>' and direction = 'parent_to_nanny';
+-- expected: score=5, text='Wonderful experience!'
+```
+
+**Verify public visibility:** Log out, open the Nanny's profile page (`/nanny/:id`) — rating should be visible.
+
+---
+
+## Test 16 — Nanny rates parent (private)
+
+**Setup:** Booking in `completed` status for the Nanny's account. Parent has no other nanny-to-parent ratings.
+
+**Steps:**
+1. Log in as Nanny, open the completed booking.
+2. Tap **Rate parent**, select 4 stars, tap **Submit**.
+
+**Expected:**
+- Confirmation that rating was saved.
+- No rating visible anywhere on the parent's own account.
+
+**DB check:**
+```sql
+select score, direction from ratings
+where booking_id = '<booking id>' and direction = 'nanny_to_parent';
+-- expected: score=4
+
+-- Confirm parent cannot see it via RLS:
+-- Run as the parent's auth role (or verify via app UI) — no nanny_to_parent rating should surface.
+```
+
+**Nanny-side visibility check:** Log in as a *different* Nanny. On a booking request from that same parent, confirm the private rating is visible to the other Nanny.
+
+---
+
+## Test 17 — Hourly cron expires overdue pending requests
+
+**Setup:** Create a pending booking and manually set `acceptance_expires_at` to a time in the past.
+
+```sql
+update bookings
+set acceptance_expires_at = now() - interval '1 minute'
+where id = '<booking id>' and status = 'pending';
+```
+
+**Steps:**
+1. Invoke the edge function manually: `supabase functions invoke expire-pending-requests`
+
+**Expected:**
+- Booking status flips to `expired`.
+- Parent's `/requests` no longer shows the entry as pending.
+
+**DB check:**
+```sql
+select status from bookings where id = '<booking id>';
+-- expected: 'expired'
+```
+
+**Stripe check:** PaymentIntent status should be `canceled` (authorization released).
