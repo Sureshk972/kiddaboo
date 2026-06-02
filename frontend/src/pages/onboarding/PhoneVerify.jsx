@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Button from "../../components/ui/Button";
 import { usePhoneVerification } from "../../hooks/usePhoneVerification";
 import { useAuth } from "../../context/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 // User-friendly copy per error code. Keys match codes returned by
 // send-otp and verify-otp edge functions.
@@ -21,7 +22,8 @@ const VERIFY_ERROR_COPY = {
  * OTP step. Two stages:
  *   1. Ask for E.164 phone → "Send code"
  *   2. Show 6-digit input → "Verify"
- * On verify success, navigate to /success for both parents and nannies.
+ * On verify success, route by profile state: no profile → /profile,
+ * nanny → /nanny/dashboard, parent → /.
  */
 export default function PhoneVerify() {
   const navigate = useNavigate();
@@ -68,9 +70,20 @@ export default function PhoneVerify() {
       // before we navigate. Otherwise RequireAuth on the next route
       // sees the stale flag and bounces back here, creating a loop.
       if (user) await fetchProfile(user.id);
-      const role = sessionStorage.getItem("kiddaboo.pendingAccountType");
-      // Both parents and nannies go to /success after phone verification.
-      navigate("/success");
+
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("first_name, account_type")
+        .eq("id", user.id)
+        .single();
+
+      if (!prof?.first_name) {
+        navigate("/profile");
+      } else if (prof.account_type === "nanny") {
+        navigate("/nanny/dashboard");
+      } else {
+        navigate("/");
+      }
     }
   }
 
