@@ -1,3 +1,4 @@
+import AvailabilityEditor from "../../components/nanny/AvailabilityEditor";
 export default function NannyAvailability() {
-  return <main><h1>Availability</h1></main>;
+  return <AvailabilityEditor />;
 }
