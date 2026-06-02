@@ -3,9 +3,22 @@ import Stripe from "https://esm.sh/stripe@14?target=denonext";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2024-06-20" });
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
   const auth = req.headers.get("Authorization");
-  if (!auth) return new Response("missing auth", { status: 401 });
+  if (!auth) return json({ error: "missing auth" }, 401);
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -14,14 +27,14 @@ Deno.serve(async (req) => {
   );
 
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return new Response("unauthenticated", { status: 401 });
+  if (!user) return json({ error: "unauthenticated" }, 401);
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("stripe_connect_account_id, account_type")
     .eq("id", user.id)
     .single();
-  if (profile?.account_type !== "nanny") return new Response("not a nanny", { status: 403 });
+  if (profile?.account_type !== "nanny") return json({ error: "not a nanny" }, 403);
 
   let accountId = profile.stripe_connect_account_id;
   if (!accountId) {
@@ -42,5 +55,5 @@ Deno.serve(async (req) => {
     type: "account_onboarding",
   });
 
-  return Response.json({ url: link.url });
+  return json({ url: link.url });
 });
