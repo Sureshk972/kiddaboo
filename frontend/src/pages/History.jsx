@@ -1,8 +1,33 @@
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
 import { useParentBookings } from "../hooks/useParentBookings";
+import RatingSheet from "../components/booking/RatingSheet";
 
 function RatingPrompt({ booking }) {
-  // Full rating UI ships in Phase 10
-  return <button>Rate Nanny</button>;
+  const [alreadyRated, setAlreadyRated] = useState(null);
+  const [opened, setOpened] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from("ratings")
+        .select("id")
+        .eq("booking_id", booking.id)
+        .eq("direction", "parent_to_nanny");
+      setAlreadyRated((data || []).length > 0);
+    })();
+  }, [booking.id]);
+
+  if (alreadyRated === null) return null;
+  if (alreadyRated) return <span>Rated ✓</span>;
+  if (!opened) return <button onClick={() => setOpened(true)}>Rate Nanny</button>;
+  return (
+    <RatingSheet
+      booking={booking}
+      direction="parent_to_nanny"
+      rateeId={booking.nanny_id}
+      onDone={() => setAlreadyRated(true)}
+    />
+  );
 }
 
 export default function History() {

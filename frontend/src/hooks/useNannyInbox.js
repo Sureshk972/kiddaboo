@@ -6,26 +6,28 @@ export function useNannyInbox() {
   const { user } = useAuth();
   const [pending, setPending] = useState([]);
   const [upcoming, setUpcoming] = useState([]);
+  const [past, setPast] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
     let cancelled = false;
     (async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("bookings")
-        .select("*, slot:nanny_slots(starts_at, ends_at)")
+        .select("*, slot:nanny_slots(starts_at, ends_at), parent:profiles!bookings_parent_id_fkey(id, full_name)")
         .eq("nanny_id", user.id)
-        .in("status", ["pending", "confirmed"]);
+        .in("status", ["pending", "confirmed", "completed"]);
       if (cancelled) return;
-      if (!error) {
-        setPending((data || []).filter(b => b.status === "pending"));
-        setUpcoming((data || []).filter(b => b.status === "confirmed"));
-      }
+      const now = Date.now();
+      const all = data || [];
+      setPending(all.filter(b => b.status === "pending"));
+      setUpcoming(all.filter(b => b.status === "confirmed" && new Date(b.slot.ends_at).getTime() > now));
+      setPast(all.filter(b => (b.status === "completed") || (b.status === "confirmed" && new Date(b.slot.ends_at).getTime() <= now)));
       setLoading(false);
     })();
     return () => { cancelled = true; };
   }, [user]);
 
-  return { pending, upcoming, loading };
+  return { pending, upcoming, past, loading };
 }

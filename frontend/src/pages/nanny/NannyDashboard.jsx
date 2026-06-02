@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { useNannyInbox } from "../../hooks/useNannyInbox";
 import { supabase } from "../../lib/supabase";
+import RatingSheet from "../../components/booking/RatingSheet";
 
 async function respondToBooking(bookingId, decision) {
   const { error } = await supabase.functions.invoke("respond-to-booking", {
@@ -12,8 +14,35 @@ async function respondToBooking(bookingId, decision) {
   return true;
 }
 
+function NannyRatingPrompt({ booking }) {
+  const [alreadyRated, setAlreadyRated] = useState(null);
+  const [opened, setOpened] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from("ratings")
+        .select("id")
+        .eq("booking_id", booking.id)
+        .eq("direction", "nanny_to_parent");
+      setAlreadyRated((data || []).length > 0);
+    })();
+  }, [booking.id]);
+
+  if (alreadyRated === null) return null;
+  if (alreadyRated) return <span>Rated ✓</span>;
+  if (!opened) return <button onClick={() => setOpened(true)}>Rate Parent</button>;
+  return (
+    <RatingSheet
+      booking={booking}
+      direction="nanny_to_parent"
+      rateeId={booking.parent_id}
+      onDone={() => setAlreadyRated(true)}
+    />
+  );
+}
+
 export default function NannyDashboard() {
-  const { pending, upcoming, loading } = useNannyInbox();
+  const { pending, upcoming, past, loading } = useNannyInbox();
   if (loading) return <p>Loading…</p>;
   return (
     <main>
@@ -50,6 +79,25 @@ export default function NannyDashboard() {
               if (error) alert(error.message);
               else window.location.reload();
             }}>Cancel</button>
+          </article>
+        ))}
+      </section>
+      <section>
+        <h2>Past sessions ({past.length})</h2>
+        {past.length === 0 && <p>None yet.</p>}
+        {past.map(b => (
+          <article key={b.id}>
+            <div>{new Date(b.slot.starts_at).toLocaleString()}</div>
+            <div>with {b.parent?.full_name ?? "(parent)"}</div>
+            <div>Status: {b.status}</div>
+            {b.status === "confirmed" && (
+              <button onClick={async () => {
+                const { error } = await supabase.functions.invoke("complete-booking", { body: { booking_id: b.id }});
+                if (error) alert(error.message);
+                else window.location.reload();
+              }}>Mark complete</button>
+            )}
+            {b.status === "completed" && <NannyRatingPrompt booking={b} />}
           </article>
         ))}
       </section>
