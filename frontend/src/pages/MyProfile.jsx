@@ -2,15 +2,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
-import { useSubscription } from "../hooks/useSubscription";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
-import HostVerificationCard from "../components/profile/HostVerificationCard";
 
 export default function MyProfile() {
-  useDocumentTitle("My Profile"); // #50
+  useDocumentTitle("My Profile");
   const navigate = useNavigate();
-  const { user, profile, signOut, isHost } = useAuth();
-  const { isPremium, subscription } = useSubscription();
+  const { user, profile, signOut } = useAuth();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   // #54: inline error replaces jarring alert()
@@ -24,9 +21,9 @@ export default function MyProfile() {
   const handleSignOut = async () => {
     try {
       await signOut();
-      navigate("/");
+      navigate("/welcome");
     } catch {
-      navigate("/");
+      navigate("/welcome");
     }
   };
 
@@ -69,14 +66,6 @@ export default function MyProfile() {
                 Phone verified
               </span>
             )}
-            {isPremium && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-white bg-amber-400 px-2 py-0.5 rounded-full">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
-                Premium
-              </span>
-            )}
           </div>
           {user?.email && (
             <p className="text-xs text-taupe mt-1">{user.email}</p>
@@ -103,42 +92,9 @@ export default function MyProfile() {
           )}
         </div>
 
-        {isHost && (
-          <HostVerificationCard
-            userId={user?.id}
-            isVerified={!!profile?.is_verified}
-          />
-        )}
-
         {/* Settings list */}
         <div className="bg-white rounded-2xl border border-cream-dark overflow-hidden">
           {[
-            ...(isHost
-              ? []
-              : [{
-                  icon: (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  ),
-                  label: isPremium ? "Premium Member" : "Upgrade to Premium",
-                  sublabel: isPremium ? null : "Unlimited join requests & more",
-                  path: "/premium",
-                  highlight: true,
-                }]),
-            ...(isHost
-              ? [{
-                  icon: (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.5" />
-                      <path d="M16 16L21 21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                    </svg>
-                  ),
-                  label: "Discover other playgroups",
-                  sublabel: "Browse playgroups as a parent",
-                  path: "/browse",
-                }]
-              : []),
             {
               icon: (
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -149,20 +105,6 @@ export default function MyProfile() {
               label: "Edit Profile",
               path: "/edit-profile",
             },
-            ...(isHost
-              ? []
-              : [{
-                  icon: (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                      <circle cx="9" cy="7" r="3" stroke="currentColor" strokeWidth="1.5" />
-                      <circle cx="17" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.5" />
-                      <path d="M3 19c0-2.76 2.69-5 6-5s6 2.24 6 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                      <path d="M14 18c.5-1.8 2.4-3 4-3s3.5 1.2 4 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                    </svg>
-                  ),
-                  label: "Manage Children",
-                  path: "/edit-profile#children",
-                }]),
             {
               icon: (
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -282,9 +224,9 @@ export default function MyProfile() {
                 This will permanently delete:
               </p>
               <ul className="text-sm text-taupe leading-relaxed list-disc pl-5 mb-4 space-y-0.5">
-                <li>Your profile and children's info</li>
-                <li>All playgroups you created</li>
-                <li>Your memberships, messages, and reviews</li>
+                <li>Your profile and account info</li>
+                <li>Your bookings and availability</li>
+                <li>Your messages and reviews</li>
               </ul>
               <p className="text-sm text-red-600 font-medium mb-5">
                 This action cannot be undone.
@@ -309,7 +251,7 @@ export default function MyProfile() {
                       });
                       if (res.error) throw res.error;
                       await signOut();
-                      navigate("/");
+                      navigate("/welcome");
                     } catch (err) {
                       console.error("Delete failed:", err);
                       setDeleteError("Something went wrong deleting your account. Please try again.");

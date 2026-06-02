@@ -10,6 +10,7 @@ import RequireAuth from "./components/auth/RequireAuth";
 import RequireAdmin from "./components/auth/RequireAdmin";
 import OnboardingOnly from "./components/auth/OnboardingOnly";
 import ParentLayout from "./layouts/ParentLayout";
+import NannyLayout from "./layouts/NannyLayout";
 import RequireRole from "./components/auth/RequireRole";
 import UpdateBadge from "./components/UpdateBadge";
 
@@ -28,6 +29,19 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ChooseRole = lazy(() => import("./pages/onboarding/ChooseRole"));
 const PhoneVerify = lazy(() => import("./pages/onboarding/PhoneVerify"));
+
+// Parent pages
+const Discover = lazy(() => import("./pages/Discover"));
+const Requests = lazy(() => import("./pages/Requests"));
+const Upcoming = lazy(() => import("./pages/Upcoming"));
+const History = lazy(() => import("./pages/History"));
+const Book = lazy(() => import("./pages/Book"));
+const NannyPublicProfile = lazy(() => import("./pages/nanny/NannyPublicProfile"));
+
+// Nanny pages
+const NannyDashboard = lazy(() => import("./pages/nanny/NannyDashboard"));
+const NannyAvailability = lazy(() => import("./pages/nanny/NannyAvailability"));
+const NannyEarnings = lazy(() => import("./pages/nanny/NannyEarnings"));
 
 // Shell for routes that don't use a TabBar layout. Renders the
 // page then a static legal footer below it, so the DBA notice is
@@ -68,7 +82,7 @@ export default function App() {
             <Route element={<StandaloneShell />}>
               {/* Public routes — no auth required */}
               <Route path="/choose-role" element={<ChooseRole />} />
-              <Route path="/" element={<Welcome />} />
+              <Route path="/welcome" element={<Welcome />} />
               <Route path="/verify" element={<PhoneVerification />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/terms" element={<TermsOfService />} />
@@ -95,6 +109,84 @@ export default function App() {
             {/* App pages — requires auth, with tab bar. Layouts embed
                 LegalFooter themselves above the TabBar. */}
             <Route path="/my-profile" element={<RequireAuth><AppLayout><MyProfile /></AppLayout></RequireAuth>} />
+
+            {/* Parent tab routes — requires parent role + ParentLayout */}
+            <Route
+              path="/"
+              element={
+                <RequireAuth>
+                  <RequireRole role="parent">
+                    <ParentLayout><Discover /></ParentLayout>
+                  </RequireRole>
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/requests"
+              element={
+                <RequireAuth>
+                  <RequireRole role="parent">
+                    <ParentLayout><Requests /></ParentLayout>
+                  </RequireRole>
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/upcoming"
+              element={
+                <RequireAuth>
+                  <RequireRole role="parent">
+                    <ParentLayout><Upcoming /></ParentLayout>
+                  </RequireRole>
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/history"
+              element={
+                <RequireAuth>
+                  <RequireRole role="parent">
+                    <ParentLayout><History /></ParentLayout>
+                  </RequireRole>
+                </RequireAuth>
+              }
+            />
+
+            {/* Parent detail routes — requires auth, no layout */}
+            <Route path="/book/:slotId" element={<RequireAuth><Book /></RequireAuth>} />
+            <Route path="/nanny/:id" element={<RequireAuth><NannyPublicProfile /></RequireAuth>} />
+
+            {/* Nanny tab routes — requires nanny role + NannyLayout */}
+            <Route
+              path="/nanny/dashboard"
+              element={
+                <RequireAuth>
+                  <RequireRole role="nanny">
+                    <NannyLayout><NannyDashboard /></NannyLayout>
+                  </RequireRole>
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/nanny/availability"
+              element={
+                <RequireAuth>
+                  <RequireRole role="nanny">
+                    <NannyLayout><NannyAvailability /></NannyLayout>
+                  </RequireRole>
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/nanny/earnings"
+              element={
+                <RequireAuth>
+                  <RequireRole role="nanny">
+                    <NannyLayout><NannyEarnings /></NannyLayout>
+                  </RequireRole>
+                </RequireAuth>
+              }
+            />
           </Routes>
           </Suspense>
         </NotificationsProvider>

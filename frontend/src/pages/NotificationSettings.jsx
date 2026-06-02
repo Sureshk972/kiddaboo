@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useSubscription } from "../hooks/useSubscription";
 import { supabase } from "../lib/supabase";
 import usePushNotifications from "../hooks/usePushNotifications";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
@@ -112,12 +111,8 @@ export default function NotificationSettings() {
   useDocumentTitle("Notifications"); // #50
   const navigate = useNavigate();
   const { user } = useAuth();
-  // Premium-gated notifications (e.g. Session Reminders) unlock for
-  // any active premium tier. The previous code used only `isPremium`,
-  // which is joiner-only — host-premium subscribers got locked out of
-  // their own toggles with a misleading "Upgrade to enable" link.
-  const { isPremium: isJoinerPremium, isHostPremium } = useSubscription();
-  const isAnyPremium = isJoinerPremium || isHostPremium;
+  // All notification types are available in the nanny model (no premium gate).
+  const isAnyPremium = true;
   const {
     isSupported,
     permission,
