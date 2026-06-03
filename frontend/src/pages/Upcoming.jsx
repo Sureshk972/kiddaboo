@@ -7,7 +7,9 @@ function CancelButton({ booking }) {
   const [confirming, setConfirming] = useState(false);
   const [working, setWorking] = useState(false);
   const [err, setErr] = useState(null);
-  const hoursUntil = (new Date(booking.slot.starts_at) - new Date()) / 3600_000;
+  const hoursUntil = booking.slot?.starts_at
+    ? (new Date(booking.slot.starts_at) - new Date()) / 3600_000
+    : Infinity;
   const inside24 = hoursUntil < 24;
 
   const cancel = async () => {
@@ -74,7 +76,7 @@ export default function Upcoming() {
 
   useEffect(() => {
     (async () => {
-      const ids = bookings.map((b) => b.nanny.id);
+      const ids = bookings.map((b) => b.nanny?.id).filter(Boolean);
       if (!ids.length) return;
       const { data } = await supabase
         .from("profiles")
@@ -109,16 +111,18 @@ export default function Upcoming() {
                     {formatProfileName(b.nanny)}
                   </h3>
                   <div className="text-xs text-taupe mt-0.5">
-                    {new Date(b.slot.starts_at).toLocaleString([], {
-                      weekday: "short",
-                      month: "short",
-                      day: "numeric",
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}
+                    {b.slot?.starts_at
+                      ? new Date(b.slot.starts_at).toLocaleString([], {
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                        })
+                      : "—"}
                   </div>
                 </div>
-                {phones[b.nanny.id] && (
+                {b.nanny?.id && phones[b.nanny.id] && (
                   <div className="flex gap-2">
                     <a
                       href={`tel:${phones[b.nanny.id]}`}
