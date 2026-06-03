@@ -242,7 +242,7 @@ export default function EditProfile() {
 
         {/* Philosophy tags */}
         <TagSelector
-          label="Parenting philosophy"
+          label={profile?.account_type === "nanny" ? "Nannying philosophy" : "Parenting philosophy"}
           options={PHILOSOPHY_TAGS}
           selected={philosophyTags}
           onChange={setPhilosophyTags}
