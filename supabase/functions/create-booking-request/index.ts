@@ -107,6 +107,8 @@ Deno.serve(async (req) => {
       capture_method: "manual",
       confirm: true,
       off_session: false,
+      // Card-only: skip Klarna/Affirm/etc. which would require a return_url.
+      automatic_payment_methods: { enabled: true, allow_redirects: "never" },
       application_fee_amount: fee,
       transfer_data: { destination: nanny.stripe_connect_account_id },
       metadata: { slot_id, parent_id: user.id, nanny_id: slot.nanny_id },
