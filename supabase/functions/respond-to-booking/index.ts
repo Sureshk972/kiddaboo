@@ -45,8 +45,22 @@ Deno.serve(async (req) => {
   if (new Date(booking.acceptance_expires_at) <= new Date()) return json({ error: "expired" }, 409);
 
   if (decision === "accept") {
+    // Retry-safe: if a previous attempt captured on Stripe but failed to
+    // persist the DB status flip, the next click would 400 with "already
+    // been captured". Check the PI state first and treat "already
+    // captured" as success — just sync the DB.
     try {
-      await stripe.paymentIntents.capture(booking.stripe_payment_intent_id!);
+      const pi = await stripe.paymentIntents.retrieve(booking.stripe_payment_intent_id!);
+      if (pi.status === "requires_capture") {
+        await stripe.paymentIntents.capture(booking.stripe_payment_intent_id!);
+      } else if (pi.status !== "succeeded") {
+        // Anything other than requires_capture / succeeded is a real failure
+        // (canceled, processing, requires_action, requires_payment_method).
+        await supabase.from("bookings")
+          .update({ status: "pending_payment_retry" })
+          .eq("id", booking_id);
+        return json({ error: `payment in unexpected state: ${pi.status}` }, 402);
+      }
       await supabase.from("bookings")
         .update({ status: "confirmed", responded_at: new Date().toISOString() })
         .eq("id", booking_id);
