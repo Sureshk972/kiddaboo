@@ -12,7 +12,7 @@ initSentry();
 // Error boundary fallback. Deliberately minimal: the soft-launch goal
 // is "the page doesn't go blank and the user can recover", not a
 // pixel-perfect error experience. Reload is the simplest escape hatch.
-function ErrorFallback({ error }) {
+function ErrorFallback() {
   return (
     <div
       style={{
@@ -34,26 +34,6 @@ function ErrorFallback({ error }) {
         <p style={{ fontSize: 14, color: "#7a6f67", marginBottom: 20 }}>
           Kiddaboo hit an unexpected error. Our team has been notified.
         </p>
-        {error?.message && (
-          <pre
-            style={{
-              textAlign: "left",
-              fontSize: 11,
-              color: "#b07a5b",
-              background: "#fff",
-              border: "1px solid #e5dccb",
-              padding: 10,
-              marginBottom: 20,
-              maxHeight: 240,
-              overflow: "auto",
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-word",
-            }}
-          >
-            {error.message}
-            {error.stack ? "\n\n" + error.stack.split("\n").slice(0, 6).join("\n") : ""}
-          </pre>
-        )}
         <button
           onClick={() => window.location.reload()}
           style={{
@@ -85,7 +65,7 @@ if ("serviceWorker" in navigator) {
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <ErrorBoundary fallback={({ error }) => <ErrorFallback error={error} />}>
+    <ErrorBoundary fallback={<ErrorFallback />}>
       <App />
     </ErrorBoundary>
   </React.StrictMode>

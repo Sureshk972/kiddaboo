@@ -70,16 +70,7 @@ function BookForm({ slot }) {
         const body = await invokeErr.context?.text?.();
         if (body) {
           const parsed = JSON.parse(body);
-          detail = parsed.detail
-            ? `${parsed.error}: ${parsed.detail}`
-            : parsed.error || body;
-          // Append debug fields if present (only set on auth failures right now).
-          const dbg = [];
-          if (parsed.claimsRole) dbg.push(`role=${parsed.claimsRole}`);
-          if (parsed.claimsExpired) dbg.push("expired");
-          if (parsed.tokenLen != null) dbg.push(`len=${parsed.tokenLen}`);
-          if (parsed.tokenPrefix) dbg.push(`pfx=${parsed.tokenPrefix}`);
-          if (dbg.length) detail += ` [${dbg.join(", ")}]`;
+          detail = parsed.error || body;
         }
       } catch {
         /* fall through with generic message */
