@@ -242,19 +242,38 @@ export default function MyProfile() {
                 <button
                   onClick={async () => {
                     setDeleting(true);
+                    setDeleteError("");
                     try {
+                      await supabase.auth.refreshSession().catch(() => {});
                       const { data: { session } } = await supabase.auth.getSession();
                       const res = await supabase.functions.invoke("delete-account", {
                         headers: {
                           Authorization: `Bearer ${session?.access_token}`,
                         },
                       });
-                      if (res.error) throw res.error;
+                      if (res.error) {
+                        // Read the JSON body for our friendly server message
+                        // (e.g. "You still have 2 active bookings…").
+                        let msg = null;
+                        try {
+                          const body = await res.error.context?.text?.();
+                          if (body) {
+                            const parsed = JSON.parse(body);
+                            msg = parsed.message || parsed.error;
+                          }
+                        } catch {
+                          /* fall through */
+                        }
+                        throw new Error(msg || res.error.message || "delete failed");
+                      }
                       await signOut();
                       navigate("/welcome");
                     } catch (err) {
                       console.error("Delete failed:", err);
-                      setDeleteError("Something went wrong deleting your account. Please try again.");
+                      setDeleteError(
+                        err.message ||
+                          "Something went wrong deleting your account. Please try again."
+                      );
                       setDeleting(false);
                     }
                   }}

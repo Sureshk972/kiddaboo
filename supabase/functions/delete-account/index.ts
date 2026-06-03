@@ -49,6 +49,41 @@ serve(withSentry("delete-account", async (req) => {
     // Use admin client to delete user data and auth user
     const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    // Guard: refuse delete if the user has any open bookings on either
+    // side. Letting a delete go through would orphan money in transit
+    // (auths held but uncaptured, transfers pending) and leave the
+    // counter-party without recourse. Counts cover both parent and nanny
+    // roles so the same guard works for either account_type.
+    const blockingStatuses = [
+      "pending",
+      "confirmed",
+      "pending_payment_retry",
+    ];
+    const { count: openCount, error: countErr } = await adminClient
+      .from("bookings")
+      .select("id", { count: "exact", head: true })
+      .or(`parent_id.eq.${user.id},nanny_id.eq.${user.id}`)
+      .in("status", blockingStatuses);
+
+    if (countErr) {
+      console.error("Error counting open bookings:", countErr);
+      return new Response(
+        JSON.stringify({ error: "Could not verify booking state" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if ((openCount ?? 0) > 0) {
+      return new Response(
+        JSON.stringify({
+          error: "open_bookings",
+          message: `You still have ${openCount} active booking${openCount === 1 ? "" : "s"}. Cancel them first, then come back to delete your account.`,
+          count: openCount,
+        }),
+        { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Call the database function to clean up user data
     const { error: dataError } = await adminClient.rpc("delete_user_data", {
       target_user_id: user.id,
