@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
+import Button from "../../components/ui/Button";
 
 export default function NannyEarnings() {
   const { user, profile } = useAuth();
   const [completedTotal, setCompletedTotal] = useState(0);
+  const [completedCount, setCompletedCount] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [connectError, setConnectError] = useState(null);
 
@@ -16,8 +19,13 @@ export default function NannyEarnings() {
         .select("rate_cents, platform_fee_cents")
         .eq("nanny_id", user.id)
         .eq("status", "completed");
-      const total = (data || []).reduce((s, b) => s + b.rate_cents - b.platform_fee_cents, 0);
+      const total = (data || []).reduce(
+        (s, b) => s + b.rate_cents - b.platform_fee_cents,
+        0
+      );
       setCompletedTotal(total);
+      setCompletedCount(data?.length || 0);
+      setLoading(false);
     })();
   }, [user?.id]);
 
@@ -25,10 +33,25 @@ export default function NannyEarnings() {
     setConnecting(true);
     setConnectError(null);
     try {
-      const { data, error } = await supabase.functions.invoke("stripe-connect-link");
+      await supabase.auth.refreshSession().catch(() => {});
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+      if (!accessToken) throw new Error("You're signed out. Please sign in again.");
+      const { data, error } = await supabase.functions.invoke("stripe-connect-link", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
       if (error) {
-        const body = await error.context?.text?.().catch(() => null);
-        throw new Error(body || error.message || "Edge function failed");
+        let detail = error.message;
+        try {
+          const body = await error.context?.text?.();
+          if (body) {
+            const parsed = JSON.parse(body);
+            detail = parsed.error || body;
+          }
+        } catch {
+          /* fall through */
+        }
+        throw new Error(detail);
       }
       if (!data?.url) throw new Error("No onboarding URL returned");
       window.location.href = data.url;
@@ -42,26 +65,51 @@ export default function NannyEarnings() {
   const needsOnboarding = !profile?.stripe_connect_charges_enabled;
 
   return (
-    <main>
-      <h1>Earnings</h1>
+    <div className="px-5 py-4 flex flex-col gap-5">
+      <h1 className="text-2xl font-heading font-bold tracking-tight text-sage-dark">
+        Earnings
+      </h1>
+
       {needsOnboarding ? (
-        <section>
-          <p>Set up payouts to start accepting bookings.</p>
-          <button onClick={onboard} disabled={connecting}>
+        <section className="bg-white border border-cream-dark p-5 flex flex-col gap-3">
+          <h2 className="text-base font-heading font-bold text-charcoal">
+            Set up payouts
+          </h2>
+          <p className="text-sm text-charcoal">
+            Connect a bank account through Stripe so we can route payments to
+            you. Parents won't be able to book you until this is done.
+          </p>
+          <Button onClick={onboard} disabled={connecting} fullWidth>
             {connecting ? "Opening Stripe…" : "Connect with Stripe"}
-          </button>
+          </Button>
           {connectError && (
-            <p role="alert" style={{ color: "crimson", marginTop: 12 }}>
+            <p role="alert" className="text-xs text-terracotta">
               Couldn't start Stripe onboarding: {connectError}
             </p>
           )}
         </section>
+      ) : loading ? (
+        <p className="text-sm text-taupe text-center py-8">Loading earnings…</p>
       ) : (
-        <section>
-          <h2>Total earned: ${(completedTotal / 100).toFixed(2)}</h2>
-          <p>Payouts are managed by Stripe and sent to your linked bank account.</p>
-        </section>
+        <>
+          <section className="bg-white border border-cream-dark p-6 text-center">
+            <p className="text-xs font-bold uppercase tracking-[1.5px] text-taupe">
+              Total earned
+            </p>
+            <p className="text-4xl font-heading font-bold text-sage-dark mt-2">
+              ${(completedTotal / 100).toFixed(2)}
+            </p>
+            <p className="text-xs text-taupe mt-2">
+              {completedCount} completed session{completedCount === 1 ? "" : "s"}
+              {" · "}your share after Kiddaboo's 15% service fee
+            </p>
+          </section>
+          <p className="text-xs text-taupe text-center px-4">
+            Payouts are managed by Stripe and sent to your linked bank account
+            on a rolling schedule.
+          </p>
+        </>
       )}
-    </main>
+    </div>
   );
 }
