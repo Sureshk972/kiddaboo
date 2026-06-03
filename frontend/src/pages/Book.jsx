@@ -45,18 +45,32 @@ function BookForm({ slot }) {
       setSubmitting(false);
       return;
     }
+    // Send the user JWT explicitly. supabase-js *should* auto-inject it,
+    // but observed: the function gets the anon key in some cached/PWA
+    // scenarios, which fails auth. Belt and suspenders.
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData?.session?.access_token;
+    if (!accessToken) {
+      setError("You're signed out. Please sign in and try again.");
+      setSubmitting(false);
+      return;
+    }
     const { error: invokeErr } = await supabase.functions.invoke("create-booking-request", {
       body: { slot_id: slot.id, note, payment_method_id: paymentMethod.id },
+      headers: { Authorization: `Bearer ${accessToken}` },
     });
     if (invokeErr) {
       // supabase-js wraps non-2xx as "Edge Function returned a non-2xx status
-      // code" — the real error (JSON {error: "..."}) is on .context (a Response).
+      // code" — the real error (JSON {error: "...", detail?: "..."}) is on
+      // .context (a Response).
       let detail = invokeErr.message;
       try {
         const body = await invokeErr.context?.text?.();
         if (body) {
           const parsed = JSON.parse(body);
-          detail = parsed.error || body;
+          detail = parsed.detail
+            ? `${parsed.error}: ${parsed.detail}`
+            : parsed.error || body;
         }
       } catch {
         /* fall through with generic message */
