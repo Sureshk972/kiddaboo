@@ -4,11 +4,14 @@ import FilterSheet from "../components/discovery/FilterSheet";
 import NannyCard from "../components/discovery/NannyCard";
 
 export default function Discover() {
+  // Default window: tomorrow → two weeks out. Narrower windows produced
+  // empty results on first visit even when nannies had slots later in
+  // the month, which felt broken.
   const tomorrow = new Date(Date.now() + 86400_000);
-  const dayAfter = new Date(Date.now() + 2 * 86400_000);
+  const twoWeeksOut = new Date(Date.now() + 14 * 86400_000);
   const [filters, setFilters] = useState({
     from: tomorrow,
-    to: dayAfter,
+    to: twoWeeksOut,
     maxRateCents: null,
   });
   const { groups, loading } = useOpenSlots(filters);
