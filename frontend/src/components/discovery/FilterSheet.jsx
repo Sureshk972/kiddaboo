@@ -6,8 +6,12 @@ export default function FilterSheet({ initial, onApply }) {
   const [to, setTo] = useState(initial.to);
   const [maxRate, setMaxRate] = useState(initial.maxRateCents ? initial.maxRateCents / 100 : "");
 
+  // iOS Safari's native datetime-local input enforces an intrinsic
+  // minimum width that ignores w-full and overflows the container.
+  // min-w-0 + appearance-none neutralizes that; box-border is the
+  // Tailwind preflight default but stated explicitly for clarity.
   const inputCls =
-    "w-full bg-white border border-cream-dark px-3 py-2.5 text-sm text-charcoal focus:border-sage focus:outline-none";
+    "block w-full min-w-0 box-border appearance-none bg-white border border-cream-dark px-3 py-2.5 text-sm text-charcoal focus:border-sage focus:outline-none";
   const labelCls = "text-xs font-medium text-charcoal";
 
   return (
