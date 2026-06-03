@@ -1,8 +1,21 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
   const auth = req.headers.get("Authorization");
-  if (!auth) return new Response("missing auth", { status: 401 });
+  if (!auth) return json({ error: "missing auth" }, 401);
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -10,21 +23,21 @@ Deno.serve(async (req) => {
     { global: { headers: { Authorization: auth } } }
   );
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return new Response("unauthenticated", { status: 401 });
+  if (!user) return json({ error: "unauthenticated" }, 401);
 
   const { booking_id } = await req.json();
   const { data: booking } = await supabase
     .from("bookings")
     .select("*, slot:nanny_slots(ends_at)")
     .eq("id", booking_id).single();
-  if (!booking) return new Response("not found", { status: 404 });
+  if (!booking) return json({ error: "not found" }, 404);
   if (![booking.nanny_id, booking.parent_id].includes(user.id))
-    return new Response("forbidden", { status: 403 });
-  if (booking.status !== "confirmed") return new Response("not confirmed", { status: 409 });
-  if (new Date(booking.slot.ends_at) > new Date()) return new Response("not yet ended", { status: 409 });
+    return json({ error: "forbidden" }, 403);
+  if (booking.status !== "confirmed") return json({ error: "not confirmed" }, 409);
+  if (new Date(booking.slot.ends_at) > new Date()) return json({ error: "not yet ended" }, 409);
 
   await supabase.from("bookings")
     .update({ status: "completed", completed_at: new Date().toISOString() })
     .eq("id", booking_id);
-  return Response.json({ ok: true });
+  return json({ ok: true });
 });

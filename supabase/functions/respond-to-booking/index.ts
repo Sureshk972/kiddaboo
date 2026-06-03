@@ -3,9 +3,22 @@ import Stripe from "https://esm.sh/stripe@14?target=denonext";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2024-06-20" });
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
   const auth = req.headers.get("Authorization");
-  if (!auth) return new Response("missing auth", { status: 401 });
+  if (!auth) return json({ error: "missing auth" }, 401);
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -14,20 +27,20 @@ Deno.serve(async (req) => {
   );
 
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return new Response("unauthenticated", { status: 401 });
+  if (!user) return json({ error: "unauthenticated" }, 401);
 
   const { booking_id, decision } = await req.json();
-  if (!["accept", "decline"].includes(decision)) return new Response("bad decision", { status: 400 });
+  if (!["accept", "decline"].includes(decision)) return json({ error: "bad decision" }, 400);
 
   const { data: booking } = await supabase
     .from("bookings")
     .select("*")
     .eq("id", booking_id)
     .single();
-  if (!booking) return new Response("not found", { status: 404 });
-  if (booking.nanny_id !== user.id) return new Response("not your booking", { status: 403 });
-  if (booking.status !== "pending") return new Response("not pending", { status: 409 });
-  if (new Date(booking.acceptance_expires_at) <= new Date()) return new Response("expired", { status: 409 });
+  if (!booking) return json({ error: "not found" }, 404);
+  if (booking.nanny_id !== user.id) return json({ error: "not your booking" }, 403);
+  if (booking.status !== "pending") return json({ error: "not pending" }, 409);
+  if (new Date(booking.acceptance_expires_at) <= new Date()) return json({ error: "expired" }, 409);
 
   if (decision === "accept") {
     try {
@@ -41,7 +54,7 @@ Deno.serve(async (req) => {
         .update({ status: "pending_payment_retry" })
         .eq("id", booking_id);
       const msg = err instanceof Error ? err.message : String(err);
-      return new Response(`capture failed: ${msg}`, { status: 402 });
+      return json({ error: `capture failed: ${msg}` }, 402);
     }
   } else {
     await stripe.paymentIntents.cancel(booking.stripe_payment_intent_id!).catch(() => {});
@@ -51,5 +64,5 @@ Deno.serve(async (req) => {
     await supabase.from("nanny_slots").update({ status: "open" }).eq("id", booking.slot_id);
   }
 
-  return Response.json({ ok: true });
+  return json({ ok: true });
 });
