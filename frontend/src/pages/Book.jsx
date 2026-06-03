@@ -48,6 +48,8 @@ function BookForm({ slot }) {
     // Send the user JWT explicitly. supabase-js *should* auto-inject it,
     // but observed: the function gets the anon key in some cached/PWA
     // scenarios, which fails auth. Belt and suspenders.
+    // Force a refresh first in case the cached access_token is expired.
+    await supabase.auth.refreshSession().catch(() => {});
     const { data: sessionData } = await supabase.auth.getSession();
     const accessToken = sessionData?.session?.access_token;
     if (!accessToken) {
@@ -71,6 +73,13 @@ function BookForm({ slot }) {
           detail = parsed.detail
             ? `${parsed.error}: ${parsed.detail}`
             : parsed.error || body;
+          // Append debug fields if present (only set on auth failures right now).
+          const dbg = [];
+          if (parsed.claimsRole) dbg.push(`role=${parsed.claimsRole}`);
+          if (parsed.claimsExpired) dbg.push("expired");
+          if (parsed.tokenLen != null) dbg.push(`len=${parsed.tokenLen}`);
+          if (parsed.tokenPrefix) dbg.push(`pfx=${parsed.tokenPrefix}`);
+          if (dbg.length) detail += ` [${dbg.join(", ")}]`;
         }
       } catch {
         /* fall through with generic message */

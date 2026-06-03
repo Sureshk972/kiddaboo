@@ -28,10 +28,33 @@ Deno.serve(async (req) => {
     { global: { headers: { Authorization: auth } } }
   );
 
-  const { data: { user }, error: userErr } = await supabase.auth.getUser(
-    auth.replace("Bearer ", "")
-  );
-  if (userErr || !user) return json({ error: "unauthenticated", detail: userErr?.message }, 401);
+  const token = auth.replace("Bearer ", "");
+  // Decode the JWT payload (middle segment) so we can include the role
+  // and expiry status in the error response — helps diagnose stale
+  // sessions vs. anon-key vs. malformed token.
+  let claimsRole: string | undefined;
+  let claimsExpired = false;
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+    claimsRole = payload?.role;
+    if (payload?.exp && payload.exp * 1000 < Date.now()) claimsExpired = true;
+  } catch {
+    /* not a valid JWT */
+  }
+  const { data: { user }, error: userErr } = await supabase.auth.getUser(token);
+  if (userErr || !user) {
+    return json(
+      {
+        error: "unauthenticated",
+        detail: userErr?.message,
+        tokenLen: token.length,
+        tokenPrefix: token.slice(0, 8),
+        claimsRole,
+        claimsExpired,
+      },
+      401
+    );
+  }
 
   const { slot_id, note, payment_method_id } = await req.json();
   if (!slot_id || !payment_method_id) return json({ error: "missing fields" }, 400);
