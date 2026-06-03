@@ -49,7 +49,19 @@ function BookForm({ slot }) {
       body: { slot_id: slot.id, note, payment_method_id: paymentMethod.id },
     });
     if (invokeErr) {
-      setError(invokeErr.message);
+      // supabase-js wraps non-2xx as "Edge Function returned a non-2xx status
+      // code" — the real error (JSON {error: "..."}) is on .context (a Response).
+      let detail = invokeErr.message;
+      try {
+        const body = await invokeErr.context?.text?.();
+        if (body) {
+          const parsed = JSON.parse(body);
+          detail = parsed.error || body;
+        }
+      } catch {
+        /* fall through with generic message */
+      }
+      setError(detail);
       setSubmitting(false);
       return;
     }
