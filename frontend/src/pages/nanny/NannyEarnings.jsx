@@ -7,6 +7,8 @@ export default function NannyEarnings() {
   const { user, profile } = useAuth();
   const [completedTotal, setCompletedTotal] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
+  const [pendingTotal, setPendingTotal] = useState(0);
+  const [pendingCount, setPendingCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [connectError, setConnectError] = useState(null);
@@ -16,15 +18,17 @@ export default function NannyEarnings() {
     (async () => {
       const { data } = await supabase
         .from("bookings")
-        .select("rate_cents, platform_fee_cents")
+        .select("rate_cents, platform_fee_cents, status")
         .eq("nanny_id", user.id)
-        .eq("status", "completed");
-      const total = (data || []).reduce(
-        (s, b) => s + b.rate_cents - b.platform_fee_cents,
-        0
-      );
-      setCompletedTotal(total);
-      setCompletedCount(data?.length || 0);
+        .in("status", ["completed", "confirmed"]);
+      const rows = data || [];
+      const completed = rows.filter((b) => b.status === "completed");
+      const pending = rows.filter((b) => b.status === "confirmed");
+      const sum = (acc, b) => acc + b.rate_cents - b.platform_fee_cents;
+      setCompletedTotal(completed.reduce(sum, 0));
+      setCompletedCount(completed.length);
+      setPendingTotal(pending.reduce(sum, 0));
+      setPendingCount(pending.length);
       setLoading(false);
     })();
   }, [user?.id]);
@@ -94,7 +98,7 @@ export default function NannyEarnings() {
         <>
           <section className="bg-white border border-cream-dark p-6 text-center">
             <p className="text-xs font-bold uppercase tracking-[1.5px] text-taupe">
-              Total earned
+              Earned (paid out)
             </p>
             <p className="text-4xl font-heading font-bold text-sage-dark mt-2">
               ${(completedTotal / 100).toFixed(2)}
@@ -104,6 +108,24 @@ export default function NannyEarnings() {
               {" · "}your share after Kiddaboo's 15% service fee
             </p>
           </section>
+
+          {pendingCount > 0 && (
+            <section className="bg-cream/60 border border-cream-dark p-4 flex items-baseline justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[1.5px] text-taupe">
+                  Upcoming
+                </p>
+                <p className="text-[11px] text-taupe mt-1">
+                  {pendingCount} confirmed session{pendingCount === 1 ? "" : "s"}
+                  {" · "}paid out after each session ends
+                </p>
+              </div>
+              <p className="text-2xl font-heading font-bold text-charcoal whitespace-nowrap">
+                ${(pendingTotal / 100).toFixed(2)}
+              </p>
+            </section>
+          )}
+
           <p className="text-xs text-taupe text-center px-4">
             Payouts are managed by Stripe and sent to your linked bank account
             on a rolling schedule.
