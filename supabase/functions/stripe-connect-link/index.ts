@@ -26,8 +26,10 @@ Deno.serve(async (req) => {
     { global: { headers: { Authorization: auth } } }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return json({ error: "unauthenticated" }, 401);
+  const { data: { user }, error: userErr } = await supabase.auth.getUser(
+    auth.replace("Bearer ", "")
+  );
+  if (!user) return json({ error: "unauthenticated", detail: userErr?.message }, 401);
 
   const { data: profile } = await supabase
     .from("profiles")

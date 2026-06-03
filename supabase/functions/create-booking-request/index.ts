@@ -28,8 +28,10 @@ Deno.serve(async (req) => {
     { global: { headers: { Authorization: auth } } }
   );
 
-  const { data: { user }, error: userErr } = await supabase.auth.getUser();
-  if (userErr || !user) return json({ error: "unauthenticated" }, 401);
+  const { data: { user }, error: userErr } = await supabase.auth.getUser(
+    auth.replace("Bearer ", "")
+  );
+  if (userErr || !user) return json({ error: "unauthenticated", detail: userErr?.message }, 401);
 
   const { slot_id, note, payment_method_id } = await req.json();
   if (!slot_id || !payment_method_id) return json({ error: "missing fields" }, 400);
