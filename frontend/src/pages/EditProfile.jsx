@@ -220,12 +220,16 @@ export default function EditProfile() {
         {/* Bio */}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-taupe">
-            About you & your family
+            {profile?.account_type === "nanny" ? "A little about myself" : "About you & your family"}
           </label>
           <textarea
             value={bio}
             onChange={(e) => setBio(e.target.value)}
-            placeholder="A little about your family, your values, and what you're looking for..."
+            placeholder={
+              profile?.account_type === "nanny"
+                ? "Your experience, what ages you love, how you spend a session, anything that helps parents pick you..."
+                : "A little about your family, your values, and what you're looking for..."
+            }
             maxLength={200}
             rows={3}
             className="

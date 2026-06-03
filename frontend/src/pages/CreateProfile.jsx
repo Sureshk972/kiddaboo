@@ -211,7 +211,7 @@ export default function CreateProfile() {
         <div className="flex flex-col gap-1.5">
           <div className="flex items-baseline justify-between">
             <label className="text-sm font-medium text-taupe">
-              {isNanny ? "About you" : "About you & your family"}
+              {isNanny ? "A little about myself" : "About you & your family"}
             </label>
             <span className="text-[11px] text-taupe/60">200 char max</span>
           </div>
