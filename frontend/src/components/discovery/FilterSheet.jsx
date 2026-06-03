@@ -22,28 +22,26 @@ export default function FilterSheet({ initial, onApply }) {
       }}
       className="bg-white border border-cream-dark p-4 flex flex-col gap-3"
     >
-      <div className="grid grid-cols-2 gap-3">
-        <label className="flex flex-col gap-1">
-          <span className={labelCls}>From</span>
-          <input
-            type="datetime-local"
-            value={from}
-            onChange={(e) => setFrom(e.target.value)}
-            required
-            className={inputCls}
-          />
-        </label>
-        <label className="flex flex-col gap-1">
-          <span className={labelCls}>To</span>
-          <input
-            type="datetime-local"
-            value={to}
-            onChange={(e) => setTo(e.target.value)}
-            required
-            className={inputCls}
-          />
-        </label>
-      </div>
+      <label className="flex flex-col gap-1">
+        <span className={labelCls}>From</span>
+        <input
+          type="datetime-local"
+          value={from}
+          onChange={(e) => setFrom(e.target.value)}
+          required
+          className={inputCls}
+        />
+      </label>
+      <label className="flex flex-col gap-1">
+        <span className={labelCls}>To</span>
+        <input
+          type="datetime-local"
+          value={to}
+          onChange={(e) => setTo(e.target.value)}
+          required
+          className={inputCls}
+        />
+      </label>
       <label className="flex flex-col gap-1">
         <span className={labelCls}>Max rate ($/hr)</span>
         <input
