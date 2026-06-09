@@ -57,14 +57,13 @@ function BookForm({ slot }) {
       setSubmitting(false);
       return;
     }
-    const { error: invokeErr } = await supabase.functions.invoke("create-booking-request", {
-      body: { slot_id: slot.id, note, payment_method_id: paymentMethod.id },
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-    if (invokeErr) {
-      // supabase-js wraps non-2xx as "Edge Function returned a non-2xx status
-      // code" — the real error (JSON {error: "...", detail?: "..."}) is on
-      // .context (a Response).
+    const invokeBooking = (payload) =>
+      supabase.functions.invoke("create-booking-request", {
+        body: payload,
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+    const extractError = async (invokeErr) => {
       let detail = invokeErr.message;
       try {
         const body = await invokeErr.context?.text?.();
@@ -75,10 +74,41 @@ function BookForm({ slot }) {
       } catch {
         /* fall through with generic message */
       }
-      setError(detail);
+      return detail;
+    };
+
+    const { data, error: invokeErr } = await invokeBooking({
+      slot_id: slot.id,
+      note,
+      payment_method_id: paymentMethod.id,
+    });
+    if (invokeErr) {
+      setError(await extractError(invokeErr));
       setSubmitting(false);
       return;
     }
+
+    if (data?.requires_action) {
+      const { error: actionErr } = await stripe.handleNextAction({
+        clientSecret: data.client_secret,
+      });
+      if (actionErr) {
+        setError(actionErr.message);
+        setSubmitting(false);
+        return;
+      }
+      const { error: finalizeErr } = await invokeBooking({
+        slot_id: slot.id,
+        note,
+        confirmed_payment_intent_id: data.payment_intent_id,
+      });
+      if (finalizeErr) {
+        setError(await extractError(finalizeErr));
+        setSubmitting(false);
+        return;
+      }
+    }
+
     navigate("/requests");
   };
 

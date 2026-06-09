@@ -34,8 +34,11 @@ Deno.serve(async (req) => {
     return json({ error: "unauthenticated", detail: userErr?.message }, 401);
   }
 
-  const { slot_id, note, payment_method_id } = await req.json();
-  if (!slot_id || !payment_method_id) return json({ error: "missing fields" }, 400);
+  const { slot_id, note, payment_method_id, confirmed_payment_intent_id } = await req.json();
+  if (!slot_id) return json({ error: "missing fields" }, 400);
+  if (!payment_method_id && !confirmed_payment_intent_id) {
+    return json({ error: "missing fields" }, 400);
+  }
 
   const { data: slot, error: slotErr } = await supabase
     .from("nanny_slots")
@@ -76,25 +79,50 @@ Deno.serve(async (req) => {
   ));
 
   let pi;
-  try {
-    pi = await stripe.paymentIntents.create({
-      amount: slot.rate_cents + fee,
-      currency: "usd",
-      customer: customerId,
-      payment_method: payment_method_id,
-      capture_method: "manual",
-      confirm: true,
-      off_session: false,
-      // Card-only: skip Klarna/Affirm/etc. which would require a return_url.
-      automatic_payment_methods: { enabled: true, allow_redirects: "never" },
-      application_fee_amount: fee,
-      transfer_data: { destination: nanny.stripe_connect_account_id },
-      metadata: { slot_id, parent_id: user.id, nanny_id: slot.nanny_id },
-    });
-  } catch (e) {
-    return json({ error: e?.message || "stripe error" }, 402);
+  if (confirmed_payment_intent_id) {
+    // Phase 2: client completed 3DS. Pick up the PI and verify it.
+    try {
+      pi = await stripe.paymentIntents.retrieve(confirmed_payment_intent_id);
+    } catch (e) {
+      return json({ error: e?.message || "stripe error" }, 402);
+    }
+    if (pi.metadata?.parent_id !== user.id || pi.metadata?.slot_id !== slot_id) {
+      return json({ error: "payment intent does not match request" }, 400);
+    }
+  } else {
+    // Phase 1: create + confirm. Idempotency key keeps a client retry from
+    // creating a second PI for the same slot+parent+payment method.
+    const idempotencyKey = `book:${slot_id}:${user.id}:${payment_method_id}`;
+    try {
+      pi = await stripe.paymentIntents.create(
+        {
+          amount: slot.rate_cents + fee,
+          currency: "usd",
+          customer: customerId,
+          payment_method: payment_method_id,
+          capture_method: "manual",
+          confirm: true,
+          off_session: false,
+          // Card-only: skip Klarna/Affirm/etc. which would require a return_url.
+          automatic_payment_methods: { enabled: true, allow_redirects: "never" },
+          application_fee_amount: fee,
+          transfer_data: { destination: nanny.stripe_connect_account_id },
+          metadata: { slot_id, parent_id: user.id, nanny_id: slot.nanny_id },
+        },
+        { idempotencyKey }
+      );
+    } catch (e) {
+      return json({ error: e?.message || "stripe error" }, 402);
+    }
   }
 
+  if (pi.status === "requires_action") {
+    return json({
+      requires_action: true,
+      client_secret: pi.client_secret,
+      payment_intent_id: pi.id,
+    });
+  }
   if (pi.status !== "requires_capture") {
     return json({ error: `payment auth failed: ${pi.status}` }, 402);
   }
