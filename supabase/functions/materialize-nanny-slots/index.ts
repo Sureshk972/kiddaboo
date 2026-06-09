@@ -53,17 +53,29 @@ Deno.serve(async () => {
     }
   }
 
-  if (slots.length === 0) return new Response("no new slots", { status: 200 });
+  const nowIso = new Date().toISOString();
 
-  const { error: insertErr } = await supabase
+  // Rebuild future open slots from current active blocks. This makes block
+  // edits (rate, time) propagate, and removes orphans when a block is
+  // soft-deleted or its start_time changes. requested/booked/past are
+  // preserved so in-flight bookings aren't disturbed.
+  const { error: deleteErr } = await supabase
     .from("nanny_slots")
-    .upsert(slots, { onConflict: "block_id,starts_at", ignoreDuplicates: true });
+    .delete()
+    .eq("status", "open")
+    .gte("starts_at", nowIso);
+  if (deleteErr) return new Response(deleteErr.message, { status: 500 });
 
-  if (insertErr) return new Response(insertErr.message, { status: 500 });
+  if (slots.length > 0) {
+    const { error: insertErr } = await supabase
+      .from("nanny_slots")
+      .upsert(slots, { onConflict: "block_id,starts_at" });
+    if (insertErr) return new Response(insertErr.message, { status: 500 });
+  }
 
   await supabase.from("nanny_slots")
     .update({ status: "past" })
-    .lt("ends_at", new Date().toISOString())
+    .lt("ends_at", nowIso)
     .eq("status", "open");
 
   return new Response(`materialized ${slots.length} candidate slots`, { status: 200 });
