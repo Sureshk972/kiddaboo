@@ -10,7 +10,7 @@ Deno.serve(async () => {
 
   const { data: blocks, error: blocksErr } = await supabase
     .from("nanny_availability_blocks")
-    .select("id, nanny_id, day_of_week, start_time, end_time, timezone, rate_cents")
+    .select("id, nanny_id, day_of_week, specific_date, start_time, end_time, timezone, rate_cents")
     .eq("active", true);
 
   if (blocksErr) return new Response(blocksErr.message, { status: 500 });
@@ -20,32 +20,36 @@ Deno.serve(async () => {
 
   const slots: Array<Record<string, unknown>> = [];
 
+  const pushSlot = (b: Record<string, any>, date: Date) => {
+    const [sh, sm] = b.start_time.split(":").map(Number);
+    const [eh, em] = b.end_time.split(":").map(Number);
+    const startLocal = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), sh, sm));
+    const endLocal = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), eh, em));
+    const offsetMs = tzOffsetMs(b.timezone, startLocal);
+    const startsAt = new Date(startLocal.getTime() - offsetMs);
+    const endsAt = new Date(endLocal.getTime() - offsetMs);
+    if (startsAt < new Date()) return;
+    slots.push({
+      block_id: b.id,
+      nanny_id: b.nanny_id,
+      starts_at: startsAt.toISOString(),
+      ends_at: endsAt.toISOString(),
+      rate_cents: b.rate_cents,
+      status: "open",
+    });
+  };
+
   for (const b of blocks ?? []) {
+    if (b.specific_date) {
+      const [y, m, d] = b.specific_date.split("-").map(Number);
+      pushSlot(b, new Date(Date.UTC(y, m - 1, d)));
+      continue;
+    }
     for (let d = 0; d <= HORIZON_DAYS; d++) {
       const date = new Date(today);
       date.setUTCDate(today.getUTCDate() + d);
       if (date.getUTCDay() !== b.day_of_week) continue;
-
-      const [sh, sm] = b.start_time.split(":").map(Number);
-      const [eh, em] = b.end_time.split(":").map(Number);
-
-      const startLocal = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), sh, sm));
-      const endLocal = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), eh, em));
-
-      const offsetMs = tzOffsetMs(b.timezone, startLocal);
-      const startsAt = new Date(startLocal.getTime() - offsetMs);
-      const endsAt = new Date(endLocal.getTime() - offsetMs);
-
-      if (startsAt < new Date()) continue;
-
-      slots.push({
-        block_id: b.id,
-        nanny_id: b.nanny_id,
-        starts_at: startsAt.toISOString(),
-        ends_at: endsAt.toISOString(),
-        rate_cents: b.rate_cents,
-        status: "open",
-      });
+      pushSlot(b, date);
     }
   }
 
