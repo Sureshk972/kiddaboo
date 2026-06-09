@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useOpenSlots } from "../hooks/useOpenSlots";
+import { useSlotUpdates } from "../hooks/useSlotUpdates";
 import FilterSheet from "../components/discovery/FilterSheet";
 import NannyCard from "../components/discovery/NannyCard";
+import NewSlotsBanner from "../components/discovery/NewSlotsBanner";
 
 export default function Discover() {
   // Default window: tomorrow → two weeks out. Narrower windows produced
@@ -14,7 +16,30 @@ export default function Discover() {
     to: twoWeeksOut,
     maxRateCents: null,
   });
-  const { groups, loading } = useOpenSlots(filters);
+  const { groups, loading, refresh } = useOpenSlots(filters);
+
+  const visibleSlots = useMemo(
+    () =>
+      groups.flatMap((g) =>
+        g.slots.map((s) => ({
+          id: s.id,
+          starts_at: s.starts_at,
+          ends_at: s.ends_at,
+          rate_cents: s.rate_cents,
+        }))
+      ),
+    [groups]
+  );
+  const { pendingCount, dismiss } = useSlotUpdates({
+    from: filters.from,
+    to: filters.to,
+    maxRateCents: filters.maxRateCents,
+    visibleSlots,
+  });
+  const applyUpdates = () => {
+    dismiss();
+    refresh();
+  };
 
   const fmtForInput = (d) => {
     const tzOffset = d.getTimezoneOffset() * 60000;
@@ -26,6 +51,8 @@ export default function Discover() {
       <h1 className="text-2xl font-heading font-bold tracking-tight text-sage-dark">
         Find a nanny
       </h1>
+
+      <NewSlotsBanner count={pendingCount} onTap={applyUpdates} />
 
       <FilterSheet
         initial={{

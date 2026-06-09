@@ -138,6 +138,7 @@ function BookForm({ slot }) {
 export default function Book() {
   const { slotId } = useParams();
   const [slot, setSlot] = useState(null);
+  const [unavailable, setUnavailable] = useState(false);
   useEffect(() => {
     (async () => {
       const { data } = await supabase
@@ -147,7 +148,50 @@ export default function Book() {
         .single();
       setSlot(data);
     })();
+
+    const channel = supabase
+      .channel(`nanny_slot_${slotId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "nanny_slots", filter: `id=eq.${slotId}` },
+        (payload) => {
+          if (payload.eventType === "DELETE") {
+            setUnavailable(true);
+            return;
+          }
+          if (payload.new) {
+            if (payload.new.status !== "open") {
+              setUnavailable(true);
+              return;
+            }
+            setSlot((prev) => (prev ? { ...prev, ...payload.new } : prev));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [slotId]);
+
+  if (unavailable) {
+    return (
+      <div className="min-h-screen bg-cream flex items-center justify-center px-5">
+        <div className="bg-white border border-cream-dark p-6 text-center max-w-sm">
+          <h1 className="text-lg font-heading font-bold text-sage-dark mb-2">
+            This slot is no longer available
+          </h1>
+          <p className="text-sm text-taupe mb-4">
+            The nanny just updated their availability. Pick another slot.
+          </p>
+          <Link to="/" className="text-sm font-medium text-sage hover:underline">
+            Back to find a nanny
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (!slot) {
     return (
