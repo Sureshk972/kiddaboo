@@ -14,6 +14,7 @@ export function useNannyBlocks() {
       .from("nanny_availability_blocks")
       .select("*")
       .eq("nanny_id", user.id)
+      .eq("active", true)
       .order("day_of_week", { ascending: true });
     if (!error) setBlocks(data || []);
     setLoading(false);
@@ -28,7 +29,12 @@ export function useNannyBlocks() {
       .upsert(payload)
       .select()
       .single();
-    if (!error) await refresh();
+    if (!error) {
+      // Cron materializes daily; trigger now so parents see this block immediately.
+      const { error: matErr } = await supabase.functions.invoke("materialize-nanny-slots");
+      if (matErr) console.error("materialize-nanny-slots failed", matErr);
+      await refresh();
+    }
     return { data, error };
   }, [user, refresh]);
 
