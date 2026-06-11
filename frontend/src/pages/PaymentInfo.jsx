@@ -66,19 +66,20 @@ export default function PaymentInfo() {
           </h2>
           <ul className="text-sm text-taupe-dark leading-relaxed list-disc pl-5 space-y-1">
             <li>
-              <strong>Session rate</strong> — the nanny's hourly rate × hours
-              booked.
+              <strong>Session rate</strong> — the nanny's posted rate ×
+              hours booked. This goes entirely to the nanny.
             </li>
             <li>
               <strong>Kiddaboo service fee — 15%</strong> of the session
-              rate. This keeps the platform running, covers Stripe
-              processing, and is always shown to you on the booking screen
-              before you tap Request.
+              rate, added on top. This keeps the platform running, covers
+              Stripe processing, and is always shown to you on the booking
+              screen before you tap Request.
             </li>
           </ul>
           <p className="text-sm text-taupe-dark leading-relaxed mt-3">
-            Your total is the sum of the two. There are no hidden charges
-            after the fact and no recurring subscription — you only pay when
+            Example: a $100 session rate means you pay <strong>$115</strong>{" "}
+            total — $100 to the nanny, $15 to Kiddaboo. No hidden charges
+            after the fact, no recurring subscription — you only pay when
             you book.
           </p>
         </section>

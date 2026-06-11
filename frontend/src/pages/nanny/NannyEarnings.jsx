@@ -83,7 +83,9 @@ export default function NannyEarnings() {
       const rows = data || [];
       const completed = rows.filter((b) => b.status === "completed");
       const pending = rows.filter((b) => b.status === "confirmed");
-      const sum = (acc, b) => acc + b.rate_cents - b.platform_fee_cents;
+      // Nanny keeps the full posted rate; Kiddaboo's 15% is added on top
+      // for the parent, not deducted from the nanny's share.
+      const sum = (acc, b) => acc + b.rate_cents;
       setCompletedTotal(completed.reduce(sum, 0));
       setCompletedCount(completed.length);
       setPendingTotal(pending.reduce(sum, 0));
@@ -195,7 +197,7 @@ export default function NannyEarnings() {
             </p>
             <p className="text-xs text-taupe mt-2">
               {completedCount} completed session{completedCount === 1 ? "" : "s"}
-              {" · "}your share after Kiddaboo's 15% service fee
+              {" · "}your full posted rate (Kiddaboo's 15% is paid by the parent)
             </p>
           </section>
 

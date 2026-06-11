@@ -50,9 +50,10 @@ export default function PayoutInfo() {
           <p className="text-sm text-taupe-dark leading-relaxed">
             The instant you tap <strong>Accept</strong>, Stripe captures the
             parent's card and transfers your share into your Stripe balance.
-            Your share is the session amount minus Kiddaboo's 15% service fee.
-            Funds are in your account at that moment — you don't have to wait
-            for the session to happen.
+            You receive your <strong>full posted rate</strong> — Kiddaboo's
+            15% service fee is added on top and paid by the parent, not
+            deducted from your share. Funds are in your account at that
+            moment — you don't have to wait for the session to happen.
           </p>
         </section>
 
@@ -89,8 +90,8 @@ export default function PayoutInfo() {
           </h2>
           <ul className="text-sm text-taupe-dark leading-relaxed list-disc pl-5 space-y-1">
             <li>
-              <strong>Earned (completed sessions)</strong> — total from sessions
-              that have ended, after the service fee.
+              <strong>Earned (completed sessions)</strong> — total from
+              sessions that have ended, at your full posted rate.
             </li>
             <li>
               <strong>Upcoming</strong> — already in your Stripe balance from
