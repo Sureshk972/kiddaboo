@@ -90,7 +90,13 @@ function CancelButton({ booking }) {
 }
 
 export default function Upcoming() {
-  const { bookings, loading } = useParentBookings(["confirmed"]);
+  const { bookings: all, loading } = useParentBookings(["confirmed"]);
+  // A confirmed session whose slot has already ended belongs in History
+  // (where the rating prompt lives), not Upcoming.
+  const now = Date.now();
+  const bookings = all.filter(
+    (b) => !b.slot?.ends_at || new Date(b.slot.ends_at).getTime() > now
+  );
   const [phones, setPhones] = useState({});
 
   useEffect(() => {

@@ -61,13 +61,23 @@ function RatingPrompt({ booking }) {
 }
 
 export default function History() {
-  const { bookings, loading } = useParentBookings([
+  const { bookings: raw, loading } = useParentBookings([
     "completed",
+    "confirmed",
     "declined",
     "expired",
     "cancelled_refunded",
     "cancelled_no_refund",
   ]);
+  // A confirmed session whose slot has ended is effectively complete from
+  // the parent's perspective — surface it here so the rating prompt is
+  // available without waiting on the nanny to tap "Mark complete".
+  const now = Date.now();
+  const bookings = raw.filter(
+    (b) =>
+      b.status !== "confirmed" ||
+      (b.slot?.ends_at && new Date(b.slot.ends_at).getTime() <= now)
+  );
 
   return (
     <div className="px-5 py-4 flex flex-col gap-4">
@@ -91,9 +101,14 @@ export default function History() {
                     {formatProfileName(b.nanny)}
                   </h3>
                   <span
-                    className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 whitespace-nowrap ${STATUS_TONE[b.status] || "bg-cream-dark text-taupe-dark"}`}
+                    className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 whitespace-nowrap ${
+                      STATUS_TONE[b.status === "confirmed" ? "completed" : b.status] ||
+                      "bg-cream-dark text-taupe-dark"
+                    }`}
                   >
-                    {STATUS_LABEL[b.status] || b.status.replace(/_/g, " ")}
+                    {b.status === "confirmed"
+                      ? "Completed"
+                      : STATUS_LABEL[b.status] || b.status.replace(/_/g, " ")}
                   </span>
                 </div>
                 <div className="text-xs text-taupe">
@@ -105,7 +120,9 @@ export default function History() {
                     minute: "2-digit",
                   })}
                 </div>
-                {b.status === "completed" && <RatingPrompt booking={b} />}
+                {(b.status === "completed" || b.status === "confirmed") && (
+                  <RatingPrompt booking={b} />
+                )}
               </article>
             </li>
           ))}

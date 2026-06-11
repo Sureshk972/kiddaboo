@@ -312,7 +312,15 @@ function PastCard({ b, onResolved }) {
             {fmtDateTime(b.slot.starts_at)}
           </div>
         </div>
-        <StatusPill status={b.status} />
+        <StatusPill
+          status={
+            b.status === "confirmed" &&
+            b.slot?.ends_at &&
+            new Date(b.slot.ends_at) <= new Date()
+              ? "completed"
+              : b.status
+          }
+        />
       </div>
       {err && <p className="text-xs text-terracotta">{err}</p>}
       {b.status === "confirmed" && (
@@ -325,7 +333,10 @@ function PastCard({ b, onResolved }) {
           {working ? "Marking…" : "Mark complete"}
         </button>
       )}
-      {b.status === "completed" && <NannyRatingPrompt booking={b} />}
+      {/* Allow rating once the session has ended, even before "Mark complete"
+          — Mark complete is now mostly cosmetic; the auto-complete cron will
+          flip the status within 24h regardless. */}
+      <NannyRatingPrompt booking={b} />
     </article>
   );
 }
