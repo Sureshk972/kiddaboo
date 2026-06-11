@@ -26,8 +26,8 @@ export function useOpenSlots({ from, to, maxRateCents = null }) {
         "*, nanny:profiles!nanny_slots_nanny_id_fkey(id, first_name, last_name, photo_url, bio, service_area_lat, service_area_lng)"
       )
       .eq("status", "open")
-      .gte("starts_at", fromIso)
-      .lte("ends_at", toIso)
+      .lt("starts_at", toIso)
+      .gt("ends_at", fromIso)
       .order("starts_at", { ascending: true });
     if (maxRateCents != null) q = q.lte("rate_cents", maxRateCents);
 
