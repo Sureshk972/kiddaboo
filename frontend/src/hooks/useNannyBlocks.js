@@ -29,13 +29,21 @@ export function useNannyBlocks() {
       .upsert(payload)
       .select()
       .single();
-    if (!error) {
-      // Cron materializes daily; trigger now so parents see this block immediately.
-      const { error: matErr } = await supabase.functions.invoke("materialize-nanny-slots");
-      if (matErr) console.error("materialize-nanny-slots failed", matErr);
-      await refresh();
+    if (error) return { data, error };
+    // Cron materializes daily; trigger now so parents see this block immediately.
+    const { error: matErr } = await supabase.functions.invoke("materialize-nanny-slots");
+    await refresh();
+    if (matErr) {
+      console.error("materialize-nanny-slots failed", matErr);
+      return {
+        data,
+        error: {
+          message:
+            "Block saved, but we couldn't publish it to parents yet. It will go live within 24 hours.",
+        },
+      };
     }
-    return { data, error };
+    return { data, error: null };
   }, [user, refresh]);
 
   const remove = useCallback(async (id) => {

@@ -28,7 +28,7 @@ Deno.serve(async () => {
     const offsetMs = tzOffsetMs(b.timezone, startLocal);
     const startsAt = new Date(startLocal.getTime() - offsetMs);
     const endsAt = new Date(endLocal.getTime() - offsetMs);
-    if (startsAt < new Date()) return;
+    if (endsAt <= new Date()) return;
     slots.push({
       block_id: b.id,
       nanny_id: b.nanny_id,
