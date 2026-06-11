@@ -118,7 +118,7 @@ export default function NannyEarnings() {
       setConnectError(res.error?.message || "Couldn't open the Stripe dashboard.");
       return;
     }
-    window.open(res.data.url, "_blank", "noopener,noreferrer");
+    window.location.href = res.data.url;
   };
 
   const needsOnboarding = !profile?.stripe_connect_charges_enabled;
