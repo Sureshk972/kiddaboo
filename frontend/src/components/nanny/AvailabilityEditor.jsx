@@ -52,8 +52,9 @@ export default function AvailabilityEditor() {
     name,
     blocks: blocks.filter((b) => b.day_of_week === dow),
   }));
+  const todayStr = todayIso();
   const dateBlocks = blocks
-    .filter((b) => b.specific_date)
+    .filter((b) => b.specific_date && b.specific_date >= todayStr)
     .sort((a, b) => a.specific_date.localeCompare(b.specific_date));
 
   const submit = async (e) => {

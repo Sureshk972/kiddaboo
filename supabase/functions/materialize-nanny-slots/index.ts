@@ -58,12 +58,26 @@ Deno.serve(async () => {
   // Rebuild future open slots from current active blocks. This makes block
   // edits (rate, time) propagate, and removes orphans when a block is
   // soft-deleted or its start_time changes. requested/booked/past are
-  // preserved so in-flight bookings aren't disturbed.
-  const { error: deleteErr } = await supabase
+  // preserved so in-flight bookings aren't disturbed. We also exclude any
+  // slot referenced by a booking — the FK is on-delete-restrict, and a
+  // booking can legitimately reference an open slot during the brief
+  // window before create-booking-request flips status to "requested".
+  const { data: referencedRows } = await supabase
+    .from("bookings")
+    .select("slot_id");
+  const referencedIds = [
+    ...new Set((referencedRows ?? []).map((r) => r.slot_id).filter(Boolean)),
+  ];
+
+  let deleteQuery = supabase
     .from("nanny_slots")
     .delete()
     .eq("status", "open")
     .gte("starts_at", nowIso);
+  if (referencedIds.length) {
+    deleteQuery = deleteQuery.not("id", "in", `(${referencedIds.join(",")})`);
+  }
+  const { error: deleteErr } = await deleteQuery;
   if (deleteErr) return new Response(deleteErr.message, { status: 500 });
 
   if (slots.length > 0) {
@@ -77,6 +91,16 @@ Deno.serve(async () => {
     .update({ status: "past" })
     .lt("ends_at", nowIso)
     .eq("status", "open");
+
+  // Soft-delete one-off blocks whose specific_date is in the past — they
+  // can no longer produce future slots and just clutter the nanny's UI.
+  const todayStr = new Date().toISOString().slice(0, 10);
+  await supabase
+    .from("nanny_availability_blocks")
+    .update({ active: false })
+    .eq("active", true)
+    .not("specific_date", "is", null)
+    .lt("specific_date", todayStr);
 
   return new Response(`materialized ${slots.length} candidate slots`, { status: 200 });
 });
