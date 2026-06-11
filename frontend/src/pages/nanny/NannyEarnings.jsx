@@ -188,7 +188,7 @@ export default function NannyEarnings() {
         <>
           <section className="bg-white border border-cream-dark p-6 text-center">
             <p className="text-xs font-bold uppercase tracking-[1.5px] text-taupe">
-              Earned (paid out)
+              Earned (completed sessions)
             </p>
             <p className="text-4xl font-heading font-bold text-sage-dark mt-2">
               ${(completedTotal / 100).toFixed(2)}
@@ -207,7 +207,7 @@ export default function NannyEarnings() {
                 </p>
                 <p className="text-[11px] text-taupe mt-1">
                   {pendingCount} confirmed session{pendingCount === 1 ? "" : "s"}
-                  {" · "}paid out after each session ends
+                  {" · "}already in your Stripe balance
                 </p>
               </div>
               <p className="text-2xl font-heading font-bold text-charcoal whitespace-nowrap">
@@ -217,8 +217,10 @@ export default function NannyEarnings() {
           )}
 
           <p className="text-xs text-taupe text-center px-4">
-            Payouts are managed by Stripe and sent to your linked bank account
-            on a rolling schedule.
+            Funds land in your Stripe balance the moment you accept a booking.
+            Stripe pays out to your bank on a rolling 2-business-day schedule
+            (your first payout may be held 7–14 days while Stripe verifies your
+            account).
           </p>
 
           <Button
