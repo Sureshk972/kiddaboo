@@ -3,6 +3,25 @@ import { useParentBookings } from "../hooks/useParentBookings";
 import { supabase } from "../lib/supabase";
 import { formatProfileName } from "../lib/profileName";
 
+function dayLabel(d) {
+  const date = new Date(d);
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  if (date.toDateString() === today.toDateString()) return "Today";
+  if (date.toDateString() === tomorrow.toDateString()) return "Tomorrow";
+  return date.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+}
+
+function fmtSessionTime(d) {
+  const time = new Date(d).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  return `${dayLabel(d)} at ${time}`;
+}
+
+function isToday(d) {
+  return new Date(d).toDateString() === new Date().toDateString();
+}
+
 function CancelButton({ booking }) {
   const [confirming, setConfirming] = useState(false);
   const [working, setWorking] = useState(false);
@@ -103,23 +122,28 @@ export default function Upcoming() {
         </div>
       ) : (
         <ul className="flex flex-col gap-3">
-          {bookings.map((b) => (
+          {bookings.map((b) => {
+            const today = b.slot?.starts_at && isToday(b.slot.starts_at);
+            return (
             <li key={b.id}>
-              <article className="bg-white border border-cream-dark p-4 flex flex-col gap-2.5">
+              <article
+                className={`bg-white border border-cream-dark p-4 flex flex-col gap-2.5 ${
+                  today ? "border-l-4 border-l-sage" : ""
+                }`}
+              >
                 <div>
                   <h3 className="text-base font-heading font-bold text-charcoal">
                     {formatProfileName(b.nanny)}
                   </h3>
-                  <div className="text-xs text-taupe mt-0.5">
-                    {b.slot?.starts_at
-                      ? new Date(b.slot.starts_at).toLocaleString([], {
-                          weekday: "short",
-                          month: "short",
-                          day: "numeric",
-                          hour: "numeric",
-                          minute: "2-digit",
-                        })
-                      : "—"}
+                  <div className="text-xs text-taupe mt-0.5 flex items-center gap-2">
+                    {today && (
+                      <span className="text-[10px] font-bold tracking-wide uppercase bg-sage text-white px-1.5 py-0.5">
+                        Today
+                      </span>
+                    )}
+                    <span>
+                      {b.slot?.starts_at ? fmtSessionTime(b.slot.starts_at) : "Time TBD"}
+                    </span>
                   </div>
                 </div>
                 {b.nanny?.id && phones[b.nanny.id] && (
@@ -141,7 +165,8 @@ export default function Upcoming() {
                 <CancelButton booking={b} />
               </article>
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
     </div>
