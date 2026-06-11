@@ -32,24 +32,28 @@ export default function Requests() {
                     ${(b.rate_cents / 100).toFixed(0)}
                   </span>
                 </div>
-                <div className="text-xs text-taupe">
-                  {new Date(b.slot.starts_at).toLocaleString([], {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                    hour: "numeric",
-                    minute: "2-digit",
-                  })}
-                </div>
-                <div className="text-xs text-charcoal">
-                  Expires{" "}
-                  {new Date(b.acceptance_expires_at).toLocaleString([], {
-                    month: "short",
-                    day: "numeric",
-                    hour: "numeric",
-                    minute: "2-digit",
-                  })}
-                </div>
+                {b.slot?.starts_at && (
+                  <div className="text-xs text-taupe">
+                    {new Date(b.slot.starts_at).toLocaleString([], {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
+                  </div>
+                )}
+                {b.acceptance_expires_at && (
+                  <div className="text-xs text-charcoal">
+                    Expires{" "}
+                    {new Date(b.acceptance_expires_at).toLocaleString([], {
+                      month: "short",
+                      day: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
+                  </div>
+                )}
                 {b.status === "pending_payment_retry" && (
                   <div className="mt-1 bg-terracotta-light px-3 py-2">
                     <p className="text-xs text-terracotta font-medium">

@@ -31,14 +31,23 @@ function parentName(p) {
   return joined || "(parent)";
 }
 
+function dayLabel(d) {
+  const date = new Date(d);
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  if (date.toDateString() === today.toDateString()) return "Today";
+  if (date.toDateString() === tomorrow.toDateString()) return "Tomorrow";
+  return date.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+}
+
 function fmtDateTime(d) {
-  return new Date(d).toLocaleString([], {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
+  const time = new Date(d).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  return `${dayLabel(d)} at ${time}`;
+}
+
+function isToday(d) {
+  return new Date(d).toDateString() === new Date().toDateString();
 }
 
 async function invokeFn(name, body) {
@@ -155,15 +164,25 @@ function UpcomingCard({ b, onResolved }) {
     onResolved();
   };
 
+  const today = isToday(b.slot.starts_at);
   return (
-    <article className="bg-white border border-cream-dark p-4 flex flex-col gap-2">
+    <article
+      className={`bg-white border border-cream-dark p-4 flex flex-col gap-2 ${
+        today ? "border-l-4 border-l-sage" : ""
+      }`}
+    >
       <div className="flex items-start justify-between gap-2">
         <div>
           <div className="text-base font-heading font-bold text-charcoal">
             {parentName(b.parent)}
           </div>
-          <div className="text-xs text-taupe mt-0.5">
-            {fmtDateTime(b.slot.starts_at)}
+          <div className="text-xs text-taupe mt-0.5 flex items-center gap-2">
+            {today && (
+              <span className="text-[10px] font-bold tracking-wide uppercase bg-sage text-white px-1.5 py-0.5">
+                Today
+              </span>
+            )}
+            <span>{fmtDateTime(b.slot.starts_at)}</span>
           </div>
         </div>
         <StatusPill status="confirmed" />

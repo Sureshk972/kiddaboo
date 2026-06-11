@@ -63,6 +63,11 @@ function BookForm({ slot }) {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
 
+    const friendlyError = (raw) => {
+      if (raw === "slot in past") return "This time has already passed. Pick a future slot to continue.";
+      return raw;
+    };
+
     const extractError = async (invokeErr) => {
       let detail = invokeErr.message;
       try {
@@ -74,7 +79,7 @@ function BookForm({ slot }) {
       } catch {
         /* fall through with generic message */
       }
-      return detail;
+      return friendlyError(detail);
     };
 
     const { data, error: invokeErr } = await invokeBooking({
