@@ -50,6 +50,23 @@ function isToday(d) {
   return new Date(d).toDateString() === new Date().toDateString();
 }
 
+function ParentRatingPill({ rating }) {
+  if (!rating || !rating.n) {
+    return (
+      <span className="text-[10px] text-taupe italic">New parent · no ratings yet</span>
+    );
+  }
+  return (
+    <span className="text-[10px] font-medium text-sage-dark inline-flex items-center gap-0.5">
+      <span className="text-sage">★</span>
+      {rating.avg.toFixed(1)}
+      <span className="text-taupe ml-1">
+        · {rating.n} rating{rating.n === 1 ? "" : "s"} from nannies
+      </span>
+    </span>
+  );
+}
+
 async function invokeFn(name, body) {
   // Force refresh + send JWT explicitly (same pattern Book.jsx uses).
   await supabase.auth.refreshSession().catch(() => {});
@@ -85,7 +102,7 @@ function StatusPill({ status }) {
   );
 }
 
-function PendingCard({ b, onResolved }) {
+function PendingCard({ b, onResolved, rating }) {
   const [working, setWorking] = useState(null); // 'accept' | 'decline' | null
   const [err, setErr] = useState(null);
 
@@ -111,7 +128,10 @@ function PendingCard({ b, onResolved }) {
           <div className="text-base font-heading font-bold text-charcoal">
             {parentName(b.parent)}
           </div>
-          <div className="text-xs text-taupe mt-0.5">
+          <div className="mt-0.5">
+            <ParentRatingPill rating={rating} />
+          </div>
+          <div className="text-xs text-taupe mt-1">
             {fmtDateTime(b.slot.starts_at)} – {new Date(b.slot.ends_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
           </div>
         </div>
@@ -147,7 +167,7 @@ function PendingCard({ b, onResolved }) {
   );
 }
 
-function UpcomingCard({ b, onResolved }) {
+function UpcomingCard({ b, onResolved, rating }) {
   const [confirming, setConfirming] = useState(false);
   const [working, setWorking] = useState(false);
   const [err, setErr] = useState(null);
@@ -176,7 +196,10 @@ function UpcomingCard({ b, onResolved }) {
           <div className="text-base font-heading font-bold text-charcoal">
             {parentName(b.parent)}
           </div>
-          <div className="text-xs text-taupe mt-0.5 flex items-center gap-2">
+          <div className="mt-0.5">
+            <ParentRatingPill rating={rating} />
+          </div>
+          <div className="text-xs text-taupe mt-1 flex items-center gap-2">
             {today && (
               <span className="text-[10px] font-bold tracking-wide uppercase bg-sage text-white px-1.5 py-0.5">
                 Today
@@ -325,7 +348,7 @@ function Section({ title, count, empty, children }) {
 }
 
 export default function NannyDashboard() {
-  const { pending, upcoming, past, loading } = useNannyInbox();
+  const { pending, upcoming, past, parentRatings, loading } = useNannyInbox();
   const reload = () => window.location.reload();
 
   return (
@@ -344,7 +367,12 @@ export default function NannyDashboard() {
             empty="No requests waiting for a response."
           >
             {pending.map((b) => (
-              <PendingCard key={b.id} b={b} onResolved={reload} />
+              <PendingCard
+                key={b.id}
+                b={b}
+                onResolved={reload}
+                rating={parentRatings[b.parent_id]}
+              />
             ))}
           </Section>
 
@@ -354,7 +382,12 @@ export default function NannyDashboard() {
             empty="No confirmed sessions ahead."
           >
             {upcoming.map((b) => (
-              <UpcomingCard key={b.id} b={b} onResolved={reload} />
+              <UpcomingCard
+                key={b.id}
+                b={b}
+                onResolved={reload}
+                rating={parentRatings[b.parent_id]}
+              />
             ))}
           </Section>
 
