@@ -70,9 +70,10 @@ export default function PaymentInfo() {
               booked.
             </li>
             <li>
-              <strong>Kiddaboo service fee</strong> — a small flat percentage
-              that keeps the platform running. Always shown to you on the
-              booking screen before you tap Request.
+              <strong>Kiddaboo service fee — 15%</strong> of the session
+              rate. This keeps the platform running, covers Stripe
+              processing, and is always shown to you on the booking screen
+              before you tap Request.
             </li>
           </ul>
           <p className="text-sm text-taupe-dark leading-relaxed mt-3">
