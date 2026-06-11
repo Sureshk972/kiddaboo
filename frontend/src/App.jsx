@@ -24,6 +24,7 @@ const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const PayoutInfo = lazy(() => import("./pages/PayoutInfo"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ChooseRole = lazy(() => import("./pages/onboarding/ChooseRole"));
 const PhoneVerify = lazy(() => import("./pages/onboarding/PhoneVerify"));
@@ -96,6 +97,7 @@ export default function App() {
               {/* Detail pages — requires auth, no tab bar */}
               <Route path="/edit-profile" element={<RequireAuth><EditProfile /></RequireAuth>} />
               <Route path="/notifications" element={<RequireAuth><NotificationSettings /></RequireAuth>} />
+              <Route path="/payout-info" element={<RequireAuth><PayoutInfo /></RequireAuth>} />
 
               {/* 404 catch-all */}
               <Route path="*" element={<NotFound />} />
