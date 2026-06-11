@@ -109,6 +109,18 @@ export default function NannyEarnings() {
     window.location.href = res.data.url;
   };
 
+  const openStripeDashboard = async () => {
+    setConnecting(true);
+    setConnectError(null);
+    const res = await invokeWithJwt("stripe-connect-dashboard");
+    setConnecting(false);
+    if (res.error || !res.data?.url) {
+      setConnectError(res.error?.message || "Couldn't open the Stripe dashboard.");
+      return;
+    }
+    window.open(res.data.url, "_blank", "noopener,noreferrer");
+  };
+
   const needsOnboarding = !profile?.stripe_connect_charges_enabled;
   const hasStartedOnboarding = !!profile?.stripe_connect_account_id;
 
@@ -208,6 +220,21 @@ export default function NannyEarnings() {
             Payouts are managed by Stripe and sent to your linked bank account
             on a rolling schedule.
           </p>
+
+          <Button
+            variant="secondary"
+            onClick={openStripeDashboard}
+            disabled={connecting}
+            fullWidth
+          >
+            {connecting ? "Opening…" : "Manage Stripe account"}
+          </Button>
+          <p className="text-[11px] text-taupe text-center -mt-2">
+            Update your bank account, tax info, or business details on Stripe.
+          </p>
+          {connectError && (
+            <p className="text-xs text-terracotta text-center">{connectError}</p>
+          )}
         </>
       )}
     </div>
