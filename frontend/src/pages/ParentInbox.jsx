@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import InboxTabs from "../components/inbox/InboxTabs";
 import { useParentBookings } from "../hooks/useParentBookings";
+import useInboxAttention from "../hooks/useInboxAttention";
 import { supabase } from "../lib/supabase";
 import { formatProfileName } from "../lib/profileName";
 import RatingSheet from "../components/booking/RatingSheet";
@@ -404,52 +405,12 @@ function PastList() {
   );
 }
 
-// Counts feed the inactive-tab badges. Cheap query — no joins.
-function useInboxCounts(user) {
-  const [counts, setCounts] = useState({ pending: 0, upcoming: 0, past: 0 });
-  useEffect(() => {
-    if (!user) return;
-    let cancelled = false;
-    (async () => {
-      const { data } = await supabase
-        .from("bookings")
-        .select("status, slot:nanny_slots(ends_at)")
-        .eq("parent_id", user.id);
-      if (cancelled || !data) return;
-      const now = Date.now();
-      const c = { pending: 0, upcoming: 0, past: 0 };
-      for (const b of data) {
-        if (b.status === "pending" || b.status === "pending_payment_retry") c.pending++;
-        else if (
-          b.status === "confirmed" &&
-          (!b.slot?.ends_at || new Date(b.slot.ends_at).getTime() > now)
-        )
-          c.upcoming++;
-        else if (PAST_STATUSES.includes(b.status)) c.past++;
-      }
-      setCounts(c);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [user]);
-  return counts;
-}
-
 export default function ParentInbox() {
   const [params, setParams] = useSearchParams();
   const tabParam = params.get("tab");
   const [tab, setTab] = useState(tabParam || null);
-  // Without a tab in the URL, default to Pending if any exist else Upcoming.
-  // We use the local counts hook to pick — but we don't want to wait on it
-  // forever: if user hits the page and counts haven't loaded, default to
-  // upcoming (the most common landing state) and let them switch.
-  const [authUser, setAuthUser] = useState(null);
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setAuthUser(data.user));
-  }, []);
-  const counts = useInboxCounts(authUser);
-  const resolvedTab = tab || (counts.pending > 0 ? "pending" : "upcoming");
+  const { pending, today } = useInboxAttention();
+  const resolvedTab = tab || (pending > 0 ? "pending" : "upcoming");
 
   const onChange = (next) => {
     setTab(next);
@@ -466,9 +427,9 @@ export default function ParentInbox() {
 
       <InboxTabs
         tabs={[
-          { key: "pending", label: "Pending", count: counts.pending },
-          { key: "upcoming", label: "Upcoming", count: counts.upcoming },
-          { key: "past", label: "Past", count: counts.past },
+          { key: "pending", label: "Pending", attention: pending > 0 ? "alert" : null },
+          { key: "upcoming", label: "Upcoming", attention: today > 0 ? "info" : null },
+          { key: "past", label: "Past" },
         ]}
         active={resolvedTab}
         onChange={onChange}

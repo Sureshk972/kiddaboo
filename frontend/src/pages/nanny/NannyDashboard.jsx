@@ -373,9 +373,23 @@ export default function NannyDashboard() {
 
       <InboxTabs
         tabs={[
-          { key: "pending", label: "Pending", count: pending.length },
-          { key: "upcoming", label: "Upcoming", count: upcoming.length },
-          { key: "past", label: "Past", count: past.length },
+          {
+            key: "pending",
+            label: "Pending",
+            attention: pending.length > 0 ? "alert" : null,
+          },
+          {
+            key: "upcoming",
+            label: "Upcoming",
+            attention: upcoming.some(
+              (b) =>
+                b.slot?.starts_at &&
+                new Date(b.slot.starts_at).toDateString() === new Date().toDateString()
+            )
+              ? "info"
+              : null,
+          },
+          { key: "past", label: "Past" },
         ]}
         active={resolvedTab}
         onChange={onChange}
