@@ -145,6 +145,18 @@ export default function MyProfile() {
             {
               icon: (
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M3 6h18M3 12h18M3 18h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              ),
+              label: "Billing history",
+              sublabel: profile?.account_type === "nanny"
+                ? "Every session and what you earned"
+                : "Every booking and what you paid",
+              path: "/billing",
+            },
+            {
+              icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                   <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
                   <path d="M14 2v6h6M8 13h8M8 17h8M8 9h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>

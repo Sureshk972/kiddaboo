@@ -26,6 +26,7 @@ const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const PayoutInfo = lazy(() => import("./pages/PayoutInfo"));
 const PaymentInfo = lazy(() => import("./pages/PaymentInfo"));
+const BillingHistory = lazy(() => import("./pages/BillingHistory"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ChooseRole = lazy(() => import("./pages/onboarding/ChooseRole"));
 const PhoneVerify = lazy(() => import("./pages/onboarding/PhoneVerify"));
@@ -101,6 +102,7 @@ export default function App() {
               <Route path="/notifications" element={<RequireAuth><NotificationSettings /></RequireAuth>} />
               <Route path="/payout-info" element={<RequireAuth><PayoutInfo /></RequireAuth>} />
               <Route path="/payment-info" element={<RequireAuth><PaymentInfo /></RequireAuth>} />
+              <Route path="/billing" element={<RequireAuth><BillingHistory /></RequireAuth>} />
 
               {/* 404 catch-all */}
               <Route path="*" element={<NotFound />} />
