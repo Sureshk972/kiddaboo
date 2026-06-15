@@ -438,6 +438,13 @@ verify_jwt = false
 [functions.submit-join-request]
 verify_jwt = false
 
+# materialize-nanny-slots: called from the nanny app right after a
+# block save so parents see new slots immediately. Same ES256/HS256
+# gateway 401 issue as the functions above; the handler runs with the
+# service role and doesn't need user identity at the gateway.
+[functions.materialize-nanny-slots]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327
