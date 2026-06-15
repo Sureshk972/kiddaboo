@@ -141,6 +141,34 @@ const MessagesIcon = (active) => (
   </svg>
 );
 
+const EarningsIcon = (active) => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <rect
+      x="3"
+      y="6"
+      width="18"
+      height="13"
+      rx="2"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      fill={active ? "currentColor" : "none"}
+      fillOpacity={active ? 0.3 : 0}
+    />
+    <path
+      d="M3 10H21"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+    <circle
+      cx="17"
+      cy="14.5"
+      r="1.25"
+      fill="currentColor"
+    />
+  </svg>
+);
+
 const ProfileIcon = (active) => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
     <circle
@@ -171,7 +199,7 @@ const PARENT_TABS = [
 const NANNY_TABS = [
   { path: "/nanny/dashboard", label: "Inbox", icon: DashboardIcon },
   { path: "/nanny/availability", label: "Availability", icon: InsightsIcon },
-  { path: "/nanny/earnings", label: "Earnings", icon: MessagesIcon },
+  { path: "/nanny/earnings", label: "Earnings", icon: EarningsIcon },
   { path: "/my-profile", label: "Profile", icon: ProfileIcon },
 ];
 
