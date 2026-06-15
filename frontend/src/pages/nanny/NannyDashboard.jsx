@@ -169,7 +169,7 @@ function PendingCard({ b, onResolved, rating }) {
   );
 }
 
-function UpcomingCard({ b, onResolved, rating }) {
+function UpcomingCard({ b, onResolved, rating, parentPhone }) {
   const [confirming, setConfirming] = useState(false);
   const [working, setWorking] = useState(false);
   const [err, setErr] = useState(null);
@@ -212,6 +212,22 @@ function UpcomingCard({ b, onResolved, rating }) {
         </div>
         <StatusPill status="confirmed" />
       </div>
+      {parentPhone && (
+        <div className="flex gap-2">
+          <a
+            href={`tel:${parentPhone}`}
+            className="flex-1 text-center text-sm font-medium bg-sage text-white py-2"
+          >
+            Call
+          </a>
+          <a
+            href={`sms:${parentPhone}`}
+            className="flex-1 text-center text-sm font-medium bg-white border border-sage text-sage-dark py-2"
+          >
+            Text
+          </a>
+        </div>
+      )}
       {!confirming ? (
         <button
           type="button"
@@ -360,6 +376,28 @@ export default function NannyDashboard() {
   const [tab, setTab] = useState(tabParam || null);
   const resolvedTab = tab || (pending.length > 0 ? "pending" : "upcoming");
 
+  // Parent phone lookup for the Call / Text buttons on confirmed sessions —
+  // batched once per upcoming list so each card renders without a per-row
+  // fetch. profiles RLS allows the nanny to read the other party's phone
+  // once a booking links them.
+  const [parentPhones, setParentPhones] = useState({});
+  useEffect(() => {
+    const ids = upcoming.map((b) => b.parent?.id).filter(Boolean);
+    if (!ids.length) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, phone_number")
+        .in("id", ids);
+      if (cancelled) return;
+      setParentPhones(Object.fromEntries((data || []).map((p) => [p.id, p.phone_number])));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [upcoming.length]);
+
   const onChange = (next) => {
     setTab(next);
     setParams({ tab: next }, { replace: true });
@@ -423,6 +461,7 @@ export default function NannyDashboard() {
                 b={b}
                 onResolved={reload}
                 rating={parentRatings[b.parent_id]}
+                parentPhone={parentPhones[b.parent?.id]}
               />
             ))}
           </div>
