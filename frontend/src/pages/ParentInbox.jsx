@@ -32,6 +32,14 @@ const STATUS_TONE = {
   cancelled_no_refund: "bg-terracotta-light text-terracotta",
 };
 
+// Parent's out-of-pocket = nanny share + Kiddaboo fee. Both stored on
+// the booking row at request time, so this is the authoritative total
+// regardless of any rate edits to the underlying slot.
+function totalDollars(b) {
+  const cents = (b.rate_cents || 0) + (b.platform_fee_cents || 0);
+  return (cents / 100).toFixed(0);
+}
+
 function dayLabel(d) {
   const date = new Date(d);
   const today = new Date();
@@ -131,7 +139,7 @@ function PendingList({ onChange }) {
                 {formatProfileName(b.nanny)}
               </h3>
               <span className="text-sm font-bold text-sage-dark whitespace-nowrap">
-                ${(b.rate_cents / 100).toFixed(0)}
+                ${totalDollars(b)}
               </span>
             </div>
             {b.slot?.starts_at && (
@@ -273,20 +281,25 @@ function UpcomingList({ onChange }) {
                 today ? "border-l-4 border-l-sage" : ""
               }`}
             >
-              <div>
-                <h3 className="text-base font-heading font-bold text-charcoal">
-                  {formatProfileName(b.nanny)}
-                </h3>
-                <div className="text-xs text-taupe mt-0.5 flex items-center gap-2">
-                  {today && (
-                    <span className="text-[10px] font-bold tracking-wide uppercase bg-sage text-white px-1.5 py-0.5">
-                      Today
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <h3 className="text-base font-heading font-bold text-charcoal">
+                    {formatProfileName(b.nanny)}
+                  </h3>
+                  <div className="text-xs text-taupe mt-0.5 flex items-center gap-2">
+                    {today && (
+                      <span className="text-[10px] font-bold tracking-wide uppercase bg-sage text-white px-1.5 py-0.5">
+                        Today
+                      </span>
+                    )}
+                    <span>
+                      {b.slot?.starts_at ? fmtSessionTime(b.slot.starts_at) : "Time TBD"}
                     </span>
-                  )}
-                  <span>
-                    {b.slot?.starts_at ? fmtSessionTime(b.slot.starts_at) : "Time TBD"}
-                  </span>
+                  </div>
                 </div>
+                <span className="text-sm font-bold text-sage-dark whitespace-nowrap">
+                  ${totalDollars(b)}
+                </span>
               </div>
               {b.nanny?.id && phones[b.nanny.id] && (
                 <div className="flex gap-2">
@@ -394,6 +407,19 @@ function PastList() {
                   minute: "2-digit",
                 })}
               </div>
+              {b.status === "cancelled_refunded" ? (
+                <div className="text-xs text-charcoal">
+                  Refunded <strong>${totalDollars(b)}</strong>
+                </div>
+              ) : b.status === "cancelled_no_refund" ? (
+                <div className="text-xs text-charcoal">
+                  Paid <strong>${totalDollars(b)}</strong> · no refund
+                </div>
+              ) : b.status === "completed" || b.status === "confirmed" ? (
+                <div className="text-xs text-charcoal">
+                  Paid <strong>${totalDollars(b)}</strong>
+                </div>
+              ) : null}
               {(b.status === "completed" || b.status === "confirmed") && (
                 <RateNannyPrompt booking={b} />
               )}
