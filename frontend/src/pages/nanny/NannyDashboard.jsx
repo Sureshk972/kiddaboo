@@ -210,7 +210,12 @@ function UpcomingCard({ b, onResolved, rating, parentPhone }) {
             <span>{fmtDateTime(b.slot.starts_at)}</span>
           </div>
         </div>
-        <StatusPill status="confirmed" />
+        <div className="flex flex-col items-end gap-1">
+          <span className="text-sm font-bold text-sage-dark whitespace-nowrap">
+            ${(b.rate_cents / 100).toFixed(0)}
+          </span>
+          <StatusPill status="confirmed" />
+        </div>
       </div>
       {parentPhone && (
         <div className="flex gap-2">
@@ -340,6 +345,13 @@ function PastCard({ b, onResolved }) {
           }
         />
       </div>
+      {b.status === "cancelled_refunded" ? (
+        <div className="text-xs text-charcoal">Cancelled · refunded to parent · you keep $0</div>
+      ) : b.status === "cancelled_no_refund" ? (
+        <div className="text-xs text-charcoal">Cancelled late · you keep <strong>${(b.rate_cents / 100).toFixed(0)}</strong></div>
+      ) : b.status === "completed" || b.status === "confirmed" ? (
+        <div className="text-xs text-charcoal">Earned <strong>${(b.rate_cents / 100).toFixed(0)}</strong></div>
+      ) : null}
       {err && <p className="text-xs text-terracotta">{err}</p>}
       {b.status === "confirmed" && (
         <button
@@ -351,9 +363,6 @@ function PastCard({ b, onResolved }) {
           {working ? "Marking…" : "Mark complete"}
         </button>
       )}
-      {/* Allow rating once the session has ended, even before "Mark complete"
-          — Mark complete is now mostly cosmetic; the auto-complete cron will
-          flip the status within 24h regardless. */}
       <NannyRatingPrompt booking={b} />
     </article>
   );
