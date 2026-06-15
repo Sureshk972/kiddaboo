@@ -138,7 +138,7 @@ function PendingCard({ b, onResolved, rating }) {
           </div>
         </div>
         <span className="text-sm font-bold text-sage-dark whitespace-nowrap">
-          ${(b.rate_cents / 100).toFixed(0)}
+          ${(b.rate_cents / 100).toFixed(2)}
         </span>
       </div>
       {b.note_from_parent && (
@@ -212,7 +212,7 @@ function UpcomingCard({ b, onResolved, rating, parentPhone }) {
         </div>
         <div className="flex flex-col items-end gap-1">
           <span className="text-sm font-bold text-sage-dark whitespace-nowrap">
-            ${(b.rate_cents / 100).toFixed(0)}
+            ${(b.rate_cents / 100).toFixed(2)}
           </span>
           <StatusPill status="confirmed" />
         </div>
@@ -348,9 +348,9 @@ function PastCard({ b, onResolved }) {
       {b.status === "cancelled_refunded" ? (
         <div className="text-xs text-charcoal">Cancelled · refunded to parent · you keep $0</div>
       ) : b.status === "cancelled_no_refund" ? (
-        <div className="text-xs text-charcoal">Cancelled late · you keep <strong>${(b.rate_cents / 100).toFixed(0)}</strong></div>
+        <div className="text-xs text-charcoal">Cancelled late · you keep <strong>${(b.rate_cents / 100).toFixed(2)}</strong></div>
       ) : b.status === "completed" || b.status === "confirmed" ? (
-        <div className="text-xs text-charcoal">Earned <strong>${(b.rate_cents / 100).toFixed(0)}</strong></div>
+        <div className="text-xs text-charcoal">Earned <strong>${(b.rate_cents / 100).toFixed(2)}</strong></div>
       ) : null}
       {err && <p className="text-xs text-terracotta">{err}</p>}
       {b.status === "confirmed" && (

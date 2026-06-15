@@ -37,7 +37,7 @@ const STATUS_TONE = {
 // regardless of any rate edits to the underlying slot.
 function totalDollars(b) {
   const cents = (b.rate_cents || 0) + (b.platform_fee_cents || 0);
-  return (cents / 100).toFixed(0);
+  return (cents / 100).toFixed(2);
 }
 
 function dayLabel(d) {
