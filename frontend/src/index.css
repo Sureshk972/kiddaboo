@@ -22,11 +22,43 @@
     /* Same as html above: clip, not hidden. See #32. */
     overflow-x: clip;
     -webkit-text-size-adjust: 100%;
+    /* Kill the rubber-band overscroll on the root document — page
+       content scrolls inside its own containers. Prevents the white
+       gap that appears above the status bar on iOS pull-down. */
+    overscroll-behavior-y: none;
   }
 
   h1, h2, h3, h4 {
     font-family: 'Fraunces', serif;
     color: #2F2F2F;
+  }
+
+  /* --- PWA tap feel ---------------------------------------------------
+     Every interactive element gets:
+       - transparent tap highlight (kills the iOS gray flash)
+       - touch-action: manipulation (kills the 300ms double-tap delay)
+       - a subtle press scale on :active (tactile "I felt that" cue)
+     Buttons/links opt out of text selection — UI chrome shouldn't be
+     selectable; content (p, span, inputs) still selects normally. */
+  button, a, [role="button"], summary, label {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  button:active, a:active, [role="button"]:active {
+    transform: scale(0.97);
+  }
+
+  button, a, [role="button"] {
+    transition: transform 120ms ease-out;
+  }
+
+  /* Inputs still need text selection and the native caret. */
+  input, textarea, [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
   }
 }
 
