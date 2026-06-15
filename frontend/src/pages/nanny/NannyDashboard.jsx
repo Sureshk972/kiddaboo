@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useNannyInbox } from "../../hooks/useNannyInbox";
 import { supabase } from "../../lib/supabase";
 import RatingSheet from "../../components/booking/RatingSheet";
+import InboxTabs from "../../components/inbox/InboxTabs";
 
 const STATUS_LABEL = {
   completed: "Completed",
@@ -341,20 +343,11 @@ function PastCard({ b, onResolved }) {
   );
 }
 
-function Section({ title, count, empty, children }) {
+function Empty({ children }) {
   return (
-    <section className="flex flex-col gap-2">
-      <h2 className="text-xs font-bold uppercase tracking-[1.5px] text-sage-dark">
-        {title} {count != null && <span className="text-taupe">({count})</span>}
-      </h2>
-      {count === 0 ? (
-        <div className="bg-white border border-cream-dark p-4 text-center">
-          <p className="text-xs text-taupe">{empty}</p>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-3">{children}</div>
-      )}
-    </section>
+    <div className="bg-white border border-cream-dark p-6 text-center">
+      <p className="text-sm text-charcoal">{children}</p>
+    </div>
   );
 }
 
@@ -362,21 +355,39 @@ export default function NannyDashboard() {
   const { pending, upcoming, past, parentRatings, loading } = useNannyInbox();
   const reload = () => window.location.reload();
 
+  const [params, setParams] = useSearchParams();
+  const tabParam = params.get("tab");
+  const [tab, setTab] = useState(tabParam || null);
+  const resolvedTab = tab || (pending.length > 0 ? "pending" : "upcoming");
+
+  const onChange = (next) => {
+    setTab(next);
+    setParams({ tab: next }, { replace: true });
+  };
+
   return (
-    <div className="px-5 py-4 flex flex-col gap-6">
+    <div className="px-5 py-4 flex flex-col gap-4">
       <h1 className="text-2xl font-heading font-bold tracking-tight text-sage-dark">
         Inbox
       </h1>
 
+      <InboxTabs
+        tabs={[
+          { key: "pending", label: "Pending", count: pending.length },
+          { key: "upcoming", label: "Upcoming", count: upcoming.length },
+          { key: "past", label: "Past", count: past.length },
+        ]}
+        active={resolvedTab}
+        onChange={onChange}
+      />
+
       {loading ? (
         <p className="text-sm text-taupe text-center py-8">Loading…</p>
-      ) : (
-        <>
-          <Section
-            title="Pending requests"
-            count={pending.length}
-            empty="No requests waiting for a response."
-          >
+      ) : resolvedTab === "pending" ? (
+        pending.length === 0 ? (
+          <Empty>No requests waiting for a response.</Empty>
+        ) : (
+          <div className="flex flex-col gap-3">
             {pending.map((b) => (
               <PendingCard
                 key={b.id}
@@ -385,13 +396,13 @@ export default function NannyDashboard() {
                 rating={parentRatings[b.parent_id]}
               />
             ))}
-          </Section>
-
-          <Section
-            title="Upcoming"
-            count={upcoming.length}
-            empty="No confirmed sessions ahead."
-          >
+          </div>
+        )
+      ) : resolvedTab === "upcoming" ? (
+        upcoming.length === 0 ? (
+          <Empty>No confirmed sessions ahead.</Empty>
+        ) : (
+          <div className="flex flex-col gap-3">
             {upcoming.map((b) => (
               <UpcomingCard
                 key={b.id}
@@ -400,18 +411,16 @@ export default function NannyDashboard() {
                 rating={parentRatings[b.parent_id]}
               />
             ))}
-          </Section>
-
-          <Section
-            title="Past sessions"
-            count={past.length}
-            empty="No sessions yet."
-          >
-            {past.map((b) => (
-              <PastCard key={b.id} b={b} onResolved={reload} />
-            ))}
-          </Section>
-        </>
+          </div>
+        )
+      ) : past.length === 0 ? (
+        <Empty>No sessions yet.</Empty>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {past.map((b) => (
+            <PastCard key={b.id} b={b} onResolved={reload} />
+          ))}
+        </div>
       )}
     </div>
   );

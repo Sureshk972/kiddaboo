@@ -191,8 +191,7 @@ const ProfileIcon = (active) => (
 
 const PARENT_TABS = [
   { path: "/", label: "Discover", icon: BrowseIcon },
-  { path: "/requests", label: "Requests", icon: GroupsIcon },
-  { path: "/upcoming", label: "Upcoming", icon: DashboardIcon },
+  { path: "/inbox", label: "Inbox", icon: DashboardIcon },
   { path: "/my-profile", label: "Profile", icon: ProfileIcon },
 ];
 

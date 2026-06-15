@@ -35,6 +35,7 @@ const Discover = lazy(() => import("./pages/Discover"));
 const Requests = lazy(() => import("./pages/Requests"));
 const Upcoming = lazy(() => import("./pages/Upcoming"));
 const History = lazy(() => import("./pages/History"));
+const ParentInbox = lazy(() => import("./pages/ParentInbox"));
 const Book = lazy(() => import("./pages/Book"));
 const NannyPublicProfile = lazy(() => import("./pages/nanny/NannyPublicProfile"));
 
@@ -146,6 +147,16 @@ export default function App() {
                 <RequireAuth>
                   <RequireRole role="parent">
                     <ParentLayout><History /></ParentLayout>
+                  </RequireRole>
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/inbox"
+              element={
+                <RequireAuth>
+                  <RequireRole role="parent">
+                    <ParentLayout><ParentInbox /></ParentLayout>
                   </RequireRole>
                 </RequireAuth>
               }

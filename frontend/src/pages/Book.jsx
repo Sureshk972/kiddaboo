@@ -114,7 +114,7 @@ function BookForm({ slot }) {
       }
     }
 
-    navigate("/requests");
+    navigate("/inbox?tab=pending");
   };
 
   return (
