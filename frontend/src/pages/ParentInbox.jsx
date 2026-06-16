@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import { toast } from "sonner";
 import InboxTabs from "../components/inbox/InboxTabs";
 import { useParentBookings } from "../hooks/useParentBookings";
 import { useInboxAttention } from "../context/InboxAttentionContext";
 import { supabase } from "../lib/supabase";
 import { formatProfileName } from "../lib/profileName";
 import RatingSheet from "../components/booking/RatingSheet";
-import Toast from "../components/ui/Toast";
 
 const PAST_STATUSES = [
   "completed",
@@ -114,7 +115,7 @@ function CancelRequestButton({ booking, onCancel }) {
   );
 }
 
-function PendingList({ showToast }) {
+function PendingList() {
   const { bookings, loading, refresh, removeBooking } = useParentBookings([
     "pending",
     "pending_payment_retry",
@@ -127,10 +128,7 @@ function PendingList({ showToast }) {
     });
     if (error) {
       rollback();
-      showToast({
-        type: "error",
-        message: `Couldn't cancel. ${error.message || ""}`.trim(),
-      });
+      toast.error(`Couldn't cancel. ${error.message || ""}`.trim());
       return;
     }
     refresh();
@@ -141,8 +139,16 @@ function PendingList({ showToast }) {
     return <Empty>No pending requests. Booking requests waiting on a nanny will show up here.</Empty>;
   return (
     <ul className="flex flex-col gap-3">
+      <AnimatePresence initial={false}>
       {bookings.map((b) => (
-        <li key={b.id}>
+        <motion.li
+          key={b.id}
+          layout
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, height: 0, marginTop: -12, overflow: "hidden" }}
+          transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
+        >
           <article className="bg-white border border-cream-dark p-4 flex flex-col gap-1.5">
             <div className="flex items-baseline justify-between gap-2">
               <h3 className="text-base font-heading font-bold text-charcoal truncate">
@@ -183,8 +189,9 @@ function PendingList({ showToast }) {
             )}
             <CancelRequestButton booking={b} onCancel={onCancel} />
           </article>
-        </li>
+        </motion.li>
       ))}
+      </AnimatePresence>
     </ul>
   );
 }
@@ -245,7 +252,7 @@ function UpcomingCancelButton({ booking, onCancel }) {
   );
 }
 
-function UpcomingList({ showToast }) {
+function UpcomingList() {
   const { bookings: all, loading, refresh, removeBooking } = useParentBookings(["confirmed"]);
   const { refresh: refreshAttention } = useInboxAttention();
   const onCancel = async (b) => {
@@ -255,10 +262,7 @@ function UpcomingList({ showToast }) {
     });
     if (error) {
       rollback();
-      showToast({
-        type: "error",
-        message: `Couldn't cancel. ${error.message || ""}`.trim(),
-      });
+      toast.error(`Couldn't cancel. ${error.message || ""}`.trim());
       return;
     }
     refresh();
@@ -288,10 +292,18 @@ function UpcomingList({ showToast }) {
     return <Empty>No upcoming bookings. Confirmed sessions will appear here with the nanny's contact info.</Empty>;
   return (
     <ul className="flex flex-col gap-3">
+      <AnimatePresence initial={false}>
       {bookings.map((b) => {
         const today = b.slot?.starts_at && isToday(b.slot.starts_at);
         return (
-          <li key={b.id}>
+          <motion.li
+            key={b.id}
+            layout
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, height: 0, marginTop: -12, overflow: "hidden" }}
+            transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
+          >
             <article
               className={`bg-white border border-cream-dark p-4 flex flex-col gap-2.5 ${
                 today ? "border-l-4 border-l-sage" : ""
@@ -335,9 +347,10 @@ function UpcomingList({ showToast }) {
               )}
               <UpcomingCancelButton booking={b} onCancel={onCancel} />
             </article>
-          </li>
+          </motion.li>
         );
       })}
+      </AnimatePresence>
     </ul>
   );
 }
@@ -453,7 +466,6 @@ export default function ParentInbox() {
   const [tab, setTab] = useState(tabParam || null);
   const { pending, today } = useInboxAttention();
   const resolvedTab = tab || (pending > 0 ? "pending" : "upcoming");
-  const [toast, setToast] = useState(null);
 
   const onChange = (next) => {
     setTab(next);
@@ -476,11 +488,9 @@ export default function ParentInbox() {
         onChange={onChange}
       />
 
-      {resolvedTab === "pending" && <PendingList showToast={setToast} />}
-      {resolvedTab === "upcoming" && <UpcomingList showToast={setToast} />}
+      {resolvedTab === "pending" && <PendingList />}
+      {resolvedTab === "upcoming" && <UpcomingList />}
       {resolvedTab === "past" && <PastList />}
-
-      <Toast toast={toast} onDismiss={() => setToast(null)} />
     </div>
   );
 }

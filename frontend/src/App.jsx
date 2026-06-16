@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import { Toaster } from "sonner";
 import LegalFooter from "./components/LegalFooter";
 import { AuthProvider } from "./context/AuthContext";
 import { OnboardingProvider } from "./context/OnboardingContext";
@@ -76,6 +77,21 @@ export default function App() {
       <OnboardingProvider>
         <NotificationsProvider>
         <InboxAttentionProvider>
+          <Toaster
+            position="bottom-center"
+            offset={88}
+            mobileOffset={88}
+            toastOptions={{
+              style: {
+                background: "#5C6B52",
+                color: "#FFFFFF",
+                border: "none",
+                borderRadius: "12px",
+                fontFamily: "DM Sans, sans-serif",
+              },
+              className: "kiddaboo-toast",
+            }}
+          />
           <UpdateBadge />
           <Suspense fallback={<RouteFallback />}>
           <Routes>

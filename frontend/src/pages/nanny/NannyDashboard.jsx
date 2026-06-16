@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import { toast } from "sonner";
 import { useNannyInbox } from "../../hooks/useNannyInbox";
 import { supabase } from "../../lib/supabase";
 import RatingSheet from "../../components/booking/RatingSheet";
 import InboxTabs from "../../components/inbox/InboxTabs";
-import Toast from "../../components/ui/Toast";
 import { useInboxAttention } from "../../context/InboxAttentionContext";
 
 const STATUS_LABEL = {
@@ -361,7 +362,6 @@ export default function NannyDashboard() {
     removeUpcoming,
     removePast,
   } = useNannyInbox();
-  const [toast, setToast] = useState(null);
   const { refresh: refreshAttention } = useInboxAttention();
 
   const onRespond = async (b, decision) => {
@@ -372,10 +372,7 @@ export default function NannyDashboard() {
     });
     if (error) {
       rollback();
-      setToast({
-        type: "error",
-        message: `Couldn't ${decision}. ${error.message || ""}`.trim(),
-      });
+      toast.error(`Couldn't ${decision}. ${error.message || ""}`.trim());
       return;
     }
     refresh();
@@ -387,10 +384,7 @@ export default function NannyDashboard() {
     const { error } = await invokeFn("cancel-booking", { booking_id: b.id });
     if (error) {
       rollback();
-      setToast({
-        type: "error",
-        message: `Couldn't cancel. ${error.message || ""}`.trim(),
-      });
+      toast.error(`Couldn't cancel. ${error.message || ""}`.trim());
       return;
     }
     refresh();
@@ -402,10 +396,7 @@ export default function NannyDashboard() {
     const { error } = await invokeFn("complete-booking", { booking_id: b.id });
     if (error) {
       rollback();
-      setToast({
-        type: "error",
-        message: `Couldn't mark complete. ${error.message || ""}`.trim(),
-      });
+      toast.error(`Couldn't mark complete. ${error.message || ""}`.trim());
       return;
     }
     refresh();
@@ -481,14 +472,24 @@ export default function NannyDashboard() {
           <Empty>No requests waiting for a response.</Empty>
         ) : (
           <div className="flex flex-col gap-3">
-            {pending.map((b) => (
-              <PendingCard
-                key={b.id}
-                b={b}
-                onRespond={onRespond}
-                rating={parentRatings[b.parent_id]}
-              />
-            ))}
+            <AnimatePresence initial={false}>
+              {pending.map((b) => (
+                <motion.div
+                  key={b.id}
+                  layout
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, height: 0, marginTop: -12, overflow: "hidden" }}
+                  transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
+                >
+                  <PendingCard
+                    b={b}
+                    onRespond={onRespond}
+                    rating={parentRatings[b.parent_id]}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         )
       ) : resolvedTab === "upcoming" ? (
@@ -496,15 +497,25 @@ export default function NannyDashboard() {
           <Empty>No confirmed sessions ahead.</Empty>
         ) : (
           <div className="flex flex-col gap-3">
-            {upcoming.map((b) => (
-              <UpcomingCard
-                key={b.id}
-                b={b}
-                onCancel={onCancelUpcoming}
-                rating={parentRatings[b.parent_id]}
-                parentPhone={parentPhones[b.parent?.id]}
-              />
-            ))}
+            <AnimatePresence initial={false}>
+              {upcoming.map((b) => (
+                <motion.div
+                  key={b.id}
+                  layout
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, height: 0, marginTop: -12, overflow: "hidden" }}
+                  transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
+                >
+                  <UpcomingCard
+                    b={b}
+                    onCancel={onCancelUpcoming}
+                    rating={parentRatings[b.parent_id]}
+                    parentPhone={parentPhones[b.parent?.id]}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         )
       ) : past.length === 0 ? (
@@ -516,7 +527,6 @@ export default function NannyDashboard() {
           ))}
         </div>
       )}
-      <Toast toast={toast} onDismiss={() => setToast(null)} />
     </div>
   );
 }
