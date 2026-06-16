@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import InboxTabs from "../components/inbox/InboxTabs";
 import { useParentBookings } from "../hooks/useParentBookings";
@@ -6,6 +6,7 @@ import useInboxAttention from "../hooks/useInboxAttention";
 import { supabase } from "../lib/supabase";
 import { formatProfileName } from "../lib/profileName";
 import RatingSheet from "../components/booking/RatingSheet";
+import Toast from "../components/ui/Toast";
 
 const PAST_STATUSES = [
   "completed",
@@ -67,23 +68,14 @@ function Empty({ children }) {
   );
 }
 
-function CancelRequestButton({ booking, onResolved }) {
+function CancelRequestButton({ booking, onCancel }) {
   const [confirming, setConfirming] = useState(false);
-  const [working, setWorking] = useState(false);
-  const [err, setErr] = useState(null);
+  const busy = useRef(false);
 
-  const cancel = async () => {
-    setWorking(true);
-    setErr(null);
-    const { error } = await supabase.functions.invoke("cancel-booking", {
-      body: { booking_id: booking.id },
-    });
-    if (error) {
-      setErr(error.message);
-      setWorking(false);
-      return;
-    }
-    onResolved();
+  const cancel = () => {
+    if (busy.current) return;
+    busy.current = true;
+    onCancel(booking);
   };
 
   if (!confirming) {
@@ -102,15 +94,13 @@ function CancelRequestButton({ booking, onResolved }) {
       <p className="text-xs text-charcoal">
         The nanny will be notified. You won't be charged.
       </p>
-      {err && <p className="text-xs text-terracotta">{err}</p>}
       <div className="flex gap-2">
         <button
           type="button"
           onClick={cancel}
-          disabled={working}
-          className="flex-1 text-xs font-medium bg-terracotta text-white py-2 disabled:opacity-50"
+          className="flex-1 text-xs font-medium bg-terracotta text-white py-2"
         >
-          {working ? "Cancelling…" : "Confirm cancel"}
+          Confirm cancel
         </button>
         <button
           type="button"
@@ -124,8 +114,26 @@ function CancelRequestButton({ booking, onResolved }) {
   );
 }
 
-function PendingList({ onChange }) {
-  const { bookings, loading } = useParentBookings(["pending", "pending_payment_retry"]);
+function PendingList({ showToast }) {
+  const { bookings, loading, refresh, removeBooking } = useParentBookings([
+    "pending",
+    "pending_payment_retry",
+  ]);
+  const onCancel = async (b) => {
+    const rollback = removeBooking(b.id);
+    const { error } = await supabase.functions.invoke("cancel-booking", {
+      body: { booking_id: b.id },
+    });
+    if (error) {
+      rollback();
+      showToast({
+        type: "error",
+        message: `Couldn't cancel. ${error.message || ""}`.trim(),
+      });
+      return;
+    }
+    refresh();
+  };
   if (loading) return <p className="text-sm text-taupe text-center py-8">Loading…</p>;
   if (bookings.length === 0)
     return <Empty>No pending requests. Booking requests waiting on a nanny will show up here.</Empty>;
@@ -171,7 +179,7 @@ function PendingList({ onChange }) {
                 </p>
               </div>
             )}
-            <CancelRequestButton booking={b} onResolved={onChange} />
+            <CancelRequestButton booking={b} onCancel={onCancel} />
           </article>
         </li>
       ))}
@@ -179,27 +187,18 @@ function PendingList({ onChange }) {
   );
 }
 
-function UpcomingCancelButton({ booking, onResolved }) {
+function UpcomingCancelButton({ booking, onCancel }) {
   const [confirming, setConfirming] = useState(false);
-  const [working, setWorking] = useState(false);
-  const [err, setErr] = useState(null);
+  const busy = useRef(false);
   const hoursUntil = booking.slot?.starts_at
     ? (new Date(booking.slot.starts_at) - new Date()) / 3600_000
     : Infinity;
   const inside24 = hoursUntil < 24;
 
-  const cancel = async () => {
-    setWorking(true);
-    setErr(null);
-    const { error } = await supabase.functions.invoke("cancel-booking", {
-      body: { booking_id: booking.id },
-    });
-    if (error) {
-      setErr(error.message);
-      setWorking(false);
-      return;
-    }
-    onResolved();
+  const cancel = () => {
+    if (busy.current) return;
+    busy.current = true;
+    onCancel(booking);
   };
 
   if (!confirming) {
@@ -224,15 +223,13 @@ function UpcomingCancelButton({ booking, onResolved }) {
           More than 24h away — you'll get a full refund.
         </p>
       )}
-      {err && <p className="text-xs text-terracotta">{err}</p>}
       <div className="flex gap-2">
         <button
           type="button"
           onClick={cancel}
-          disabled={working}
-          className="flex-1 text-xs font-medium bg-terracotta text-white py-2 disabled:opacity-50"
+          className="flex-1 text-xs font-medium bg-terracotta text-white py-2"
         >
-          {working ? "Cancelling…" : "Confirm cancel"}
+          Confirm cancel
         </button>
         <button
           type="button"
@@ -246,8 +243,23 @@ function UpcomingCancelButton({ booking, onResolved }) {
   );
 }
 
-function UpcomingList({ onChange }) {
-  const { bookings: all, loading } = useParentBookings(["confirmed"]);
+function UpcomingList({ showToast }) {
+  const { bookings: all, loading, refresh, removeBooking } = useParentBookings(["confirmed"]);
+  const onCancel = async (b) => {
+    const rollback = removeBooking(b.id);
+    const { error } = await supabase.functions.invoke("cancel-booking", {
+      body: { booking_id: b.id },
+    });
+    if (error) {
+      rollback();
+      showToast({
+        type: "error",
+        message: `Couldn't cancel. ${error.message || ""}`.trim(),
+      });
+      return;
+    }
+    refresh();
+  };
   const now = Date.now();
   const bookings = useMemo(
     () => all.filter((b) => !b.slot?.ends_at || new Date(b.slot.ends_at).getTime() > now),
@@ -317,7 +329,7 @@ function UpcomingList({ onChange }) {
                   </a>
                 </div>
               )}
-              <UpcomingCancelButton booking={b} onResolved={onChange} />
+              <UpcomingCancelButton booking={b} onCancel={onCancel} />
             </article>
           </li>
         );
@@ -437,13 +449,12 @@ export default function ParentInbox() {
   const [tab, setTab] = useState(tabParam || null);
   const { pending, today } = useInboxAttention();
   const resolvedTab = tab || (pending > 0 ? "pending" : "upcoming");
+  const [toast, setToast] = useState(null);
 
   const onChange = (next) => {
     setTab(next);
     setParams({ tab: next }, { replace: true });
   };
-
-  const reload = () => window.location.reload();
 
   return (
     <div className="px-5 py-4 flex flex-col gap-4">
@@ -461,9 +472,11 @@ export default function ParentInbox() {
         onChange={onChange}
       />
 
-      {resolvedTab === "pending" && <PendingList onChange={reload} />}
-      {resolvedTab === "upcoming" && <UpcomingList onChange={reload} />}
+      {resolvedTab === "pending" && <PendingList showToast={setToast} />}
+      {resolvedTab === "upcoming" && <UpcomingList showToast={setToast} />}
       {resolvedTab === "past" && <PastList />}
+
+      <Toast toast={toast} onDismiss={() => setToast(null)} />
     </div>
   );
 }

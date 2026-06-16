@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useNannyInbox } from "../../hooks/useNannyInbox";
 import { supabase } from "../../lib/supabase";
 import RatingSheet from "../../components/booking/RatingSheet";
 import InboxTabs from "../../components/inbox/InboxTabs";
+import Toast from "../../components/ui/Toast";
 
 const STATUS_LABEL = {
   completed: "Completed",
@@ -104,25 +105,13 @@ function StatusPill({ status }) {
   );
 }
 
-function PendingCard({ b, onResolved, rating }) {
-  const [working, setWorking] = useState(null); // 'accept' | 'decline' | null
-  const [err, setErr] = useState(null);
-
-  const respond = async (decision) => {
-    setErr(null);
-    setWorking(decision);
-    const { error } = await invokeFn("respond-to-booking", {
-      booking_id: b.id,
-      decision,
-    });
-    if (error) {
-      setErr(error.message);
-      setWorking(null);
-      return;
-    }
-    onResolved();
+function PendingCard({ b, onRespond, rating }) {
+  const busy = useRef(false);
+  const handle = (decision) => {
+    if (busy.current) return;
+    busy.current = true;
+    onRespond(b, decision);
   };
-
   return (
     <article className="bg-white border border-cream-dark p-4 flex flex-col gap-3">
       <div className="flex items-start justify-between gap-2">
@@ -146,44 +135,34 @@ function PendingCard({ b, onResolved, rating }) {
           {b.note_from_parent}
         </p>
       )}
-      {err && <p className="text-xs text-terracotta">{err}</p>}
       <div className="flex gap-2">
         <button
           type="button"
-          onClick={() => respond("accept")}
-          disabled={working != null}
-          className="flex-1 text-sm font-medium bg-sage text-white py-2 disabled:opacity-50"
+          onClick={() => handle("accept")}
+          className="flex-1 text-sm font-medium bg-sage text-white py-2"
         >
-          {working === "accept" ? "Accepting…" : "Accept"}
+          Accept
         </button>
         <button
           type="button"
-          onClick={() => respond("decline")}
-          disabled={working != null}
-          className="flex-1 text-sm font-medium bg-white border border-cream-dark text-charcoal py-2 disabled:opacity-50"
+          onClick={() => handle("decline")}
+          className="flex-1 text-sm font-medium bg-white border border-cream-dark text-charcoal py-2"
         >
-          {working === "decline" ? "Declining…" : "Decline"}
+          Decline
         </button>
       </div>
     </article>
   );
 }
 
-function UpcomingCard({ b, onResolved, rating, parentPhone }) {
+function UpcomingCard({ b, onCancel, rating, parentPhone }) {
   const [confirming, setConfirming] = useState(false);
-  const [working, setWorking] = useState(false);
-  const [err, setErr] = useState(null);
+  const busy = useRef(false);
 
-  const cancel = async () => {
-    setWorking(true);
-    setErr(null);
-    const { error } = await invokeFn("cancel-booking", { booking_id: b.id });
-    if (error) {
-      setErr(error.message);
-      setWorking(false);
-      return;
-    }
-    onResolved();
+  const cancel = () => {
+    if (busy.current) return;
+    busy.current = true;
+    onCancel(b);
   };
 
   const today = isToday(b.slot.starts_at);
@@ -246,15 +225,13 @@ function UpcomingCard({ b, onResolved, rating, parentPhone }) {
           <p className="text-xs text-charcoal">
             Parent will receive a full refund. This can't be undone.
           </p>
-          {err && <p className="text-xs text-terracotta">{err}</p>}
           <div className="flex gap-2">
             <button
               type="button"
               onClick={cancel}
-              disabled={working}
-              className="flex-1 text-xs font-medium bg-terracotta text-white py-2 disabled:opacity-50"
+              className="flex-1 text-xs font-medium bg-terracotta text-white py-2"
             >
-              {working ? "Cancelling…" : "Confirm cancel"}
+              Confirm cancel
             </button>
             <button
               type="button"
@@ -308,20 +285,12 @@ function NannyRatingPrompt({ booking }) {
   );
 }
 
-function PastCard({ b, onResolved }) {
-  const [working, setWorking] = useState(false);
-  const [err, setErr] = useState(null);
-
-  const complete = async () => {
-    setWorking(true);
-    setErr(null);
-    const { error } = await invokeFn("complete-booking", { booking_id: b.id });
-    if (error) {
-      setErr(error.message);
-      setWorking(false);
-      return;
-    }
-    onResolved();
+function PastCard({ b, onComplete }) {
+  const busy = useRef(false);
+  const complete = () => {
+    if (busy.current) return;
+    busy.current = true;
+    onComplete(b);
   };
 
   return (
@@ -352,15 +321,13 @@ function PastCard({ b, onResolved }) {
       ) : b.status === "completed" || b.status === "confirmed" ? (
         <div className="text-xs text-charcoal">Earned <strong>${(b.rate_cents / 100).toFixed(2)}</strong></div>
       ) : null}
-      {err && <p className="text-xs text-terracotta">{err}</p>}
       {b.status === "confirmed" && (
         <button
           type="button"
           onClick={complete}
-          disabled={working}
-          className="text-xs font-medium bg-sage text-white px-3 py-1.5 self-start disabled:opacity-50"
+          className="text-xs font-medium bg-sage text-white px-3 py-1.5 self-start"
         >
-          {working ? "Marking…" : "Mark complete"}
+          Mark complete
         </button>
       )}
       <NannyRatingPrompt booking={b} />
@@ -377,8 +344,63 @@ function Empty({ children }) {
 }
 
 export default function NannyDashboard() {
-  const { pending, upcoming, past, parentRatings, loading } = useNannyInbox();
-  const reload = () => window.location.reload();
+  const {
+    pending,
+    upcoming,
+    past,
+    parentRatings,
+    loading,
+    refresh,
+    removePending,
+    removeUpcoming,
+    removePast,
+  } = useNannyInbox();
+  const [toast, setToast] = useState(null);
+
+  const onRespond = async (b, decision) => {
+    const rollback = removePending(b.id);
+    const { error } = await invokeFn("respond-to-booking", {
+      booking_id: b.id,
+      decision,
+    });
+    if (error) {
+      rollback();
+      setToast({
+        type: "error",
+        message: `Couldn't ${decision}. ${error.message || ""}`.trim(),
+      });
+      return;
+    }
+    refresh();
+  };
+
+  const onCancelUpcoming = async (b) => {
+    const rollback = removeUpcoming(b.id);
+    const { error } = await invokeFn("cancel-booking", { booking_id: b.id });
+    if (error) {
+      rollback();
+      setToast({
+        type: "error",
+        message: `Couldn't cancel. ${error.message || ""}`.trim(),
+      });
+      return;
+    }
+    refresh();
+  };
+
+  const onComplete = async (b) => {
+    const rollback = removePast(b.id);
+    const { error } = await invokeFn("complete-booking", { booking_id: b.id });
+    if (error) {
+      rollback();
+      setToast({
+        type: "error",
+        message: `Couldn't mark complete. ${error.message || ""}`.trim(),
+      });
+      return;
+    }
+    refresh();
+  };
 
   const [params, setParams] = useSearchParams();
   const tabParam = params.get("tab");
@@ -453,7 +475,7 @@ export default function NannyDashboard() {
               <PendingCard
                 key={b.id}
                 b={b}
-                onResolved={reload}
+                onRespond={onRespond}
                 rating={parentRatings[b.parent_id]}
               />
             ))}
@@ -468,7 +490,7 @@ export default function NannyDashboard() {
               <UpcomingCard
                 key={b.id}
                 b={b}
-                onResolved={reload}
+                onCancel={onCancelUpcoming}
                 rating={parentRatings[b.parent_id]}
                 parentPhone={parentPhones[b.parent?.id]}
               />
@@ -480,10 +502,11 @@ export default function NannyDashboard() {
       ) : (
         <div className="flex flex-col gap-3">
           {past.map((b) => (
-            <PastCard key={b.id} b={b} onResolved={reload} />
+            <PastCard key={b.id} b={b} onComplete={onComplete} />
           ))}
         </div>
       )}
+      <Toast toast={toast} onDismiss={() => setToast(null)} />
     </div>
   );
 }
