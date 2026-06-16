@@ -71,8 +71,13 @@ function ParentRatingPill({ rating }) {
 }
 
 async function invokeFn(name, body) {
-  // Force refresh + send JWT explicitly (same pattern Book.jsx uses).
-  await supabase.auth.refreshSession().catch(() => {});
+  // Send the user's JWT explicitly so the edge function's admin.auth
+  // .getUser(token) call resolves to *this* user. We deliberately do
+  // NOT call refreshSession() here — it fires SIGNED_OUT through
+  // onAuthStateChange when the refresh token is stale, which kicks
+  // the user back to /welcome mid-action. The SDK auto-refreshes
+  // the access token internally inside functions.invoke if it's near
+  // expiry, so the explicit refresh was only adding risk.
   const { data: sessionData } = await supabase.auth.getSession();
   const accessToken = sessionData?.session?.access_token;
   if (!accessToken) return { error: { message: "Signed out. Please sign in again." } };
