@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import useParentSelfRating from "../hooks/useParentSelfRating";
 
 export default function MyProfile() {
   useDocumentTitle("My Profile");
@@ -17,6 +18,8 @@ export default function MyProfile() {
   const lastName = profile?.last_name || "Name";
   const initials =
     (firstName[0] || "Y").toUpperCase() + (lastName[0] || "").toUpperCase();
+  const selfRating = useParentSelfRating();
+  const isParent = profile?.account_type !== "nanny";
 
   const handleSignOut = async () => {
     try {
@@ -91,6 +94,31 @@ export default function MyProfile() {
             </div>
           )}
         </div>
+
+        {isParent && selfRating.avg != null && (
+          <div className="bg-white border border-cream-dark p-5">
+            <div className="text-[10px] font-medium tracking-[0.14em] uppercase text-taupe">
+              Your standing with nannies
+            </div>
+            <div className="flex items-baseline gap-2 mt-1">
+              <span
+                className="text-charcoal"
+                style={{ fontFamily: "Fraunces, serif", fontWeight: 500, fontSize: "28px", letterSpacing: "-0.5px" }}
+              >
+                {selfRating.avg.toFixed(1)}
+              </span>
+              <span className="text-sm text-taupe">/ 5</span>
+              <span className="text-xs text-taupe ml-auto">
+                {selfRating.count} rating{selfRating.count === 1 ? "" : "s"}
+              </span>
+            </div>
+            <p className="text-xs text-taupe mt-3 leading-relaxed">
+              Nannies rate parents privately after each session — they're the
+              only ones who see this score. It signals how clear your requests
+              are and how easy you are to coordinate with.
+            </p>
+          </div>
+        )}
 
         {/* Settings list */}
         <div className="bg-white rounded-2xl border border-cream-dark overflow-hidden">
