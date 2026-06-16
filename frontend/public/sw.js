@@ -1,10 +1,10 @@
 // Kiddaboo Service Worker — Push Notifications + runtime caching
 
 // Bump VERSION to invalidate all caches on the next activation.
-const VERSION = "v1";
-const SHELL_CACHE = `kiddaboo-shell-${VERSION}`;
+const VERSION = "v2";
+const ASSET_CACHE = `kiddaboo-assets-${VERSION}`;
 const FONT_CACHE = `kiddaboo-fonts-${VERSION}`;
-const KNOWN_CACHES = new Set([SHELL_CACHE, FONT_CACHE]);
+const KNOWN_CACHES = new Set([ASSET_CACHE, FONT_CACHE]);
 
 // Handle incoming push messages
 self.addEventListener("push", (event) => {
@@ -81,19 +81,12 @@ self.addEventListener("activate", (event) => {
 // Runtime caching. Strategy by origin/asset:
 //   - Supabase / Stripe / same-origin /api: never cached (live user data)
 //   - Google + cdnfonts font files: cache-first (immutable, long-lived)
-//   - Same-origin GETs (app shell — HTML, hashed JS/CSS, icons): SWR
-async function staleWhileRevalidate(request, cacheName) {
-  const cache = await caches.open(cacheName);
-  const cached = await cache.match(request);
-  const networkPromise = fetch(request)
-    .then((res) => {
-      if (res && res.ok) cache.put(request, res.clone());
-      return res;
-    })
-    .catch(() => cached);
-  return cached || networkPromise;
-}
-
+//   - Same-origin /assets/* (hashed JS/CSS chunks): cache-first — the
+//     hash is the cache buster, so once cached they never need refetching
+//   - Same-origin HTML navigations: network-first — guarantees the
+//     bundle references in the HTML match the assets actually on the
+//     server right now. After a deploy, cached HTML pointing at old
+//     hashes would 404 against the new build; this avoids that.
 async function cacheFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
   const cached = await cache.match(request);
@@ -101,6 +94,26 @@ async function cacheFirst(request, cacheName) {
   const res = await fetch(request);
   if (res && res.ok) cache.put(request, res.clone());
   return res;
+}
+
+async function networkFirst(request, cacheName) {
+  const cache = await caches.open(cacheName);
+  try {
+    const res = await fetch(request);
+    if (res && res.ok) cache.put(request, res.clone());
+    return res;
+  } catch {
+    const cached = await cache.match(request);
+    if (cached) return cached;
+    throw new Error("offline and not cached");
+  }
+}
+
+function isNavigation(request) {
+  return (
+    request.mode === "navigate" ||
+    (request.method === "GET" && request.headers.get("accept")?.includes("text/html"))
+  );
 }
 
 self.addEventListener("fetch", (event) => {
@@ -129,8 +142,16 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Same-origin app shell.
-  if (url.origin === self.location.origin) {
-    event.respondWith(staleWhileRevalidate(request, SHELL_CACHE));
+  if (url.origin !== self.location.origin) return;
+
+  // Hashed immutable assets — cache forever.
+  if (url.pathname.startsWith("/assets/")) {
+    event.respondWith(cacheFirst(request, ASSET_CACHE));
+    return;
+  }
+
+  // HTML (navigation) — network-first so the bundle references are fresh.
+  if (isNavigation(request)) {
+    event.respondWith(networkFirst(request, ASSET_CACHE));
   }
 });
