@@ -3,7 +3,6 @@ import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
 import Button from "../../components/ui/Button";
-import EarningsRing from "../../components/nanny/EarningsRing";
 import EarningsTrendBars from "../../components/nanny/EarningsTrendBars";
 import useNannyStats from "../../hooks/useNannyStats";
 
@@ -173,24 +172,23 @@ export default function NannyEarnings() {
         <p className="text-sm text-taupe text-center py-8">Loading earnings…</p>
       ) : (
         <>
-          <section className="bg-white border border-black/[0.06] p-5 flex flex-col items-center relative">
-            <div className="absolute top-3 left-4 text-[10px] font-medium tracking-[0.14em] uppercase text-taupe">
+          <section className="bg-white border border-black/[0.06] px-5 pt-6 pb-5 flex flex-col items-center">
+            <div className="text-[10px] font-medium tracking-[0.14em] uppercase text-taupe">
               This week
             </div>
+            <div
+              className="text-charcoal mt-2 leading-none"
+              style={{ fontFamily: "Fraunces, serif", fontWeight: 500, fontSize: "56px", letterSpacing: "-1.5px" }}
+            >
+              ${(stats.weekEarningsCents / 100).toFixed(stats.weekEarningsCents < 10000 ? 2 : 0)}
+            </div>
             {stats.weekDeltaCents !== 0 && (
-              <div className="absolute top-3 right-4 text-[10px] font-medium text-sage-dark">
+              <div className="text-xs text-sage-dark mt-2">
                 {stats.weekDeltaCents > 0 ? "↗" : "↘"} {stats.weekDeltaCents > 0 ? "+" : "−"}$
-                {Math.abs(stats.weekDeltaCents / 100).toFixed(0)}
+                {Math.abs(stats.weekDeltaCents / 100).toFixed(0)} vs last week
               </div>
             )}
-            <EarningsRing
-              size={200}
-              pct={stats.weekEarningsCents / stats.weeklyGoalCents}
-              centerTop={`$${(stats.weekEarningsCents / 100).toFixed(stats.weekEarningsCents < 10000 ? 2 : 0)}`}
-              centerBottom={`${Math.round((stats.weekEarningsCents / stats.weeklyGoalCents) * 100)}% OF GOAL`}
-              centerSubtitle={`$${(stats.weeklyGoalCents / 100).toFixed(0)} weekly target`}
-            />
-            <div className="flex gap-7 mt-2">
+            <div className="flex gap-7 mt-6">
               <Stat value={stats.weekSessions} label="Sessions" />
               <div className="w-px bg-black/10 self-stretch" />
               <Stat value={stats.weekHours.toFixed(1)} label="Hours" />

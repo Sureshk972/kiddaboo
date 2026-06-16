@@ -14,21 +14,6 @@ function startOfWeek(d = new Date()) {
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
-function weekBucket(date, weeks) {
-  const i = Math.floor((weeks[0].start - date) / WEEK_MS) * -1;
-  // ^ negative because date is earlier than weeks[0].start
-  return weeks[weeks.length - 1 - i] || null;
-}
-
-// Median that ignores zero-earnings weeks so a nanny who took two
-// quiet weeks isn't permanently anchored at $0.
-function median(nums) {
-  const arr = nums.filter((n) => n > 0).slice().sort((a, b) => a - b);
-  if (!arr.length) return 0;
-  const mid = Math.floor(arr.length / 2);
-  return arr.length % 2 ? arr[mid] : (arr[mid - 1] + arr[mid]) / 2;
-}
-
 export default function useNannyStats() {
   const { user } = useAuth();
   const [state, setState] = useState({
@@ -38,7 +23,6 @@ export default function useNannyStats() {
     weekHours: 0,
     weekDeltaCents: 0,
     rating: null,
-    weeklyGoalCents: 20000, // $200 fallback
     eightWeeks: [], // [{label, earningsCents, startsAt}]
     lifetimeCents: 0,
     nextSession: null, // { startsAt, rateCents } | null
@@ -122,15 +106,6 @@ export default function useNannyStats() {
         }
       }
 
-      // Goal = median of the previous 4 completed weeks × 1.1, floor at $50,
-      // ceiling at $1000 so the ring doesn't read absurdly. Use a fixed $200
-      // when there's no history yet.
-      const priorWeeks = eightWeeks.slice(3, 7).map((w) => w.earningsCents);
-      const med = median(priorWeeks);
-      const goalCents = med
-        ? Math.min(100000, Math.max(5000, Math.round((med * 1.1) / 100) * 100))
-        : 20000;
-
       const ratingNs = ratings || [];
       const avgRating = ratingNs.length
         ? ratingNs.reduce((acc, r) => acc + r.score, 0) / ratingNs.length
@@ -143,7 +118,6 @@ export default function useNannyStats() {
         weekHours: weekHoursMs / 3600_000,
         weekDeltaCents: weekEarningsCents - lastWeekEarningsCents,
         rating: avgRating ? { avg: avgRating, n: ratingNs.length } : null,
-        weeklyGoalCents: goalCents,
         eightWeeks,
         lifetimeCents,
         nextSession,

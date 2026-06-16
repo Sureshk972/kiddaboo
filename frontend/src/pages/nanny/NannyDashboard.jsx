@@ -7,7 +7,6 @@ import { supabase } from "../../lib/supabase";
 import RatingSheet from "../../components/booking/RatingSheet";
 import InboxTabs from "../../components/inbox/InboxTabs";
 import { useInboxAttention } from "../../context/InboxAttentionContext";
-import EarningsRing from "../../components/nanny/EarningsRing";
 import useNannyStats from "../../hooks/useNannyStats";
 
 const STATUS_LABEL = {
@@ -445,9 +444,6 @@ export default function NannyDashboard() {
   };
 
   const stats = useNannyStats();
-  const ringPct = stats.loading
-    ? 0
-    : stats.weekEarningsCents / stats.weeklyGoalCents;
 
   return (
     <div className="px-5 py-4 flex flex-col gap-4">
@@ -461,56 +457,58 @@ export default function NannyDashboard() {
       </div>
 
       {!stats.loading && (
-        <section className="bg-white border border-black/[0.06] p-4 flex items-center gap-3">
-          <EarningsRing
-            size={104}
-            stroke={9}
-            pct={ringPct}
-            centerTop={`$${(stats.weekEarningsCents / 100).toFixed(stats.weekEarningsCents < 10000 ? 0 : 0)}`}
-            centerBottom="THIS WEEK"
-          />
-          <div className="flex-1 flex flex-col gap-2">
-            <div>
-              <div className="text-[10px] font-medium tracking-[0.14em] uppercase text-taupe">
-                {Math.round(ringPct * 100)}% of weekly goal
+        <section className="bg-white border border-black/[0.06] px-5 py-4">
+          <div className="flex items-baseline justify-between">
+            <div className="text-[10px] font-medium tracking-[0.14em] uppercase text-taupe">
+              This week
+            </div>
+            {stats.weekDeltaCents !== 0 && (
+              <div className="text-[10px] font-medium text-sage-dark">
+                {stats.weekDeltaCents > 0 ? "↗" : "↘"} {stats.weekDeltaCents > 0 ? "+" : "−"}$
+                {Math.abs(stats.weekDeltaCents / 100).toFixed(0)}
               </div>
-              <div className="text-xs text-charcoal mt-0.5">
-                ${(stats.weeklyGoalCents / 100).toFixed(0)} target
+            )}
+          </div>
+          <div
+            className="text-charcoal mt-1 leading-none"
+            style={{ fontFamily: "Fraunces, serif", fontWeight: 500, fontSize: "36px", letterSpacing: "-1px" }}
+          >
+            ${(stats.weekEarningsCents / 100).toFixed(stats.weekEarningsCents < 10000 ? 2 : 0)}
+          </div>
+          <div className="flex gap-5 mt-4 pt-4 border-t border-black/[0.06]">
+            <div>
+              <div
+                className="text-base text-charcoal leading-none"
+                style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+              >
+                {stats.weekSessions}
+              </div>
+              <div className="text-[9px] font-medium tracking-[0.1em] uppercase text-taupe mt-1">
+                Sessions
               </div>
             </div>
-            <div className="flex gap-3">
-              <div>
-                <div
-                  className="text-base text-charcoal leading-none"
-                  style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
-                >
-                  {stats.weekSessions}
-                </div>
-                <div className="text-[9px] font-medium tracking-[0.1em] uppercase text-taupe mt-1">
-                  Sessions
-                </div>
+            <div className="w-px bg-black/10 self-stretch" />
+            <div>
+              <div
+                className="text-base text-charcoal leading-none"
+                style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+              >
+                {stats.weekHours.toFixed(1)}
               </div>
-              <div>
-                <div
-                  className="text-base text-charcoal leading-none"
-                  style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
-                >
-                  {stats.weekHours.toFixed(1)}
-                </div>
-                <div className="text-[9px] font-medium tracking-[0.1em] uppercase text-taupe mt-1">
-                  Hours
-                </div>
+              <div className="text-[9px] font-medium tracking-[0.1em] uppercase text-taupe mt-1">
+                Hours
               </div>
-              <div>
-                <div
-                  className="text-base text-charcoal leading-none"
-                  style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
-                >
-                  {stats.rating ? stats.rating.avg.toFixed(1) : "—"}
-                </div>
-                <div className="text-[9px] font-medium tracking-[0.1em] uppercase text-taupe mt-1">
-                  Rating
-                </div>
+            </div>
+            <div className="w-px bg-black/10 self-stretch" />
+            <div>
+              <div
+                className="text-base text-charcoal leading-none"
+                style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+              >
+                {stats.rating ? stats.rating.avg.toFixed(1) : "—"}
+              </div>
+              <div className="text-[9px] font-medium tracking-[0.1em] uppercase text-taupe mt-1">
+                Rating
               </div>
             </div>
           </div>
