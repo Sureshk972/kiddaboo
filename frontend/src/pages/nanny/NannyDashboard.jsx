@@ -447,14 +447,9 @@ export default function NannyDashboard() {
 
   return (
     <div className="px-5 py-4 flex flex-col gap-4">
-      <div>
-        <div className="text-[11px] font-medium tracking-[0.14em] uppercase text-sage-dark">
-          Nanny
-        </div>
-        <h1 className="text-3xl font-heading font-medium tracking-tight text-charcoal mt-1">
-          Inbox
-        </h1>
-      </div>
+      <h1 className="text-3xl font-heading font-medium tracking-tight text-charcoal">
+        Inbox
+      </h1>
 
       {!stats.loading && (
         <section className="bg-white border border-black/[0.06] px-5 py-4">
@@ -463,8 +458,24 @@ export default function NannyDashboard() {
               This week
             </div>
             {stats.weekDeltaCents !== 0 && (
-              <div className="text-[10px] font-medium text-sage-dark">
-                {stats.weekDeltaCents > 0 ? "↗" : "↘"} {stats.weekDeltaCents > 0 ? "+" : "−"}$
+              <div className="text-[10px] font-medium text-sage-dark inline-flex items-center gap-1">
+                <svg
+                  width="9"
+                  height="9"
+                  viewBox="0 0 10 10"
+                  aria-hidden="true"
+                  style={{ transform: stats.weekDeltaCents > 0 ? "rotate(0)" : "rotate(90deg)" }}
+                >
+                  <path
+                    d="M2 8L8 2M8 2H3.5M8 2V6.5"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                  />
+                </svg>
+                {stats.weekDeltaCents > 0 ? "+" : "−"}$
                 {Math.abs(stats.weekDeltaCents / 100).toFixed(0)}
               </div>
             )}

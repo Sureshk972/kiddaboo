@@ -105,13 +105,10 @@ export default function NannyEarnings() {
   if (syncing) {
     return (
       <div className="px-5 py-4 flex flex-col gap-5">
-        <div className="text-[11px] font-medium tracking-[0.14em] uppercase text-violet">
-          Nanny
-        </div>
-        <h1 className="text-3xl font-heading font-medium tracking-tight text-charcoal -mt-2">
+        <h1 className="text-3xl font-heading font-medium tracking-tight text-charcoal">
           Earnings
         </h1>
-        <div className="bg-white rounded-2xl border border-black/5 p-6 text-center">
+        <div className="bg-white border border-black/5 p-6 text-center">
           <p className="text-sm text-charcoal">Checking with Stripe…</p>
           <p className="text-xs text-taupe mt-2">
             Confirming your payout setup. This usually takes a few seconds.
@@ -123,14 +120,9 @@ export default function NannyEarnings() {
 
   return (
     <div className="px-5 py-4 flex flex-col gap-4">
-      <div>
-        <div className="text-[11px] font-medium tracking-[0.14em] uppercase text-violet">
-          Nanny
-        </div>
-        <h1 className="text-3xl font-heading font-medium tracking-tight text-charcoal mt-1">
-          Earnings
-        </h1>
-      </div>
+      <h1 className="text-3xl font-heading font-medium tracking-tight text-charcoal">
+        Earnings
+      </h1>
 
       {needsOnboarding ? (
         <section className="bg-white border border-cream-dark p-5 flex flex-col gap-3">
@@ -183,8 +175,9 @@ export default function NannyEarnings() {
               ${(stats.weekEarningsCents / 100).toFixed(stats.weekEarningsCents < 10000 ? 2 : 0)}
             </div>
             {stats.weekDeltaCents !== 0 && (
-              <div className="text-xs text-sage-dark mt-2">
-                {stats.weekDeltaCents > 0 ? "↗" : "↘"} {stats.weekDeltaCents > 0 ? "+" : "−"}$
+              <div className="text-xs text-sage-dark mt-2 inline-flex items-center gap-1">
+                <DeltaArrow up={stats.weekDeltaCents > 0} />
+                {stats.weekDeltaCents > 0 ? "+" : "−"}$
                 {Math.abs(stats.weekDeltaCents / 100).toFixed(0)} vs last week
               </div>
             )}
@@ -261,6 +254,27 @@ export default function NannyEarnings() {
         </>
       )}
     </div>
+  );
+}
+
+function DeltaArrow({ up }) {
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 10 10"
+      aria-hidden="true"
+      style={{ transform: up ? "rotate(0)" : "rotate(90deg)" }}
+    >
+      <path
+        d="M2 8L8 2M8 2H3.5M8 2V6.5"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </svg>
   );
 }
 
