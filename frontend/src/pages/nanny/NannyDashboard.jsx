@@ -364,6 +364,13 @@ export default function NannyDashboard() {
   } = useNannyInbox();
   const { refresh: refreshAttention } = useInboxAttention();
 
+  // Catch pending bookings created since app boot — the provider only
+  // auto-loads at mount, so a parent who books while the nanny is
+  // already in the inbox would otherwise see no attention dot.
+  useEffect(() => {
+    refreshAttention();
+  }, [refreshAttention]);
+
   const onRespond = async (b, decision) => {
     const rollback = removePending(b.id);
     const { error } = await invokeFn("respond-to-booking", {

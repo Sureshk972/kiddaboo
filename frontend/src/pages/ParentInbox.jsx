@@ -464,8 +464,15 @@ export default function ParentInbox() {
   const [params, setParams] = useSearchParams();
   const tabParam = params.get("tab");
   const [tab, setTab] = useState(tabParam || null);
-  const { pending, today } = useInboxAttention();
+  const { pending, today, refresh: refreshAttention } = useInboxAttention();
   const resolvedTab = tab || (pending > 0 ? "pending" : "upcoming");
+
+  // Catch counts created elsewhere (Book flow, accept/decline from the
+  // other party, etc.) the moment the inbox page mounts. The provider
+  // itself only loads once at app boot.
+  useEffect(() => {
+    refreshAttention();
+  }, [refreshAttention]);
 
   const onChange = (next) => {
     setTab(next);
