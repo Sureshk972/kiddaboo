@@ -4,6 +4,7 @@ import LegalFooter from "./components/LegalFooter";
 import { AuthProvider } from "./context/AuthContext";
 import { OnboardingProvider } from "./context/OnboardingContext";
 import { NotificationsProvider } from "./context/NotificationsContext";
+import { InboxAttentionProvider } from "./context/InboxAttentionContext";
 import AppLayout from "./components/layout/AppLayout";
 import Welcome from "./pages/Welcome";
 import RequireAuth from "./components/auth/RequireAuth";
@@ -74,6 +75,7 @@ export default function App() {
       <AuthProvider>
       <OnboardingProvider>
         <NotificationsProvider>
+        <InboxAttentionProvider>
           <UpdateBadge />
           <Suspense fallback={<RouteFallback />}>
           <Routes>
@@ -201,6 +203,7 @@ export default function App() {
             />
           </Routes>
           </Suspense>
+        </InboxAttentionProvider>
         </NotificationsProvider>
       </OnboardingProvider>
       </AuthProvider>

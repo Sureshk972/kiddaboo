@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import InboxTabs from "../components/inbox/InboxTabs";
 import { useParentBookings } from "../hooks/useParentBookings";
-import useInboxAttention from "../hooks/useInboxAttention";
+import { useInboxAttention } from "../context/InboxAttentionContext";
 import { supabase } from "../lib/supabase";
 import { formatProfileName } from "../lib/profileName";
 import RatingSheet from "../components/booking/RatingSheet";
@@ -119,6 +119,7 @@ function PendingList({ showToast }) {
     "pending",
     "pending_payment_retry",
   ]);
+  const { refresh: refreshAttention } = useInboxAttention();
   const onCancel = async (b) => {
     const rollback = removeBooking(b.id);
     const { error } = await supabase.functions.invoke("cancel-booking", {
@@ -133,6 +134,7 @@ function PendingList({ showToast }) {
       return;
     }
     refresh();
+    refreshAttention();
   };
   if (loading) return <p className="text-sm text-taupe text-center py-8">Loading…</p>;
   if (bookings.length === 0)
@@ -245,6 +247,7 @@ function UpcomingCancelButton({ booking, onCancel }) {
 
 function UpcomingList({ showToast }) {
   const { bookings: all, loading, refresh, removeBooking } = useParentBookings(["confirmed"]);
+  const { refresh: refreshAttention } = useInboxAttention();
   const onCancel = async (b) => {
     const rollback = removeBooking(b.id);
     const { error } = await supabase.functions.invoke("cancel-booking", {
@@ -259,6 +262,7 @@ function UpcomingList({ showToast }) {
       return;
     }
     refresh();
+    refreshAttention();
   };
   const now = Date.now();
   const bookings = useMemo(

@@ -5,6 +5,7 @@ import { supabase } from "../../lib/supabase";
 import RatingSheet from "../../components/booking/RatingSheet";
 import InboxTabs from "../../components/inbox/InboxTabs";
 import Toast from "../../components/ui/Toast";
+import { useInboxAttention } from "../../context/InboxAttentionContext";
 
 const STATUS_LABEL = {
   completed: "Completed",
@@ -361,6 +362,7 @@ export default function NannyDashboard() {
     removePast,
   } = useNannyInbox();
   const [toast, setToast] = useState(null);
+  const { refresh: refreshAttention } = useInboxAttention();
 
   const onRespond = async (b, decision) => {
     const rollback = removePending(b.id);
@@ -377,6 +379,7 @@ export default function NannyDashboard() {
       return;
     }
     refresh();
+    refreshAttention();
   };
 
   const onCancelUpcoming = async (b) => {
@@ -391,6 +394,7 @@ export default function NannyDashboard() {
       return;
     }
     refresh();
+    refreshAttention();
   };
 
   const onComplete = async (b) => {
@@ -405,6 +409,7 @@ export default function NannyDashboard() {
       return;
     }
     refresh();
+    refreshAttention();
   };
 
   const [params, setParams] = useSearchParams();

@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import TabBar from "./TabBar";
 import { useAuth } from "../../context/AuthContext";
 import usePushNotifications from "../../hooks/usePushNotifications";
-import useInboxAttention from "../../hooks/useInboxAttention";
+import { useInboxAttention } from "../../context/InboxAttentionContext";
 import { useAccountType } from "../../hooks/useAccountType";
 import PushPermissionPrompt from "../ui/PushPermissionPrompt";
 import PageTransition from "../ui/PageTransition";
