@@ -151,10 +151,16 @@ function PendingList() {
         >
           <article className="bg-white border border-cream-dark p-4 flex flex-col gap-1.5">
             <div className="flex items-baseline justify-between gap-2">
-              <h3 className="text-base font-heading font-bold text-charcoal truncate">
+              <h3
+                className="text-lg text-charcoal truncate"
+                style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+              >
                 {formatProfileName(b.nanny)}
               </h3>
-              <span className="text-sm font-bold text-sage-dark whitespace-nowrap">
+              <span
+                className="text-base text-sage-dark whitespace-nowrap"
+                style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+              >
                 ${totalDollars(b)}
               </span>
             </div>
@@ -311,7 +317,10 @@ function UpcomingList() {
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <h3 className="text-base font-heading font-bold text-charcoal">
+                  <h3
+                    className="text-lg text-charcoal"
+                    style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+                  >
                     {formatProfileName(b.nanny)}
                   </h3>
                   <div className="text-xs text-taupe mt-0.5 flex items-center gap-2">
@@ -325,7 +334,10 @@ function UpcomingList() {
                     </span>
                   </div>
                 </div>
-                <span className="text-sm font-bold text-sage-dark whitespace-nowrap">
+                <span
+                  className="text-base text-sage-dark whitespace-nowrap"
+                  style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+                >
                   ${totalDollars(b)}
                 </span>
               </div>
@@ -416,7 +428,10 @@ function PastList() {
           <li key={b.id}>
             <article className="bg-white border border-cream-dark p-4 flex flex-col gap-2">
               <div className="flex items-baseline justify-between gap-2">
-                <h3 className="text-base font-heading font-bold text-charcoal truncate">
+                <h3
+                  className="text-lg text-charcoal truncate"
+                  style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+                >
                   {formatProfileName(b.nanny)}
                 </h3>
                 <span

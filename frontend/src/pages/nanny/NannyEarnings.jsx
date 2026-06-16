@@ -3,6 +3,9 @@ import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
 import Button from "../../components/ui/Button";
+import EarningsRing from "../../components/nanny/EarningsRing";
+import EarningsTrendBars from "../../components/nanny/EarningsTrendBars";
+import useNannyStats from "../../hooks/useNannyStats";
 
 async function invokeWithJwt(name) {
   await supabase.auth.refreshSession().catch(() => {});
@@ -30,11 +33,7 @@ async function invokeWithJwt(name) {
 export default function NannyEarnings() {
   const { user, profile, fetchProfile } = useAuth();
   const [params, setParams] = useSearchParams();
-  const [completedTotal, setCompletedTotal] = useState(0);
-  const [completedCount, setCompletedCount] = useState(0);
-  const [pendingTotal, setPendingTotal] = useState(0);
-  const [pendingCount, setPendingCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const stats = useNannyStats();
   const [connecting, setConnecting] = useState(false);
   const [connectError, setConnectError] = useState(null);
   const [syncing, setSyncing] = useState(false);
@@ -72,28 +71,6 @@ export default function NannyEarnings() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  useEffect(() => {
-    if (!user?.id) return;
-    (async () => {
-      const { data } = await supabase
-        .from("bookings")
-        .select("rate_cents, platform_fee_cents, status")
-        .eq("nanny_id", user.id)
-        .in("status", ["completed", "confirmed"]);
-      const rows = data || [];
-      const completed = rows.filter((b) => b.status === "completed");
-      const pending = rows.filter((b) => b.status === "confirmed");
-      // Nanny keeps the full posted rate; Kiddaboo's 15% is added on top
-      // for the parent, not deducted from the nanny's share.
-      const sum = (acc, b) => acc + b.rate_cents;
-      setCompletedTotal(completed.reduce(sum, 0));
-      setCompletedCount(completed.length);
-      setPendingTotal(pending.reduce(sum, 0));
-      setPendingCount(pending.length);
-      setLoading(false);
-    })();
-  }, [user?.id]);
-
   const onboard = async () => {
     setConnecting(true);
     setConnectError(null);
@@ -129,10 +106,13 @@ export default function NannyEarnings() {
   if (syncing) {
     return (
       <div className="px-5 py-4 flex flex-col gap-5">
-        <h1 className="text-2xl font-heading font-bold tracking-tight text-sage-dark">
+        <div className="text-[11px] font-medium tracking-[0.14em] uppercase text-violet">
+          Nanny
+        </div>
+        <h1 className="text-3xl font-heading font-medium tracking-tight text-charcoal -mt-2">
           Earnings
         </h1>
-        <div className="bg-white border border-cream-dark p-6 text-center">
+        <div className="bg-white rounded-2xl border border-black/5 p-6 text-center">
           <p className="text-sm text-charcoal">Checking with Stripe…</p>
           <p className="text-xs text-taupe mt-2">
             Confirming your payout setup. This usually takes a few seconds.
@@ -143,10 +123,15 @@ export default function NannyEarnings() {
   }
 
   return (
-    <div className="px-5 py-4 flex flex-col gap-5">
-      <h1 className="text-2xl font-heading font-bold tracking-tight text-sage-dark">
-        Earnings
-      </h1>
+    <div className="px-5 py-4 flex flex-col gap-4">
+      <div>
+        <div className="text-[11px] font-medium tracking-[0.14em] uppercase text-violet">
+          Nanny
+        </div>
+        <h1 className="text-3xl font-heading font-medium tracking-tight text-charcoal mt-1">
+          Earnings
+        </h1>
+      </div>
 
       {needsOnboarding ? (
         <section className="bg-white border border-cream-dark p-5 flex flex-col gap-3">
@@ -184,41 +169,77 @@ export default function NannyEarnings() {
             </p>
           )}
         </section>
-      ) : loading ? (
+      ) : stats.loading ? (
         <p className="text-sm text-taupe text-center py-8">Loading earnings…</p>
       ) : (
         <>
-          <section className="bg-white border border-cream-dark p-6 text-center">
-            <p className="text-xs font-bold uppercase tracking-[1.5px] text-taupe">
-              Earned (completed sessions)
-            </p>
-            <p className="text-4xl font-heading font-bold text-sage-dark mt-2">
-              ${(completedTotal / 100).toFixed(2)}
-            </p>
-            <p className="text-xs text-taupe mt-2">
-              {completedCount} completed session{completedCount === 1 ? "" : "s"}
-              {" · "}your full posted rate (Kiddaboo's 15% is paid by the parent)
-            </p>
+          <section className="bg-white border border-black/[0.06] p-5 flex flex-col items-center relative">
+            <div className="absolute top-3 left-4 text-[10px] font-medium tracking-[0.14em] uppercase text-taupe">
+              This week
+            </div>
+            {stats.weekDeltaCents !== 0 && (
+              <div className="absolute top-3 right-4 text-[10px] font-medium text-sage-dark">
+                {stats.weekDeltaCents > 0 ? "↗" : "↘"} {stats.weekDeltaCents > 0 ? "+" : "−"}$
+                {Math.abs(stats.weekDeltaCents / 100).toFixed(0)}
+              </div>
+            )}
+            <EarningsRing
+              size={200}
+              pct={stats.weekEarningsCents / stats.weeklyGoalCents}
+              centerTop={`$${(stats.weekEarningsCents / 100).toFixed(stats.weekEarningsCents < 10000 ? 2 : 0)}`}
+              centerBottom={`${Math.round((stats.weekEarningsCents / stats.weeklyGoalCents) * 100)}% OF GOAL`}
+              centerSubtitle={`$${(stats.weeklyGoalCents / 100).toFixed(0)} weekly target`}
+            />
+            <div className="flex gap-7 mt-2">
+              <Stat value={stats.weekSessions} label="Sessions" />
+              <div className="w-px bg-black/10 self-stretch" />
+              <Stat value={stats.weekHours.toFixed(1)} label="Hours" />
+              <div className="w-px bg-black/10 self-stretch" />
+              <Stat
+                value={stats.rating ? stats.rating.avg.toFixed(1) : "—"}
+                label="Rating"
+              />
+            </div>
           </section>
 
-          {pendingCount > 0 && (
-            <section className="bg-cream/60 border border-cream-dark p-4 flex items-baseline justify-between gap-3">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[1.5px] text-taupe">
-                  Upcoming
-                </p>
-                <p className="text-[11px] text-taupe mt-1">
-                  {pendingCount} confirmed session{pendingCount === 1 ? "" : "s"}
-                  {" · "}already in your Stripe balance
-                </p>
+          <section className="bg-white border border-black/[0.06] p-4">
+            <div className="flex justify-between items-baseline mb-3">
+              <div className="text-[11px] font-medium tracking-[0.12em] uppercase text-taupe">
+                Last 8 weeks
               </div>
-              <p className="text-2xl font-heading font-bold text-charcoal whitespace-nowrap">
-                ${(pendingTotal / 100).toFixed(2)}
-              </p>
+              <div
+                className="text-sm text-charcoal"
+                style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+              >
+                ${(stats.lifetimeCents / 100).toFixed(0)}
+              </div>
+            </div>
+            <EarningsTrendBars weeks={stats.eightWeeks} />
+          </section>
+
+          {stats.nextSession && (
+            <section className="bg-white border border-black/[0.06] p-4 flex items-center justify-between">
+              <div>
+                <div className="text-[10px] font-medium tracking-[0.12em] uppercase text-taupe">
+                  Next session
+                </div>
+                <div
+                  className="text-base text-charcoal mt-0.5"
+                  style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+                >
+                  ${(stats.nextSession.rateCents / 100).toFixed(2)} ·{" "}
+                  {stats.nextSession.startsAt.toLocaleDateString([], {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </div>
+              </div>
+              <div className="text-lg text-sage-dark">→</div>
             </section>
           )}
 
-          <p className="text-xs text-taupe text-center px-4">
+          <p className="text-[11px] text-taupe text-center px-4 mt-1">
             Funds land in your Stripe balance the moment you accept a booking.
             Stripe pays out to your bank on a rolling 2-business-day schedule
             (your first payout may be held 7–14 days while Stripe verifies your
@@ -241,6 +262,22 @@ export default function NannyEarnings() {
           )}
         </>
       )}
+    </div>
+  );
+}
+
+function Stat({ value, label }) {
+  return (
+    <div className="text-center">
+      <div
+        className="text-2xl text-charcoal leading-none"
+        style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+      >
+        {value}
+      </div>
+      <div className="text-[9px] font-medium tracking-[0.12em] uppercase text-taupe mt-1">
+        {label}
+      </div>
     </div>
   );
 }

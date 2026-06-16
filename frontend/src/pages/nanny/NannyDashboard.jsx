@@ -7,6 +7,8 @@ import { supabase } from "../../lib/supabase";
 import RatingSheet from "../../components/booking/RatingSheet";
 import InboxTabs from "../../components/inbox/InboxTabs";
 import { useInboxAttention } from "../../context/InboxAttentionContext";
+import EarningsRing from "../../components/nanny/EarningsRing";
+import useNannyStats from "../../hooks/useNannyStats";
 
 const STATUS_LABEL = {
   completed: "Completed",
@@ -442,11 +444,78 @@ export default function NannyDashboard() {
     setParams({ tab: next }, { replace: true });
   };
 
+  const stats = useNannyStats();
+  const ringPct = stats.loading
+    ? 0
+    : stats.weekEarningsCents / stats.weeklyGoalCents;
+
   return (
     <div className="px-5 py-4 flex flex-col gap-4">
-      <h1 className="text-2xl font-heading font-bold tracking-tight text-sage-dark">
-        Inbox
-      </h1>
+      <div>
+        <div className="text-[11px] font-medium tracking-[0.14em] uppercase text-sage-dark">
+          Nanny
+        </div>
+        <h1 className="text-3xl font-heading font-medium tracking-tight text-charcoal mt-1">
+          Inbox
+        </h1>
+      </div>
+
+      {!stats.loading && (
+        <section className="bg-white border border-black/[0.06] p-4 flex items-center gap-3">
+          <EarningsRing
+            size={104}
+            stroke={9}
+            pct={ringPct}
+            centerTop={`$${(stats.weekEarningsCents / 100).toFixed(stats.weekEarningsCents < 10000 ? 0 : 0)}`}
+            centerBottom="THIS WEEK"
+          />
+          <div className="flex-1 flex flex-col gap-2">
+            <div>
+              <div className="text-[10px] font-medium tracking-[0.14em] uppercase text-taupe">
+                {Math.round(ringPct * 100)}% of weekly goal
+              </div>
+              <div className="text-xs text-charcoal mt-0.5">
+                ${(stats.weeklyGoalCents / 100).toFixed(0)} target
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <div>
+                <div
+                  className="text-base text-charcoal leading-none"
+                  style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+                >
+                  {stats.weekSessions}
+                </div>
+                <div className="text-[9px] font-medium tracking-[0.1em] uppercase text-taupe mt-1">
+                  Sessions
+                </div>
+              </div>
+              <div>
+                <div
+                  className="text-base text-charcoal leading-none"
+                  style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+                >
+                  {stats.weekHours.toFixed(1)}
+                </div>
+                <div className="text-[9px] font-medium tracking-[0.1em] uppercase text-taupe mt-1">
+                  Hours
+                </div>
+              </div>
+              <div>
+                <div
+                  className="text-base text-charcoal leading-none"
+                  style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+                >
+                  {stats.rating ? stats.rating.avg.toFixed(1) : "—"}
+                </div>
+                <div className="text-[9px] font-medium tracking-[0.1em] uppercase text-taupe mt-1">
+                  Rating
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       <InboxTabs
         tabs={[
