@@ -15,23 +15,36 @@ export default function AdminVerifications() {
   const [rejectReason, setRejectReason] = useState("");
   const [acting, setActing] = useState(false);
 
-  async function load() {
-    setLoading(true);
+  async function fetchRows(forTab) {
     let q = supabase
       .from("verification_requests")
       .select(
         "id, status, submitted_at, reviewed_at, notes, user_id, profiles:profiles!verification_requests_user_id_fkey(id, first_name, last_name, photo_url, role, account_type, trust_score)"
       )
       .order("submitted_at", { ascending: false });
-    if (tab !== "all") q = q.eq("status", tab);
+    if (forTab !== "all") q = q.eq("status", forTab);
     const { data, error } = await q;
     if (error) console.error(error);
-    setRows(data ?? []);
+    return data ?? [];
+  }
+
+  async function load() {
+    setLoading(true);
+    setRows(await fetchRows(tab));
     setLoading(false);
   }
 
   useEffect(() => {
-    load();
+    let cancelled = false;
+    setLoading(true);
+    fetchRows(tab).then((data) => {
+      if (cancelled) return;
+      setRows(data);
+      setLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [tab]);
 
   async function decide(status) {
@@ -53,10 +66,15 @@ export default function AdminVerifications() {
       return;
     }
     if (status === "approved") {
-      await supabase
+      const { error: profileError } = await supabase
         .from("profiles")
         .update({ is_verified: true })
         .eq("id", selected.user_id);
+      if (profileError) {
+        alert(
+          `Request marked approved but profile.is_verified update failed: ${profileError.message}. Set it manually.`
+        );
+      }
     }
     setActing(false);
     setSelected(null);
@@ -172,14 +190,14 @@ export default function AdminVerifications() {
                     onClick={() => decide("approved")}
                     className="bg-sage text-white text-sm rounded-md px-3 py-1 disabled:opacity-50"
                   >
-                    Approve
+                    {acting ? "Approving…" : "Approve"}
                   </button>
                   <button
                     disabled={acting}
                     onClick={() => decide("rejected")}
                     className="border border-cream-dark text-charcoal text-sm rounded-md px-3 py-1 disabled:opacity-50"
                   >
-                    Reject
+                    {acting ? "Rejecting…" : "Reject"}
                   </button>
                 </div>
               </>
