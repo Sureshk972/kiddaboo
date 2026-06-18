@@ -9,6 +9,7 @@ import { InboxAttentionProvider } from "./context/InboxAttentionContext";
 import AppLayout from "./components/layout/AppLayout";
 import Welcome from "./pages/Welcome";
 import RequireAuth from "./components/auth/RequireAuth";
+import AdminRoute from "./components/auth/AdminRoute";
 import OnboardingOnly from "./components/auth/OnboardingOnly";
 import ParentLayout from "./layouts/ParentLayout";
 import NannyLayout from "./layouts/NannyLayout";
@@ -46,6 +47,17 @@ const NannyPublicProfile = lazy(() => import("./pages/nanny/NannyPublicProfile")
 const NannyDashboard = lazy(() => import("./pages/nanny/NannyDashboard"));
 const NannyAvailability = lazy(() => import("./pages/nanny/NannyAvailability"));
 const NannyEarnings = lazy(() => import("./pages/nanny/NannyEarnings"));
+
+// Admin pages
+const AdminLayout = lazy(() => import("./layouts/AdminLayout"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminVerifications = lazy(() => import("./pages/admin/AdminVerifications"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminUserDetail = lazy(() => import("./pages/admin/AdminUserDetail"));
+const AdminBookings = lazy(() => import("./pages/admin/AdminBookings"));
+const AdminBookingDetail = lazy(() => import("./pages/admin/AdminBookingDetail"));
+const AdminPayments = lazy(() => import("./pages/admin/AdminPayments"));
+const AdminReports = lazy(() => import("./pages/admin/AdminReports"));
 
 // Shell for routes that don't use a TabBar layout. Renders the
 // page then a static legal footer below it, so the DBA notice is
@@ -217,6 +229,28 @@ export default function App() {
                 </RequireAuth>
               }
             />
+
+            {/* Admin routes — requires auth + admin role. AdminLayout
+                renders its own sidebar shell at desktop widths. */}
+            <Route
+              path="/admin"
+              element={
+                <RequireAuth>
+                  <AdminRoute>
+                    <AdminLayout />
+                  </AdminRoute>
+                </RequireAuth>
+              }
+            >
+              <Route index element={<AdminDashboard />} />
+              <Route path="verifications" element={<AdminVerifications />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="users/:id" element={<AdminUserDetail />} />
+              <Route path="bookings" element={<AdminBookings />} />
+              <Route path="bookings/:id" element={<AdminBookingDetail />} />
+              <Route path="payments" element={<AdminPayments />} />
+              <Route path="reports" element={<AdminReports />} />
+            </Route>
           </Routes>
           </Suspense>
         </InboxAttentionProvider>
