@@ -106,6 +106,7 @@ Deno.serve(async (req) => {
           automatic_payment_methods: { enabled: true, allow_redirects: "never" },
           application_fee_amount: fee,
           transfer_data: { destination: nanny.stripe_connect_account_id },
+          on_behalf_of: nanny.stripe_connect_account_id,
           metadata: { slot_id, parent_id: user.id, nanny_id: slot.nanny_id },
         },
         { idempotencyKey }
