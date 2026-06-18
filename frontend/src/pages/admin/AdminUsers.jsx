@@ -24,8 +24,9 @@ export default function AdminUsers() {
       if (roleFilter !== "all") q = q.eq("account_type", roleFilter);
       if (statusFilter === "active") q = q.eq("is_suspended", false);
       if (statusFilter === "suspended") q = q.eq("is_suspended", true);
-      if (search.trim()) {
-        const s = `%${search.trim()}%`;
+      const safeSearch = search.trim().replace(/[,()"\\*]/g, "");
+      if (safeSearch) {
+        const s = `%${safeSearch}%`;
         q = q.or(`first_name.ilike.${s},last_name.ilike.${s}`);
       }
       const { data, error } = await q;

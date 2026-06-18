@@ -10,36 +10,43 @@ export default function AdminUserDetail() {
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState(false);
 
-  async function load() {
-    setLoading(true);
-    const [{ data: p }, { data: b }] = await Promise.all([
-      supabase.from("profiles").select("*").eq("id", id).single(),
-      supabase
-        .from("bookings")
-        .select("id, requested_at, status, rate_cents, platform_fee_cents")
-        .or(`parent_id.eq.${id},nanny_id.eq.${id}`)
-        .order("requested_at", { ascending: false })
-        .limit(50),
-    ]);
-    setProfile(p);
-    setBookings(b ?? []);
-    setLoading(false);
-  }
-
   useEffect(() => {
-    load();
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const [{ data: p }, { data: b }] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", id).single(),
+        supabase
+          .from("bookings")
+          .select("id, requested_at, status, rate_cents, platform_fee_cents")
+          .or(`parent_id.eq.${id},nanny_id.eq.${id}`)
+          .order("requested_at", { ascending: false })
+          .limit(50),
+      ]);
+      if (cancelled) return;
+      setProfile(p);
+      setBookings(b ?? []);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   async function toggleSuspend() {
     if (!profile) return;
     setActing(true);
+    const next = !profile.is_suspended;
     const { error } = await supabase
       .from("profiles")
-      .update({ is_suspended: !profile.is_suspended })
+      .update({ is_suspended: next })
       .eq("id", profile.id);
-    if (error) alert(error.message);
+    if (error) {
+      alert(error.message);
+    } else {
+      setProfile({ ...profile, is_suspended: next });
+    }
     setActing(false);
-    load();
   }
 
   if (loading) return <div className="text-sm text-taupe-dark">Loading…</div>;
