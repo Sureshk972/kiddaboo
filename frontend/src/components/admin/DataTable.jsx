@@ -16,8 +16,14 @@ export default function DataTable({
     copy.sort((a, b) => {
       const va = a[sortKey];
       const vb = b[sortKey];
-      if (va === vb) return 0;
-      const cmp = va > vb ? 1 : -1;
+      const aNil = va === null || va === undefined;
+      const bNil = vb === null || vb === undefined;
+      if (aNil && bNil) return 0;
+      if (aNil) return 1;
+      if (bNil) return -1;
+      let cmp;
+      if (typeof va === "number" && typeof vb === "number") cmp = va - vb;
+      else cmp = String(va).localeCompare(String(vb));
       return sortDir === "asc" ? cmp : -cmp;
     });
     return copy;
@@ -46,23 +52,41 @@ export default function DataTable({
       <table className="w-full text-sm">
         <thead className="bg-cream">
           <tr>
-            {columns.map((col) => (
-              <th
-                key={col.key}
-                className={
-                  "text-left font-medium text-charcoal px-3 py-2 border-b border-cream-dark " +
-                  (col.sortable ? "cursor-pointer select-none" : "")
-                }
-                onClick={() => clickHeader(col)}
-              >
-                {col.header}
-                {sortKey === col.key && (
-                  <span className="ml-1 text-taupe-dark">
-                    {sortDir === "asc" ? "▲" : "▼"}
-                  </span>
-                )}
-              </th>
-            ))}
+            {columns.map((col) => {
+              const isActive = sortKey === col.key;
+              const ariaSort = col.sortable
+                ? isActive
+                  ? sortDir === "asc"
+                    ? "ascending"
+                    : "descending"
+                  : "none"
+                : undefined;
+              return (
+                <th
+                  key={col.key}
+                  scope="col"
+                  aria-sort={ariaSort}
+                  className="text-left font-medium text-charcoal px-3 py-2 border-b border-cream-dark"
+                >
+                  {col.sortable ? (
+                    <button
+                      type="button"
+                      onClick={() => clickHeader(col)}
+                      className="inline-flex items-center gap-1 font-medium text-charcoal hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage rounded-sm"
+                    >
+                      {col.header}
+                      {isActive && (
+                        <span className="text-taupe-dark">
+                          {sortDir === "asc" ? "▲" : "▼"}
+                        </span>
+                      )}
+                    </button>
+                  ) : (
+                    col.header
+                  )}
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>

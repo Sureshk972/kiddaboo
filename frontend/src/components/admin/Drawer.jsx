@@ -16,13 +16,20 @@ export default function Drawer({ open, onClose, title, children }) {
         className="absolute inset-0 bg-charcoal/30"
         onClick={onClose}
       />
-      <div className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-white border-l border-cream-dark shadow-lg flex flex-col">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="drawer-title"
+        className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-white border-l border-cream-dark shadow-lg flex flex-col"
+      >
         <div className="px-5 py-3 border-b border-cream-dark flex items-center justify-between">
-          <h2 className="font-heading font-bold text-charcoal text-sm">{title}</h2>
+          <h2 id="drawer-title" className="font-heading font-bold text-charcoal text-sm">
+            {title}
+          </h2>
           <button
             onClick={onClose}
-            aria-label="Close"
-            className="text-taupe-dark hover:text-charcoal"
+            aria-label="Close drawer"
+            className="text-taupe-dark hover:text-charcoal text-xl leading-none"
           >
             ×
           </button>
