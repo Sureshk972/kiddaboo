@@ -47,13 +47,39 @@ export default function PayoutInfo() {
           <h2 className="font-heading font-bold text-charcoal text-sm mb-2">
             2. You accept the request
           </h2>
-          <p className="text-sm text-taupe-dark leading-relaxed">
+          <p className="text-sm text-taupe-dark leading-relaxed mb-3">
             The instant you tap <strong>Accept</strong>, Stripe captures the
             parent's card and transfers your share into your Stripe balance.
-            You receive your <strong>full posted rate</strong> — Kiddaboo's
-            15% service fee is added on top and paid by the parent, not
-            deducted from your share. Funds are in your account at that
-            moment — you don't have to wait for the session to happen.
+            Funds are in your account at that moment — you don't have to wait
+            for the session to happen.
+          </p>
+          <p className="text-sm text-taupe-dark leading-relaxed mb-3">
+            Here's how the money breaks down on a <strong>$50 session</strong>:
+          </p>
+          <ul className="text-sm text-taupe-dark leading-relaxed list-disc pl-5 space-y-1 mb-3">
+            <li>
+              Parent is charged <strong>$57.50</strong> ($50 + $7.50
+              Kiddaboo service fee).
+            </li>
+            <li>
+              Kiddaboo keeps the <strong>$7.50</strong> service fee.
+            </li>
+            <li>
+              Your <strong>$50</strong> posted rate goes to your Stripe
+              balance.
+            </li>
+            <li>
+              Stripe's card processing fee (<strong>2.9% + $0.30</strong>,
+              about $1.97 on this example) is deducted from your balance.
+            </li>
+            <li>
+              You net about <strong>$48.03</strong> on a $50 session.
+            </li>
+          </ul>
+          <p className="text-sm text-taupe-dark leading-relaxed">
+            The processing fee is Stripe's, not Kiddaboo's — it's the cost
+            of accepting a card. The exact amount depends on the card type
+            and your country.
           </p>
         </section>
 
