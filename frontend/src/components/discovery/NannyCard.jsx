@@ -24,8 +24,14 @@ function StarRow({ score }) {
   );
 }
 
+const proximityLabel = {
+  0: "In your zip",
+  1: "Nearby",
+};
+
 export default function NannyCard({ group }) {
-  const { nanny, slots, avgRating, ratingCount } = group;
+  const { nanny, slots, avgRating, ratingCount, zipTier } = group;
+  const proximity = proximityLabel[zipTier];
   const [expanded, setExpanded] = useState(false);
 
   const rates = slots.map((s) => s.rate_cents);
@@ -56,12 +62,19 @@ export default function NannyCard({ group }) {
         </Link>
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline justify-between gap-2">
-            <Link
-              to={`/nanny/${nanny.id}`}
-              className="text-base font-heading font-bold text-charcoal truncate hover:text-sage-dark"
-            >
-              {formatProfileName(nanny)}
-            </Link>
+            <div className="flex items-center gap-2 min-w-0">
+              <Link
+                to={`/nanny/${nanny.id}`}
+                className="text-base font-heading font-bold text-charcoal truncate hover:text-sage-dark"
+              >
+                {formatProfileName(nanny)}
+              </Link>
+              {proximity && (
+                <span className="text-[10px] uppercase tracking-wide font-medium text-sage-dark bg-sage-light px-1.5 py-0.5 rounded shrink-0">
+                  {proximity}
+                </span>
+              )}
+            </div>
             <span className="text-sm font-bold text-sage-dark whitespace-nowrap">
               {minRate === maxRate
                 ? `$${(minRate / 100).toFixed(0)}/hr`
