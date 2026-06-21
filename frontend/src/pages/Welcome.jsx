@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/ui/Button";
+import ReviewsList from "../components/ReviewsList";
 import { useAuth } from "../context/AuthContext";
 
 export default function Welcome() {
@@ -88,6 +89,22 @@ export default function Welcome() {
           Already have an account? <span className="underline underline-offset-4">Sign in</span>
         </button>
       </div>
+
+      {/* What parents say */}
+      <section className="w-full max-w-sm mt-16">
+        <h2 className="text-lg font-heading font-bold text-charcoal mb-4 text-center">
+          What parents say
+        </h2>
+        <ReviewsList limit={3} compact />
+        <div className="mt-4 text-center">
+          <button
+            onClick={() => navigate("/reviews")}
+            className="text-sm text-sage hover:text-sage-dark transition-colors cursor-pointer bg-transparent border-none py-2 underline underline-offset-4"
+          >
+            See all reviews →
+          </button>
+        </div>
+      </section>
 
       {/* Legal links — #61: enlarged touch targets (min 44pt tap area) */}
       <div className="mt-8 flex gap-2">
