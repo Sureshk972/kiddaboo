@@ -25,6 +25,7 @@ const MyProfile = lazy(() => import("./pages/MyProfile"));
 const EditProfile = lazy(() => import("./pages/EditProfile"));
 const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const Reviews = lazy(() => import("./pages/Reviews"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const PayoutInfo = lazy(() => import("./pages/PayoutInfo"));
@@ -117,6 +118,7 @@ export default function App() {
               <Route path="/welcome" element={<Welcome />} />
               <Route path="/verify" element={<PhoneVerification />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/reviews" element={<Reviews />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
 
