@@ -91,7 +91,7 @@ export default function Welcome() {
       </div>
 
       {/* What parents say */}
-      <section className="w-full max-w-sm mt-16">
+      <section className="w-full max-w-xs mt-16">
         <h2
           className="text-lg font-bold mb-4 text-center"
           style={{ fontFamily: "'Manrope', sans-serif", color: "#8B3FE0" }}
