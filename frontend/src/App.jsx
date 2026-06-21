@@ -59,6 +59,7 @@ const AdminBookings = lazy(() => import("./pages/admin/AdminBookings"));
 const AdminBookingDetail = lazy(() => import("./pages/admin/AdminBookingDetail"));
 const AdminPayments = lazy(() => import("./pages/admin/AdminPayments"));
 const AdminReports = lazy(() => import("./pages/admin/AdminReports"));
+const AdminFeedback = lazy(() => import("./pages/admin/AdminFeedback"));
 
 // Shell for routes that don't use a TabBar layout. Renders the
 // page then a static legal footer below it, so the DBA notice is
@@ -252,6 +253,7 @@ export default function App() {
               <Route path="bookings/:id" element={<AdminBookingDetail />} />
               <Route path="payments" element={<AdminPayments />} />
               <Route path="reports" element={<AdminReports />} />
+              <Route path="feedback" element={<AdminFeedback />} />
             </Route>
           </Routes>
           </Suspense>
