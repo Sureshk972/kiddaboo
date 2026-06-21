@@ -4,6 +4,7 @@ import { useOpenSlots } from "../hooks/useOpenSlots";
 import { useSlotUpdates } from "../hooks/useSlotUpdates";
 import FilterSheet from "../components/discovery/FilterSheet";
 import NannyCard from "../components/discovery/NannyCard";
+import NannyCardSkeleton from "../components/discovery/NannyCardSkeleton";
 import NewSlotsBanner from "../components/discovery/NewSlotsBanner";
 
 const listVariants = {
@@ -78,9 +79,13 @@ export default function Discover() {
       />
 
       {loading ? (
-        <p className="text-sm text-taupe text-center py-8">
-          Loading available nannies…
-        </p>
+        <ul className="flex flex-col gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <li key={i}>
+              <NannyCardSkeleton />
+            </li>
+          ))}
+        </ul>
       ) : groups.length === 0 ? (
         <div className="bg-white border border-cream-dark p-6 text-center">
           <p className="text-sm text-charcoal">No nannies available in that window.</p>

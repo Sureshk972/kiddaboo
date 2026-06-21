@@ -8,6 +8,17 @@ import { useInboxAttention } from "../context/InboxAttentionContext";
 import { supabase } from "../lib/supabase";
 import { formatProfileName } from "../lib/profileName";
 import RatingSheet from "../components/booking/RatingSheet";
+import BookingCardSkeleton from "../components/ui/BookingCardSkeleton";
+
+function ListSkeleton() {
+  return (
+    <div className="flex flex-col gap-3">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <BookingCardSkeleton key={i} />
+      ))}
+    </div>
+  );
+}
 
 const PAST_STATUSES = [
   "completed",
@@ -134,7 +145,7 @@ function PendingList() {
     refresh();
     refreshAttention();
   };
-  if (loading) return <p className="text-sm text-taupe text-center py-8">Loading…</p>;
+  if (loading) return <ListSkeleton />;
   if (bookings.length === 0)
     return <Empty>No pending requests. Booking requests waiting on a nanny will show up here.</Empty>;
   return (
@@ -293,7 +304,7 @@ function UpcomingList() {
     })();
   }, [bookings.length]);
 
-  if (loading) return <p className="text-sm text-taupe text-center py-8">Loading…</p>;
+  if (loading) return <ListSkeleton />;
   if (bookings.length === 0)
     return <Empty>No upcoming bookings. Confirmed sessions will appear here with the nanny's contact info.</Empty>;
   return (
@@ -418,7 +429,7 @@ function PastList() {
     [raw, now]
   );
 
-  if (loading) return <p className="text-sm text-taupe text-center py-8">Loading…</p>;
+  if (loading) return <ListSkeleton />;
   if (bookings.length === 0) return <Empty>No past bookings yet.</Empty>;
   return (
     <ul className="flex flex-col gap-3">

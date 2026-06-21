@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParentBookings } from "../hooks/useParentBookings";
 import { supabase } from "../lib/supabase";
 import { formatProfileName } from "../lib/profileName";
+import BookingCardSkeleton from "../components/ui/BookingCardSkeleton";
 
 function dayLabel(d) {
   const date = new Date(d);
@@ -118,7 +119,11 @@ export default function Upcoming() {
       </h1>
 
       {loading ? (
-        <p className="text-sm text-taupe text-center py-8">Loading…</p>
+        <div className="flex flex-col gap-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <BookingCardSkeleton key={i} />
+          ))}
+        </div>
       ) : bookings.length === 0 ? (
         <div className="bg-white border border-cream-dark p-6 text-center">
           <p className="text-sm text-charcoal">No upcoming bookings.</p>
