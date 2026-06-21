@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import useParentSelfRating from "../hooks/useParentSelfRating";
+import FeedbackSheet from "../components/FeedbackSheet";
 
 export default function MyProfile() {
   useDocumentTitle("My Profile");
@@ -11,6 +12,7 @@ export default function MyProfile() {
   const { user, profile, signOut } = useAuth();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
   // #54: inline error replaces jarring alert()
   const [deleteError, setDeleteError] = useState("");
 
@@ -201,10 +203,23 @@ export default function MyProfile() {
               label: "Privacy Policy",
               path: "/privacy",
             },
+            {
+              icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              ),
+              label: "Send feedback",
+              sublabel: "Tell us what's working or what could be better",
+              onClick: () => setShowFeedback(true),
+            },
           ].map((item, i, arr) => (
             <button
               key={item.label}
-              onClick={() => item.path && navigate(item.path)}
+              onClick={() => {
+                if (item.onClick) item.onClick();
+                else if (item.path) navigate(item.path);
+              }}
               className={`w-full flex items-center gap-3 px-4 py-4 text-left bg-transparent border-none transition-colors ${
                 i < arr.length - 1 ? "border-b border-cream-dark" : ""
               } ${item.comingSoon ? "opacity-50 cursor-default" : "cursor-pointer hover:bg-cream-dark/50"}`}
@@ -259,6 +274,11 @@ export default function MyProfile() {
           Delete my account
         </button>
       </div>
+
+      <FeedbackSheet
+        open={showFeedback}
+        onClose={() => setShowFeedback(false)}
+      />
 
       {/* Delete confirmation modal */}
       {showDeleteConfirm && (
