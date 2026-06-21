@@ -117,10 +117,10 @@ export default function FeedbackSheet({ open, onClose }) {
                     <svg
                       width="32"
                       height="32"
-                      viewBox="0 0 14 14"
-                      fill={active ? "#7A8F6D" : "none"}
-                      stroke={active ? "#7A8F6D" : "#9A8E80"}
-                      strokeWidth={active ? "0" : "1.4"}
+                      viewBox="-1 -1 16 16"
+                      fill={active ? "#D9A441" : "#FFFFFF"}
+                      stroke={active ? "#D9A441" : "#5C5C5C"}
+                      strokeWidth="1.4"
                       strokeLinejoin="round"
                     >
                       <path d="M7 1L8.8 4.7L13 5.3L10 8.2L10.7 12.3L7 10.4L3.3 12.3L4 8.2L1 5.3L5.2 4.7L7 1Z" />
