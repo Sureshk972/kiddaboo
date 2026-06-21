@@ -92,14 +92,18 @@ export default function Welcome() {
 
       {/* What parents say */}
       <section className="w-full max-w-sm mt-16">
-        <h2 className="text-lg font-heading font-bold text-charcoal mb-4 text-center">
+        <h2
+          className="text-lg font-bold mb-4 text-center"
+          style={{ fontFamily: "'Manrope', sans-serif", color: "#8B3FE0" }}
+        >
           What parents say
         </h2>
         <ReviewsList limit={3} compact />
         <div className="mt-4 text-center">
           <button
             onClick={() => navigate("/reviews")}
-            className="text-sm text-sage hover:text-sage-dark transition-colors cursor-pointer bg-transparent border-none py-2 underline underline-offset-4"
+            className="text-sm transition-colors cursor-pointer bg-transparent border-none py-2 underline underline-offset-4"
+            style={{ color: "#8B3FE0" }}
           >
             See all reviews →
           </button>
