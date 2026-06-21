@@ -30,7 +30,10 @@ export default function Welcome() {
   }
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-6">
+    <div
+      data-safe-top
+      className="min-h-screen bg-cream flex flex-col items-center justify-center px-6 pb-[max(1rem,env(safe-area-inset-bottom))]"
+    >
       {/* Logo area */}
       <div className="flex flex-col items-center gap-6 mb-12">
         {/* Logo mark — five boxes echoing the illustration palette */}
