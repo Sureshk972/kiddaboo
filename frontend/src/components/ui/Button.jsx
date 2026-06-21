@@ -1,6 +1,8 @@
+import { motion } from "framer-motion";
+
 const variants = {
   primary:
-    "bg-sage text-white hover:bg-sage-dark active:scale-[0.98] shadow-sm",
+    "bg-sage text-white hover:bg-sage-dark shadow-sm",
   secondary:
     "bg-cream-dark text-taupe-dark border border-cream-dark hover:border-sage-light",
   ghost:
@@ -24,14 +26,17 @@ export default function Button({
   type = "button",
   className = "",
 }) {
+  const isDisabled = disabled || loading;
   return (
-    <button
+    <motion.button
       type={type}
       onClick={onClick}
-      disabled={disabled || loading}
+      disabled={isDisabled}
+      whileTap={isDisabled ? undefined : { scale: 0.96 }}
+      transition={{ type: "spring", stiffness: 500, damping: 28 }}
       className={`
         font-body font-medium
-        transition-all duration-150 ease-out cursor-pointer
+        transition-colors duration-150 ease-out cursor-pointer
         disabled:opacity-50 disabled:cursor-not-allowed
         ${sizes[size] || sizes.md}
         ${fullWidth ? "w-full" : ""}
@@ -47,6 +52,6 @@ export default function Button({
       ) : (
         children
       )}
-    </button>
+    </motion.button>
   );
 }

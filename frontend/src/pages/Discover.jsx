@@ -1,9 +1,23 @@
 import { useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import { useOpenSlots } from "../hooks/useOpenSlots";
 import { useSlotUpdates } from "../hooks/useSlotUpdates";
 import FilterSheet from "../components/discovery/FilterSheet";
 import NannyCard from "../components/discovery/NannyCard";
 import NewSlotsBanner from "../components/discovery/NewSlotsBanner";
+
+const listVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05, delayChildren: 0.04 } },
+};
+const itemVariants = {
+  hidden: { opacity: 0, y: 12 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 300, damping: 28 },
+  },
+};
 
 export default function Discover() {
   // Default window: tomorrow → two weeks out. Narrower windows produced
@@ -75,13 +89,18 @@ export default function Discover() {
           </p>
         </div>
       ) : (
-        <ul className="flex flex-col gap-3">
+        <motion.ul
+          className="flex flex-col gap-3"
+          variants={listVariants}
+          initial="hidden"
+          animate="show"
+        >
           {groups.map((g) => (
-            <li key={g.nannyId}>
+            <motion.li key={g.nannyId} variants={itemVariants}>
               <NannyCard group={g} />
-            </li>
+            </motion.li>
           ))}
-        </ul>
+        </motion.ul>
       )}
     </div>
   );
