@@ -107,21 +107,6 @@ export default function Welcome() {
         </button>
       </div>
 
-      {/* Social — #61: enlarged icon + tap area */}
-      <a
-        href="https://www.instagram.com/kiddaboo1/"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-2 flex items-center gap-2 text-xs transition-colors px-3 py-3"
-        style={{ color: '#8B3FE0' }}
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" strokeWidth="1.5" />
-          <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.5" />
-          <circle cx="18" cy="6" r="1.5" fill="currentColor" />
-        </svg>
-        Follow us on Instagram
-      </a>
     </div>
   );
 }
