@@ -447,7 +447,7 @@ export default function NannyDashboard() {
 
   return (
     <div className="px-5 py-4 flex flex-col gap-4">
-      <h1 className="text-3xl font-heading font-medium tracking-tight text-charcoal">
+      <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Inter', sans-serif", color: '#8B3FE0' }}>
         Inbox
       </h1>
 

@@ -79,7 +79,7 @@ export default function AvailabilityEditor() {
   return (
     <div className="px-5 py-4 flex flex-col gap-5">
       <div className="flex items-baseline justify-between gap-3">
-        <h1 className="text-2xl font-heading font-bold tracking-tight text-sage-dark">
+        <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Inter', sans-serif", color: '#8B3FE0' }}>
           Availability
         </h1>
         {!showForm && !loading && (
