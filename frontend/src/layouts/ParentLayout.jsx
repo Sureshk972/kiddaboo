@@ -22,15 +22,14 @@ export default function ParentLayout({ children }) {
       <div className="hidden md:block bg-sage-dark text-center py-2 text-xs text-white">
         Kiddaboo is designed for mobile — open this on your phone for the best experience.
       </div>
-      <div className="max-w-md mx-auto w-full flex-1 flex flex-col">
-        <div
-          className="px-5 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))]"
-          style={{ backgroundColor: '#8B3FE0' }}
-        >
+      <div className="w-full" style={{ backgroundColor: '#8B3FE0' }}>
+        <div className="max-w-md mx-auto px-5 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))]">
           <span className="text-[10px] font-bold tracking-[1.5px] text-white uppercase">
             Parent
           </span>
         </div>
+      </div>
+      <div className="max-w-md mx-auto w-full flex-1 flex flex-col">
         <div className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))]">
           {children}
           <LegalFooter />
