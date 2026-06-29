@@ -30,20 +30,19 @@ export default function AppLayout({ children }) {
 
   return (
     <div className="h-dvh bg-cream flex flex-col">
-      <div
-        className="px-5 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] flex items-center gap-2"
-        style={{ backgroundColor: '#8B3FE0' }}
-      >
-        <span
-          className="text-base text-white tracking-tight"
-          style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 800 }}
-        >
-          Kiddaboo
-        </span>
-        <span className="text-white/50 text-[10px]">·</span>
-        <span className="text-[10px] font-bold tracking-[1.5px] text-white uppercase">
-          {isNanny ? 'Nanny' : 'Parent'}
-        </span>
+      <div className="w-full" style={{ backgroundColor: '#8B3FE0' }}>
+        <div className="max-w-md mx-auto px-5 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] flex items-center gap-2">
+          <span
+            className="text-base text-white tracking-tight"
+            style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 800 }}
+          >
+            Kiddaboo
+          </span>
+          <span className="text-white/50 text-[10px]">·</span>
+          <span className="text-[10px] font-bold tracking-[1.5px] text-white uppercase">
+            {isNanny ? 'Nanny' : 'Parent'}
+          </span>
+        </div>
       </div>
       <div ref={scrollRef} className="flex-1 overflow-y-auto flex flex-col min-h-0 pb-[calc(4rem+env(safe-area-inset-bottom))]">
         {shouldShowPrompt && (
