@@ -46,7 +46,7 @@ export default function MyProfile() {
       <div className="max-w-md mx-auto px-5 py-6 flex flex-col gap-6">
         {/* Profile card */}
         <div className="bg-white rounded-2xl border border-cream-dark p-6 flex flex-col items-center text-center">
-          <div className="w-20 h-20 rounded-full bg-sage-light flex items-center justify-center mb-3 overflow-hidden">
+          <div className="w-28 h-28 rounded-full bg-sage-light flex items-center justify-center mb-3 overflow-hidden">
             {profile?.photo_url ? (
               <img
                 src={profile.photo_url}
@@ -54,7 +54,7 @@ export default function MyProfile() {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-2xl font-heading font-bold text-sage-dark">
+              <span className="text-3xl font-heading font-bold text-sage-dark">
                 {initials}
               </span>
             )}
