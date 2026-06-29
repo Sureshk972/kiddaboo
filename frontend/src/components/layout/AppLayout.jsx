@@ -30,6 +30,14 @@ export default function AppLayout({ children }) {
 
   return (
     <div className="h-dvh bg-cream flex flex-col">
+      <div
+        className="px-5 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))]"
+        style={{ backgroundColor: '#8B3FE0' }}
+      >
+        <span className="text-[10px] font-bold tracking-[1.5px] text-white uppercase">
+          {isNanny ? 'Nanny' : 'Parent'}
+        </span>
+      </div>
       <div ref={scrollRef} className="flex-1 overflow-y-auto flex flex-col min-h-0 pb-[calc(4rem+env(safe-area-inset-bottom))]">
         {shouldShowPrompt && (
           <div className="pt-[calc(0.75rem+env(safe-area-inset-top))]">
