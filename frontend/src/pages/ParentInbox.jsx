@@ -164,13 +164,13 @@ function PendingList() {
             <div className="flex items-baseline justify-between gap-2">
               <h3
                 className="text-lg text-charcoal truncate"
-                style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+                style={{ fontWeight: 500 }}
               >
                 {formatProfileName(b.nanny)}
               </h3>
               <span
                 className="text-base text-sage-dark whitespace-nowrap"
-                style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+                style={{ fontWeight: 500 }}
               >
                 ${totalDollars(b)}
               </span>
@@ -330,7 +330,7 @@ function UpcomingList() {
                 <div>
                   <h3
                     className="text-lg text-charcoal"
-                    style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+                    style={{ fontWeight: 500 }}
                   >
                     {formatProfileName(b.nanny)}
                   </h3>
@@ -347,7 +347,7 @@ function UpcomingList() {
                 </div>
                 <span
                   className="text-base text-sage-dark whitespace-nowrap"
-                  style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+                  style={{ fontWeight: 500 }}
                 >
                   ${totalDollars(b)}
                 </span>
@@ -441,7 +441,7 @@ function PastList() {
               <div className="flex items-baseline justify-between gap-2">
                 <h3
                   className="text-lg text-charcoal truncate"
-                  style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+                  style={{ fontWeight: 500 }}
                 >
                   {formatProfileName(b.nanny)}
                 </h3>

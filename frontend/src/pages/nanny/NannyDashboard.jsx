@@ -482,7 +482,7 @@ export default function NannyDashboard() {
           </div>
           <div
             className="text-charcoal mt-1 leading-none"
-            style={{ fontFamily: "Fraunces, serif", fontWeight: 500, fontSize: "36px", letterSpacing: "-1px" }}
+            style={{ fontWeight: 500, fontSize: "36px", letterSpacing: "-1px" }}
           >
             ${(stats.weekEarningsCents / 100).toFixed(stats.weekEarningsCents < 10000 ? 2 : 0)}
           </div>
@@ -490,7 +490,7 @@ export default function NannyDashboard() {
             <div>
               <div
                 className="text-base text-charcoal leading-none"
-                style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+                style={{ fontWeight: 500 }}
               >
                 {stats.weekSessions}
               </div>
@@ -502,7 +502,7 @@ export default function NannyDashboard() {
             <div>
               <div
                 className="text-base text-charcoal leading-none"
-                style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+                style={{ fontWeight: 500 }}
               >
                 {stats.weekHours.toFixed(1)}
               </div>
@@ -514,7 +514,7 @@ export default function NannyDashboard() {
             <div>
               <div
                 className="text-base text-charcoal leading-none"
-                style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+                style={{ fontWeight: 500 }}
               >
                 {stats.rating ? stats.rating.avg.toFixed(1) : "—"}
               </div>

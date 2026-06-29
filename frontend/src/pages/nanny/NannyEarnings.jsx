@@ -170,7 +170,7 @@ export default function NannyEarnings() {
             </div>
             <div
               className="text-charcoal mt-2 leading-none"
-              style={{ fontFamily: "Fraunces, serif", fontWeight: 500, fontSize: "56px", letterSpacing: "-1.5px" }}
+              style={{ fontWeight: 500, fontSize: "56px", letterSpacing: "-1.5px" }}
             >
               ${(stats.weekEarningsCents / 100).toFixed(stats.weekEarningsCents < 10000 ? 2 : 0)}
             </div>
@@ -200,7 +200,7 @@ export default function NannyEarnings() {
               </div>
               <div
                 className="text-sm text-charcoal"
-                style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+                style={{ fontWeight: 500 }}
               >
                 ${(stats.lifetimeCents / 100).toFixed(0)}
               </div>
@@ -216,7 +216,7 @@ export default function NannyEarnings() {
                 </div>
                 <div
                   className="text-base text-charcoal mt-0.5"
-                  style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+                  style={{ fontWeight: 500 }}
                 >
                   ${(stats.nextSession.rateCents / 100).toFixed(2)} ·{" "}
                   {stats.nextSession.startsAt.toLocaleDateString([], {
@@ -283,7 +283,7 @@ function Stat({ value, label }) {
     <div className="text-center">
       <div
         className="text-2xl text-charcoal leading-none"
-        style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}
+        style={{ fontWeight: 500 }}
       >
         {value}
       </div>

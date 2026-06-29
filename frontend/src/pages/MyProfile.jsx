@@ -105,7 +105,7 @@ export default function MyProfile() {
             <div className="flex items-baseline gap-2 mt-1">
               <span
                 className="text-charcoal"
-                style={{ fontFamily: "Fraunces, serif", fontWeight: 500, fontSize: "28px", letterSpacing: "-0.5px" }}
+                style={{ fontWeight: 500, fontSize: "28px", letterSpacing: "-0.5px" }}
               >
                 {selfRating.avg.toFixed(1)}
               </span>
