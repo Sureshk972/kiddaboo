@@ -23,8 +23,11 @@ export default function ParentLayout({ children }) {
         Kiddaboo is designed for mobile — open this on your phone for the best experience.
       </div>
       <div className="max-w-md mx-auto w-full flex-1 flex flex-col">
-        <div className="px-5 pt-[calc(0.75rem+env(safe-area-inset-top))]">
-          <span className="text-[10px] font-bold tracking-[1.5px] text-sage-dark uppercase">
+        <div
+          className="px-5 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))]"
+          style={{ backgroundColor: '#8B3FE0' }}
+        >
+          <span className="text-[10px] font-bold tracking-[1.5px] text-white uppercase">
             Parent
           </span>
         </div>
