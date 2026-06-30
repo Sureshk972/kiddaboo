@@ -5,7 +5,7 @@ import { formatProfileName, profileInitial } from "../../lib/profileName";
 function StarRow({ score }) {
   const full = Math.round(score);
   return (
-    <span className="text-sage-dark" aria-label={`${score} out of 5 stars`}>
+    <span className="text-gold" aria-label={`${score} out of 5 stars`}>
       {"★".repeat(full)}
       <span className="text-cream-dark">{"★".repeat(5 - full)}</span>
     </span>
@@ -68,7 +68,7 @@ export default function NannyPublicProfile() {
           </h1>
           <div className="flex items-center gap-2 mt-1.5">
             {profile.verified_at && (
-              <span className="text-[10px] font-bold uppercase tracking-wide bg-sage-light text-sage-dark px-2 py-0.5">
+              <span className="text-[10px] font-bold uppercase tracking-wide bg-gold-light text-gold-dark px-2 py-0.5">
                 Verified
               </span>
             )}

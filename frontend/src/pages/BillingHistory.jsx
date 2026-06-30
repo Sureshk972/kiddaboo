@@ -17,7 +17,7 @@ const STATUS_LABEL = {
 };
 
 const STATUS_TONE = {
-  completed: "bg-sage-light text-sage-dark",
+  completed: "bg-gold-light text-gold-dark",
   confirmed: "bg-sage-light text-sage-dark",
   pending: "bg-cream-dark text-taupe-dark",
   pending_payment_retry: "bg-terracotta-light text-terracotta",

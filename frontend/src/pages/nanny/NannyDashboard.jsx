@@ -21,7 +21,7 @@ const STATUS_LABEL = {
 };
 
 const STATUS_TONE = {
-  completed: "bg-sage-light text-sage-dark",
+  completed: "bg-gold-light text-gold-dark",
   confirmed: "bg-sage-light text-sage-dark",
   declined: "bg-terracotta-light text-terracotta",
   expired: "bg-cream-dark text-taupe-dark",
@@ -64,7 +64,7 @@ function ParentRatingPill({ rating }) {
   }
   return (
     <span className="text-[10px] font-medium text-sage-dark inline-flex items-center gap-0.5">
-      <span className="text-sage">★</span>
+      <span className="text-gold">★</span>
       {rating.avg.toFixed(1)}
       <span className="text-taupe ml-1">
         · {rating.n} rating{rating.n === 1 ? "" : "s"} from nannies

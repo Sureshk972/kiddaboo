@@ -18,7 +18,7 @@ function StarRow({ score }) {
   const full = Math.round(score);
   return (
     <span aria-label={`${score.toFixed(1)} out of 5`}>
-      <span className="text-sage-dark">{"★".repeat(full)}</span>
+      <span className="text-gold">{"★".repeat(full)}</span>
       <span className="text-cream-dark">{"★".repeat(5 - full)}</span>
     </span>
   );
