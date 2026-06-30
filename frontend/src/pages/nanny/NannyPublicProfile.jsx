@@ -68,7 +68,7 @@ export default function NannyPublicProfile() {
           </h1>
           <div className="flex items-center gap-2 mt-1.5">
             {profile.verified_at && (
-              <span className="text-[10px] font-bold uppercase tracking-wide bg-gold-light text-gold-dark px-2 py-0.5">
+              <span className="text-[10px] font-bold uppercase tracking-wide bg-gold text-white px-2 py-0.5">
                 Verified
               </span>
             )}

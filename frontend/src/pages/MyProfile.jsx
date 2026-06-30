@@ -64,7 +64,7 @@ export default function MyProfile() {
           </h2>
           <div className="flex flex-wrap justify-center gap-1.5 mt-1.5">
             {profile?.is_phone_verified && (
-              <span className="inline-flex items-center gap-1 text-[11px] text-gold-dark bg-gold-light px-2 py-0.5 rounded-full">
+              <span className="inline-flex items-center gap-1 text-[11px] text-white bg-gold px-2 py-0.5 rounded-full">
                 <svg width="10" height="10" viewBox="0 0 20 20" fill="none">
                   <path d="M5 10l3 3 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
