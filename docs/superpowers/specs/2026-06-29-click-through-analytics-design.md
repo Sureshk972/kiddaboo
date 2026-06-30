@@ -1,7 +1,7 @@
 # First-Party Click-Through Analytics — Design
 
 **Date:** 2026-06-29
-**Status:** Approved (shape), pending implementation plan
+**Status:** Implemented on `feature/click-through-analytics` branch — pending verify + merge
 **Author:** Claude (Opus 4.7), with Suresh
 
 ## Problem
