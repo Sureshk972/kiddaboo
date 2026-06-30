@@ -96,7 +96,7 @@ export default function ConversationCard({ conversation, onClick }) {
               {hasUnread && (
                 <span
                   aria-label={`${unreadCount} unread`}
-                  className="bg-sage text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1.5 flex items-center justify-center"
+                  className="bg-teal text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1.5 flex items-center justify-center"
                 >
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>

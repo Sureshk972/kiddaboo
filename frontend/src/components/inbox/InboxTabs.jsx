@@ -5,7 +5,7 @@
 //   null    — nothing
 const DOT_TONE = {
   alert: "bg-terracotta animate-pulse",
-  info: "bg-sage",
+  info: "bg-teal",
 };
 
 export default function InboxTabs({ tabs, active, onChange }) {
