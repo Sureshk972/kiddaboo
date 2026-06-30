@@ -21,7 +21,7 @@ const STATUS_LABEL = {
 };
 
 const STATUS_TONE = {
-  completed: "bg-gold-light text-gold-dark",
+  completed: "bg-gold text-white",
   confirmed: "bg-sage-light text-sage-dark",
   declined: "bg-terracotta-light text-terracotta",
   expired: "bg-cream-dark text-taupe-dark",
