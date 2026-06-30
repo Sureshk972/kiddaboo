@@ -116,7 +116,7 @@ export default function PrivacyPolicy() {
         <section className="mb-6">
           <h2 className="font-heading font-bold text-charcoal text-sm mb-2">9. Cookies & Local Storage</h2>
           <p className="text-sm text-taupe-dark leading-relaxed">
-            Kiddaboo uses browser local storage for authentication tokens and session data. We do not use third-party tracking cookies or analytics services.
+            Kiddaboo uses browser local storage for authentication tokens and session data. We do not use third-party tracking cookies or analytics services. We do collect first-party usage analytics — pageviews, clicks, and named events — on our own Supabase infrastructure to improve the product. No PII is captured in event properties and your IP address is not stored. You can opt out from My Profile → Don't track my activity.
           </p>
         </section>
 

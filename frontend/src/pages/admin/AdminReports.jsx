@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import {
   LineChart,
   Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   Tooltip,
@@ -10,6 +12,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useAdminTimeseries } from "../../hooks/useAdminTimeseries";
+import { useAdminEvents } from "../../hooks/useAdminEvents";
 import { supabase } from "../../lib/supabase";
 
 const PRESETS = [
@@ -84,11 +87,21 @@ export default function AdminReports() {
     };
   }, [range.fromIso, range.toIso]);
 
+  const pageviews = useAdminEvents("admin_events_by_day", range.fromIso, range.toIso);
+  const topPages = useAdminEvents("admin_top_pages", range.fromIso, range.toIso);
+  const topClicks = useAdminEvents("admin_top_clicks", range.fromIso, range.toIso);
+  const sessions = useAdminEvents("admin_active_sessions", range.fromIso, range.toIso);
+  const clickFunnel = useAdminEvents("admin_funnel_signup_book_pay", range.fromIso, range.toIso);
+
   const signupsPivot = useMemo(() => pivotByBucket(signups, "account_type"), [signups]);
   const bookingsPivot = useMemo(() => pivotByBucket(bookings, "status"), [bookings]);
   const gmvPivot = useMemo(
     () => pivotByBucket(bookings, "status", "gmv_cents"),
     [bookings]
+  );
+  const pageviewsPivot = useMemo(
+    () => pivotByBucket(pageviews.rows, "user_role"),
+    [pageviews.rows]
   );
 
   return (
@@ -173,6 +186,56 @@ export default function AdminReports() {
             <div className="text-sm text-taupe-dark">Loading…</div>
           )}
         </div>
+
+        <ChartCard title="Pageviews per day (by role)">
+          <LineChart data={pageviewsPivot.data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="bucket" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            {pageviewsPivot.splits.map((role, i) => (
+              <Line key={role} type="monotone" dataKey={role} stroke={COLORS[i % COLORS.length]} />
+            ))}
+          </LineChart>
+        </ChartCard>
+
+        <ChartCard title="Top pages">
+          <BarChart data={topPages.rows} layout="vertical">
+            <XAxis type="number" />
+            <YAxis dataKey="path" type="category" width={180} />
+            <Tooltip />
+            <Bar dataKey="count" fill={COLORS[0]} />
+          </BarChart>
+        </ChartCard>
+
+        <ChartCard title="Top click events">
+          <BarChart data={topClicks.rows} layout="vertical">
+            <XAxis type="number" />
+            <YAxis dataKey="event_name" type="category" width={180} />
+            <Tooltip />
+            <Bar dataKey="count" fill={COLORS[1]} />
+          </BarChart>
+        </ChartCard>
+
+        <ChartCard title="Active sessions per day">
+          <LineChart data={sessions.rows}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="bucket" />
+            <YAxis />
+            <Tooltip />
+            <Line type="monotone" dataKey="count" stroke={COLORS[2]} />
+          </LineChart>
+        </ChartCard>
+
+        <ChartCard title="Signup → Booking → Payment">
+          <BarChart data={clickFunnel.rows}>
+            <XAxis dataKey="step" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="count" fill={COLORS[3]} />
+          </BarChart>
+        </ChartCard>
       </div>
     </div>
   );

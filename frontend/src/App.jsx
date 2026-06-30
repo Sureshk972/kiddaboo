@@ -6,6 +6,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { OnboardingProvider } from "./context/OnboardingContext";
 import { NotificationsProvider } from "./context/NotificationsContext";
 import { InboxAttentionProvider } from "./context/InboxAttentionContext";
+import { TrackingProvider } from "./context/TrackingContext";
 import AppLayout from "./components/layout/AppLayout";
 import Welcome from "./pages/Welcome";
 import RequireAuth from "./components/auth/RequireAuth";
@@ -91,6 +92,7 @@ export default function App() {
       <OnboardingProvider>
         <NotificationsProvider>
         <InboxAttentionProvider>
+          <TrackingProvider>
           <Toaster
             position="bottom-center"
             offset={88}
@@ -257,6 +259,7 @@ export default function App() {
             </Route>
           </Routes>
           </Suspense>
+          </TrackingProvider>
         </InboxAttentionProvider>
         </NotificationsProvider>
       </OnboardingProvider>

@@ -39,7 +39,7 @@ export function AuthProvider({ children }) {
   const fetchProfile = async (userId) => {
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, is_phone_verified, created_at, updated_at, notification_prefs, role, account_type, timezone, stripe_connect_account_id, stripe_connect_charges_enabled, stripe_connect_payouts_enabled")
+      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, is_phone_verified, created_at, updated_at, notification_prefs, role, account_type, timezone, stripe_connect_account_id, stripe_connect_charges_enabled, stripe_connect_payouts_enabled, analytics_opt_out")
       .eq("id", userId)
       .single();
 
@@ -139,6 +139,11 @@ export function AuthProvider({ children }) {
     return { data, error };
   };
 
+  // Convenience wrapper — callers don't need to know the current user.id
+  const refreshProfile = async () => {
+    if (user) await fetchProfile(user.id);
+  };
+
   const isAdmin = profile?.role === "admin";
   const accountType = profile?.account_type ?? null;
   const isNanny = accountType === "nanny";
@@ -157,6 +162,7 @@ export function AuthProvider({ children }) {
         signOut,
         updateProfile,
         fetchProfile,
+        refreshProfile,
       }}
     >
       {children}

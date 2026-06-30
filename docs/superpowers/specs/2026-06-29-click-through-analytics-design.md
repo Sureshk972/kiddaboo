@@ -1,7 +1,7 @@
 # First-Party Click-Through Analytics — Design
 
 **Date:** 2026-06-29
-**Status:** Approved (shape), pending implementation plan
+**Status:** Implemented on `feature/click-through-analytics` branch — pending verify + merge
 **Author:** Claude (Opus 4.7), with Suresh
 
 ## Problem
@@ -140,7 +140,7 @@ Extend `AdminReports.jsx` with new chart cards. All driven by a new hook `useAdm
 - Manual: open the app, navigate, observe rows landing in `events` via Supabase SQL editor
 - Visual: admin reports show the five new charts populated
 - Opt-out: toggle on MyProfile → reload → confirm no rows land for that user
-- RLS: anonymous client cannot select from `events`; non-admin user cannot select rows other than their own (admin can select all via existing admin gate)
+- RLS: anonymous client cannot select from `events`; non-admin authenticated user cannot select any rows (no end-user UI surfaces their own events); admin can select all via the existing `public.is_admin()` gate
 
 ## Open questions to resolve in the implementation plan
 
