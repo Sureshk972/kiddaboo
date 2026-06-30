@@ -163,7 +163,7 @@ function BookForm({ slot }) {
         </p>
       )}
 
-      <Button type="submit" disabled={submitting} fullWidth>
+      <Button type="submit" disabled={submitting} fullWidth data-track="parent_book_confirm">
         {submitting ? "Submitting…" : `Request — $${(total / 100).toFixed(2)}`}
       </Button>
     </form>

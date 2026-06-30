@@ -189,6 +189,7 @@ export default function AdminVerifications() {
                     disabled={acting}
                     onClick={() => decide("approved")}
                     className="bg-sage text-white text-sm rounded-md px-3 py-1 disabled:opacity-50"
+                    data-track="admin_verification_approve"
                   >
                     {acting ? "Approving…" : "Approve"}
                   </button>
@@ -196,6 +197,7 @@ export default function AdminVerifications() {
                     disabled={acting}
                     onClick={() => decide("rejected")}
                     className="border border-cream-dark text-charcoal text-sm rounded-md px-3 py-1 disabled:opacity-50"
+                    data-track="admin_verification_reject"
                   >
                     {acting ? "Rejecting…" : "Reject"}
                   </button>

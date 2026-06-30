@@ -148,6 +148,7 @@ function PendingCard({ b, onRespond, rating }) {
           type="button"
           onClick={() => handle("accept")}
           className="flex-1 text-sm font-medium bg-sage text-white py-2"
+          data-track="nanny_accept"
         >
           Accept
         </button>
@@ -155,6 +156,7 @@ function PendingCard({ b, onRespond, rating }) {
           type="button"
           onClick={() => handle("decline")}
           className="flex-1 text-sm font-medium bg-white border border-cream-dark text-charcoal py-2"
+          data-track="nanny_decline"
         >
           Decline
         </button>
