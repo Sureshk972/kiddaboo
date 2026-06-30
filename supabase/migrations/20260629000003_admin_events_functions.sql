@@ -56,27 +56,34 @@ language sql security invoker stable as $$
   order by 1;
 $$;
 
--- Signup -> first booking -> first payment funnel. Counts distinct users
--- who hit each step in the period.
+-- Signup -> Booking -> Payment funnel. Cohort semantics: of users who
+-- signed up in [p_from, p_to), how many ever booked (at any point) and
+-- how many ever paid. The booking/payment lookups are intentionally
+-- unbounded in time so we don't undercount slow converters.
 create or replace function public.admin_funnel_signup_book_pay(p_from timestamptz, p_to timestamptz)
 returns table (step text, count bigint)
 language sql security invoker stable as $$
-  with signups as (
+  with cohort as (
     select id from public.profiles
-    where created_at >= p_from and created_at < p_to and public.is_admin()
+    where created_at >= p_from and created_at < p_to
   ),
   booked as (
-    select distinct parent_id as id from public.bookings
-    where requested_at >= p_from and requested_at < p_to and public.is_admin()
+    select distinct c.id
+    from cohort c
+    join public.bookings b on b.parent_id = c.id
   ),
   paid as (
-    select distinct b.parent_id as id from public.bookings b
-    where b.requested_at >= p_from and b.requested_at < p_to
-      and b.status in ('confirmed','completed') and public.is_admin()
+    select distinct c.id
+    from cohort c
+    join public.bookings b on b.parent_id = c.id
+    where b.status in ('confirmed','completed')
   )
-  select 'signups' as step, count(*)::bigint from signups
-  union all
-  select 'booked', count(*)::bigint from booked
-  union all
-  select 'paid', count(*)::bigint from paid;
+  select step, count from (
+    select 'signups' as step, (select count(*) from cohort)::bigint as count
+    union all
+    select 'booked', (select count(*) from booked)::bigint
+    union all
+    select 'paid', (select count(*) from paid)::bigint
+  ) f
+  where public.is_admin();
 $$;
