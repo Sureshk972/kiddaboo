@@ -80,10 +80,14 @@ describe("tracking.js", () => {
     for (let i = 0; i < 50; i++) {
       pushEvent({ event_type: "click", event_name: `b${i}`, path: "/x" });
     }
-    // Let microtasks run so the async flush resolves.
-    await Promise.resolve();
-    await Promise.resolve();
-    expect(supabase.from).toHaveBeenCalled();
+    // supabase.from is called synchronously inside flush() before the
+    // first await, so the from-call is observable immediately after the
+    // 50th pushEvent. Verifying the batch size proves the threshold flush
+    // actually sent all 50 events, not just any non-empty subset.
+    expect(supabase.from).toHaveBeenCalledWith("events");
+    const insertMock = supabase.from.mock.results[0].value.insert;
+    expect(insertMock).toHaveBeenCalledTimes(1);
+    expect(insertMock.mock.calls[0][0]).toHaveLength(50);
     teardown();
   });
 });
