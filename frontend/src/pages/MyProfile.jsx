@@ -9,7 +9,7 @@ import FeedbackSheet from "../components/FeedbackSheet";
 export default function MyProfile() {
   useDocumentTitle("My Profile");
   const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, refreshProfile } = useAuth();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -206,6 +206,28 @@ export default function MyProfile() {
             {
               icon: (
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                </svg>
+              ),
+              label: "Don't track my activity",
+              sublabel: "Skip first-party usage analytics on your account",
+              toggle: true,
+              onClick: async () => {
+                const next = !profile?.analytics_opt_out;
+                const { error } = await supabase
+                  .from("profiles")
+                  .update({ analytics_opt_out: next })
+                  .eq("id", user.id);
+                if (error) {
+                  console.warn("[analytics_opt_out] update failed:", error);
+                  return;
+                }
+                await refreshProfile();
+              },
+            },
+            {
+              icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                   <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               ),
@@ -235,7 +257,19 @@ export default function MyProfile() {
                   <span className="text-[11px] text-taupe mt-0.5">{item.sublabel}</span>
                 )}
               </div>
-              {item.comingSoon ? (
+              {item.toggle ? (
+                <div
+                  className={`w-10 h-6 rounded-full p-0.5 transition-colors flex-shrink-0 ${
+                    profile?.analytics_opt_out ? "bg-sage" : "bg-cream-dark"
+                  }`}
+                >
+                  <div
+                    className={`w-5 h-5 rounded-full bg-white transition-transform ${
+                      profile?.analytics_opt_out ? "translate-x-4" : ""
+                    }`}
+                  />
+                </div>
+              ) : item.comingSoon ? (
                 <span className="text-[10px] text-taupe/50">Soon</span>
               ) : (
                 <svg
