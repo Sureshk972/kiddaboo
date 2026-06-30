@@ -85,7 +85,7 @@ export default function BillingHistory() {
   }, [user, isNanny]);
 
   return (
-    <div className="px-5 py-4 flex flex-col gap-4">
+    <div className="px-5 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] flex flex-col gap-4">
       <button
         type="button"
         onClick={() => navigate(-1)}
