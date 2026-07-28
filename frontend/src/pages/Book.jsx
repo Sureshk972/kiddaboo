@@ -11,10 +11,10 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 const cardElementOptions = {
   style: {
     base: {
-      color: "#2F2F2F",
+      color: "#1C1814",
       fontFamily: "'Inter', sans-serif",
       fontSize: "16px",
-      "::placeholder": { color: "#8B3FE0" },
+      "::placeholder": { color: "#6B635A" },
     },
     invalid: { color: "#B07A5B" },
   },
@@ -214,7 +214,7 @@ export default function Book() {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center px-5">
         <div className="bg-white border border-cream-dark p-6 text-center max-w-sm">
-          <h1 className="text-lg font-heading font-bold text-sage-dark mb-2">
+          <h1 className="text-lg font-heading font-bold text-charcoal mb-2">
             This slot is no longer available
           </h1>
           <p className="text-sm text-taupe mb-4">
@@ -244,7 +244,7 @@ export default function Book() {
             ← Back
           </Link>
           <header className="mb-5">
-            <h1 className="text-2xl font-heading font-bold text-sage-dark tracking-tight">
+            <h1 className="text-2xl font-display font-bold text-charcoal tracking-tight">
               Book {formatProfileName(slot.nanny)}
             </h1>
             <div className="text-sm text-taupe mt-1">

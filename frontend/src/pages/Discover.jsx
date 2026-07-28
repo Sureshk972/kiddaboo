@@ -63,7 +63,7 @@ export default function Discover() {
 
   return (
     <div className="px-5 py-4 flex flex-col gap-4">
-      <h1 className="text-2xl font-heading font-bold tracking-tight text-sage-dark">
+      <h1 className="text-2xl font-display font-bold tracking-tight text-charcoal">
         Find a nanny
       </h1>
 
