@@ -105,7 +105,7 @@ export default function NannyEarnings() {
   if (syncing) {
     return (
       <div className="px-5 py-4 flex flex-col gap-5">
-        <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Inter', sans-serif", color: '#8B3FE0' }}>
+        <h1 className="text-2xl font-display font-bold tracking-tight" style={{ color: '#1C1814' }}>
           Earnings
         </h1>
         <div className="bg-white border border-black/5 p-6 text-center">
@@ -120,7 +120,7 @@ export default function NannyEarnings() {
 
   return (
     <div className="px-5 py-4 flex flex-col gap-4">
-      <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Inter', sans-serif", color: '#8B3FE0' }}>
+      <h1 className="text-2xl font-display font-bold tracking-tight" style={{ color: '#1C1814' }}>
         Earnings
       </h1>
 
