@@ -216,6 +216,24 @@ export default function AvailabilityEditor() {
 
       {loading ? (
         <p className="text-sm text-taupe text-center py-8">Loading…</p>
+      ) : blocks.length === 0 ? (
+        !showForm && (
+          <div className="bg-white border border-cream-dark p-8 text-center flex flex-col items-center gap-3">
+            <div className="text-[10px] font-medium tracking-[0.14em] uppercase text-taupe">
+              No hours yet
+            </div>
+            <p className="text-sm text-charcoal max-w-xs">
+              Add your first block so parents can find and book you. It only takes a minute.
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowForm(true)}
+              className="text-sm font-medium bg-charcoal text-cream px-5 py-2.5 hover:bg-sage transition-colors"
+            >
+              Add your first block
+            </button>
+          </div>
+        )
       ) : (
         <>
           {dateBlocks.length > 0 && (
