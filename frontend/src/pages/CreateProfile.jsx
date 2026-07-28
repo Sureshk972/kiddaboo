@@ -114,7 +114,7 @@ export default function CreateProfile() {
     <OnboardingLayout currentStep={2}>
       <div className="flex flex-col gap-6 pt-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight mb-2" style={{ fontFamily: "'Inter', sans-serif", color: '#8B3FE0' }}>
+          <h1 className="text-2xl font-display font-bold tracking-tight mb-2" style={{ color: '#1C1814' }}>
             Tell us about you
           </h1>
           <p className="text-taupe leading-relaxed">

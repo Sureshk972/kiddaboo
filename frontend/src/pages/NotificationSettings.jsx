@@ -189,7 +189,7 @@ export default function NotificationSettings() {
               <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
-          <h1 className="text-xl font-bold tracking-tight" style={{ fontFamily: "'Inter', sans-serif", color: '#8B3FE0' }}>
+          <h1 className="text-xl font-display font-bold tracking-tight" style={{ color: '#1C1814' }}>
             Notifications
           </h1>
         </div>

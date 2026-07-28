@@ -98,7 +98,7 @@ export default function BillingHistory() {
         Back
       </button>
 
-      <h1 className="text-2xl font-heading font-bold tracking-tight text-sage-dark">
+      <h1 className="text-2xl font-display font-bold tracking-tight text-charcoal">
         Billing history
       </h1>
       <p className="text-xs text-taupe -mt-2">
@@ -135,7 +135,7 @@ export default function BillingHistory() {
                       {STATUS_LABEL[b.status] || b.status.replace(/_/g, " ")}
                     </span>
                   </div>
-                  <div className="text-sm font-bold text-sage-dark whitespace-nowrap">
+                  <div className="text-sm font-bold text-charcoal whitespace-nowrap">
                     {amount > 0 ? `$${amount.toFixed(2)}` : "—"}
                   </div>
                 </article>

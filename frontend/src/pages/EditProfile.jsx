@@ -149,14 +149,14 @@ export default function EditProfile() {
             <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
               <path
                 d="M12.5 15L7.5 10L12.5 5"
-                stroke="#2F2F2F"
+                stroke="#1C1814"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
             </svg>
           </button>
-          <h1 className="text-xl font-bold tracking-tight" style={{ fontFamily: "'Inter', sans-serif", color: '#8B3FE0' }}>
+          <h1 className="text-xl font-display font-bold tracking-tight" style={{ color: '#1C1814' }}>
             Edit Profile
           </h1>
         </div>

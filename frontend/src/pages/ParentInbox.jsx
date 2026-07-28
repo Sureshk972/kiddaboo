@@ -169,7 +169,7 @@ function PendingList() {
                 {formatProfileName(b.nanny)}
               </h3>
               <span
-                className="text-base text-sage-dark whitespace-nowrap"
+                className="text-base text-charcoal whitespace-nowrap"
                 style={{ fontWeight: 500 }}
               >
                 ${totalDollars(b)}
@@ -346,7 +346,7 @@ function UpcomingList() {
                   </div>
                 </div>
                 <span
-                  className="text-base text-sage-dark whitespace-nowrap"
+                  className="text-base text-charcoal whitespace-nowrap"
                   style={{ fontWeight: 500 }}
                 >
                   ${totalDollars(b)}
@@ -507,7 +507,7 @@ export default function ParentInbox() {
 
   return (
     <div className="px-5 py-4 flex flex-col gap-4">
-      <h1 className="text-2xl font-heading font-bold tracking-tight text-sage-dark">
+      <h1 className="text-2xl font-display font-bold tracking-tight text-charcoal">
         Inbox
       </h1>
 
