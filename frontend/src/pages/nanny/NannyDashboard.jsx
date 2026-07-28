@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import { useNannyInbox } from "../../hooks/useNannyInbox";
+import { useNannyBlocks } from "../../hooks/useNannyBlocks";
+import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
 import RatingSheet from "../../components/booking/RatingSheet";
 import InboxTabs from "../../components/inbox/InboxTabs";
@@ -353,6 +355,67 @@ function Empty({ children }) {
   );
 }
 
+function SetupStep({ done, title, desc, cta, to }) {
+  return (
+    <li className="flex items-start gap-3">
+      <span
+        className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
+          done ? "bg-teal-light" : "border border-cream-dark"
+        }`}
+      >
+        {done && (
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M20 6L9 17L4 12" stroke="#3F8278" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+      </span>
+      <div className="flex-1 min-w-0">
+        <div className={`text-sm font-medium ${done ? "text-taupe line-through" : "text-charcoal"}`}>
+          {title}
+        </div>
+        {!done && <div className="text-xs text-taupe mt-0.5">{desc}</div>}
+      </div>
+      {!done && (
+        <Link to={to} className="text-xs font-medium text-sage whitespace-nowrap self-center">
+          {cta} &rarr;
+        </Link>
+      )}
+    </li>
+  );
+}
+
+// Onboarding checklist for new nannies — a nanny gets zero bookings until
+// they set availability (which makes them discoverable) and connect payouts
+// (so they get paid). Auto-hides once both are done.
+function SetupChecklist({ hasAvailability, hasPayouts }) {
+  return (
+    <section className="bg-white border border-cream-dark p-5 flex flex-col gap-4">
+      <div>
+        <div className="text-[10px] font-medium tracking-[0.14em] uppercase text-taupe">Get set up</div>
+        <h2 className="text-lg font-display font-semibold text-charcoal mt-1">
+          Two steps to start getting booked
+        </h2>
+      </div>
+      <ul className="flex flex-col gap-3">
+        <SetupStep
+          done={hasAvailability}
+          title="Set your availability"
+          desc="Parents can only find and book you once your hours are up."
+          cta="Set hours"
+          to="/nanny/availability"
+        />
+        <SetupStep
+          done={hasPayouts}
+          title="Connect your payouts"
+          desc="Link your bank so your earnings reach you."
+          cta="Connect"
+          to="/nanny/earnings"
+        />
+      </ul>
+    </section>
+  );
+}
+
 export default function NannyDashboard() {
   const {
     pending,
@@ -366,6 +429,11 @@ export default function NannyDashboard() {
     removePast,
   } = useNannyInbox();
   const { refresh: refreshAttention } = useInboxAttention();
+  const { profile } = useAuth();
+  const { blocks, loading: blocksLoading } = useNannyBlocks();
+  const hasAvailability = blocks.length > 0;
+  const hasPayouts = !!profile?.stripe_connect_payouts_enabled;
+  const needsSetup = !blocksLoading && (!hasAvailability || !hasPayouts);
 
   // Catch pending bookings created since app boot — the provider only
   // auto-loads at mount, so a parent who books while the nanny is
@@ -452,6 +520,10 @@ export default function NannyDashboard() {
       <h1 className="text-2xl font-display font-bold tracking-tight" style={{ color: '#1C1814' }}>
         Inbox
       </h1>
+
+      {needsSetup && (
+        <SetupChecklist hasAvailability={hasAvailability} hasPayouts={hasPayouts} />
+      )}
 
       {!stats.loading && (
         <section className="bg-white border border-black/[0.06] px-5 py-4">
