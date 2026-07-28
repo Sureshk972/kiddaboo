@@ -16,7 +16,7 @@ export default function UpdateBadge() {
       className="fixed z-50 right-3 text-[11px] font-bold tracking-wide uppercase px-3 py-1.5 rounded-full shadow-md cursor-pointer border-none text-white"
       style={{
         top: "calc(env(safe-area-inset-top) + 0.5rem)",
-        backgroundColor: "#8B3FE0",
+        backgroundColor: "#C2673C",
         fontFamily: "'Inter', sans-serif",
       }}
       aria-label="New version available — tap to refresh"

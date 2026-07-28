@@ -102,7 +102,7 @@ export default function PhoneVerify() {
         >
           ← Back
         </button>
-        <h1 className="text-2xl font-bold text-charcoal mb-2">Verify your phone</h1>
+        <h1 className="text-2xl font-bold text-charcoal mb-2 font-display">Verify your phone</h1>
         <p className="text-sm text-taupe mb-8">
           We send a 6-digit code to make sure you're a real person. We won't share your number.
         </p>
