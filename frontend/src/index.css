@@ -5,8 +5,8 @@
 @layer base {
   html {
     font-family: 'DM Sans', sans-serif;
-    background-color: #ECE3FB;
-    color: #6B5E54;
+    background-color: #FAF7F1;
+    color: #4A443C;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     /* overflow-x: clip prevents horizontal bleed without turning
@@ -29,7 +29,7 @@
   }
 
   h1, h2, h3, h4 {
-    color: #2F2F2F;
+    color: #1C1814;
   }
 
   /* --- PWA tap feel ---------------------------------------------------
