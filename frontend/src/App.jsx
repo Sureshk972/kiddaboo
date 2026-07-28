@@ -99,7 +99,7 @@ export default function App() {
             mobileOffset={88}
             toastOptions={{
               style: {
-                background: "#5C6B52",
+                background: "#1C1814",
                 color: "#FFFFFF",
                 border: "none",
                 borderRadius: "12px",

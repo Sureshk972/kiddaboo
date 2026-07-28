@@ -2,9 +2,9 @@ import { motion } from "framer-motion";
 
 const variants = {
   primary:
-    "bg-sage text-white hover:bg-sage-dark shadow-sm",
+    "bg-charcoal text-cream hover:bg-sage shadow-sm",
   secondary:
-    "bg-cream-dark text-taupe-dark border border-cream-dark hover:border-sage-light",
+    "bg-cream-dark text-charcoal border border-cream-dark hover:border-sage",
   ghost:
     "bg-transparent text-sage hover:text-sage-dark underline underline-offset-4",
 };

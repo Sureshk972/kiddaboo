@@ -1,7 +1,7 @@
 // 8 weekly bars rendered as SVG. Bar height encodes earnings; color
-// ramps from pale lavender (oldest) to brand violet (this week) so the
+// ramps from pale warm tint (oldest) to terracotta (this week) so the
 // trend reads even before the eye lands on the numbers.
-const PALETTE = ["#ECE3FB", "#ECE3FB", "#D9C9F4", "#D9C9F4", "#B58FE6", "#A36BE0", "#A36BE0", "#8B3FE0"];
+const PALETTE = ["#F0DDD0", "#F0DDD0", "#E4C0AA", "#E4C0AA", "#D69E7F", "#CB8058", "#CB8058", "#C2673C"];
 
 export default function EarningsTrendBars({ weeks }) {
   const maxCents = Math.max(...weeks.map((w) => w.earningsCents), 1);
@@ -25,7 +25,7 @@ export default function EarningsTrendBars({ weeks }) {
               width={barW}
               height={barH}
               rx={3}
-              fill={PALETTE[PALETTE.length - weeks.length + i] || PALETTE[i] || "#ECE3FB"}
+              fill={PALETTE[PALETTE.length - weeks.length + i] || PALETTE[i] || "#F0DDD0"}
             />
           );
         })}

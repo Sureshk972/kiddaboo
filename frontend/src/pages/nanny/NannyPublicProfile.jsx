@@ -63,7 +63,7 @@ export default function NannyPublicProfile() {
               </span>
             )}
           </div>
-          <h1 className="text-xl font-heading font-bold text-charcoal">
+          <h1 className="text-xl font-display font-bold text-charcoal">
             {displayName}
           </h1>
           <div className="flex items-center gap-2 mt-1.5">
@@ -89,7 +89,7 @@ export default function NannyPublicProfile() {
         </header>
 
         <section className="mt-6">
-          <h2 className="text-sm font-bold uppercase tracking-[1.5px] text-sage-dark mb-3">
+          <h2 className="text-sm font-bold uppercase tracking-[1.5px] text-charcoal mb-3">
             Reviews
           </h2>
           {ratings.length === 0 ? (

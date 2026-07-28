@@ -18,7 +18,7 @@ export default function PaymentInfo() {
               <path d="M15 18L9 12L15 6" stroke="#5C5C5C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-          <h1 className="font-heading font-bold text-charcoal text-base">
+          <h1 className="font-display font-bold text-charcoal text-base">
             How payments work
           </h1>
         </div>

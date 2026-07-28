@@ -50,7 +50,7 @@ export default function ResetPassword() {
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
               <path
                 d="M20 6L9 17L4 12"
-                stroke="#5C6B52"
+                stroke="#C2673C"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -58,7 +58,7 @@ export default function ResetPassword() {
             </svg>
           </div>
           <div>
-            <h1 className="text-2xl font-heading font-bold text-charcoal mb-2">
+            <h1 className="text-2xl font-display font-bold text-charcoal mb-2">
               Password updated!
             </h1>
             <p className="text-taupe leading-relaxed">
@@ -101,7 +101,7 @@ export default function ResetPassword() {
     <OnboardingLayout currentStep={1}>
       <div className="flex flex-col gap-6 pt-8">
         <div>
-          <h1 className="text-2xl font-heading font-bold text-charcoal mb-2">
+          <h1 className="text-2xl font-display font-bold text-charcoal mb-2">
             Set new password
           </h1>
           <p className="text-taupe leading-relaxed">

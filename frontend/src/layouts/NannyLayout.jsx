@@ -15,11 +15,11 @@ export default function NannyLayout({ children }) {
       <div className="hidden md:block bg-sage-dark text-center py-2 text-xs text-white">
         Kiddaboo is designed for mobile — open this on your phone for the best experience.
       </div>
-      <div className="w-full" style={{ backgroundColor: '#8B3FE0' }}>
+      <div className="w-full" style={{ backgroundColor: '#1C1814' }}>
         <div className="max-w-md mx-auto px-5 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] flex items-center gap-2">
           <span
-            className="text-base text-white tracking-tight"
-            style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 800 }}
+            className="text-base text-white tracking-tight font-display"
+            style={{ fontWeight: 800 }}
           >
             Kiddaboo
           </span>

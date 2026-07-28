@@ -107,7 +107,7 @@ export default function AdminFeedback() {
       header: "Rating",
       sortable: true,
       render: (r) => (
-        <span className="text-sage-dark tracking-wider" title={`${r.rating} of 5`}>
+        <span className="text-gold tracking-wider" title={`${r.rating} of 5`}>
           {starString(r.rating)}
         </span>
       ),

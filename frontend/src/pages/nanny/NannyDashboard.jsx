@@ -134,7 +134,7 @@ function PendingCard({ b, onRespond, rating }) {
             {fmtDateTime(b.slot.starts_at)} – {new Date(b.slot.ends_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
           </div>
         </div>
-        <span className="text-sm font-bold text-sage-dark whitespace-nowrap">
+        <span className="text-sm font-bold text-charcoal whitespace-nowrap">
           ${(b.rate_cents / 100).toFixed(2)}
         </span>
       </div>
@@ -200,7 +200,7 @@ function UpcomingCard({ b, onCancel, rating, parentPhone }) {
           </div>
         </div>
         <div className="flex flex-col items-end gap-1">
-          <span className="text-sm font-bold text-sage-dark whitespace-nowrap">
+          <span className="text-sm font-bold text-charcoal whitespace-nowrap">
             ${(b.rate_cents / 100).toFixed(2)}
           </span>
           <StatusPill status="confirmed" />
@@ -449,7 +449,7 @@ export default function NannyDashboard() {
 
   return (
     <div className="px-5 py-4 flex flex-col gap-4">
-      <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Inter', sans-serif", color: '#8B3FE0' }}>
+      <h1 className="text-2xl font-display font-bold tracking-tight" style={{ color: '#1C1814' }}>
         Inbox
       </h1>
 

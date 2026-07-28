@@ -74,9 +74,9 @@ export default function ReportSheet({
             {step === "done" ? (
               /* Success */
               <div className="py-6 text-center">
-                <div className="w-14 h-14 bg-sage-light rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-14 h-14 bg-teal-light rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M20 6L9 17L4 12" stroke="#5C6B52" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M20 6L9 17L4 12" stroke="#3F8278" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
                 <h3 className="text-lg font-heading font-bold text-charcoal mb-2">

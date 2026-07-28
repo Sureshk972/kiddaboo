@@ -19,7 +19,7 @@ function Stars({ rating }) {
           width="14"
           height="14"
           viewBox="0 0 14 14"
-          fill={n <= rating ? "#7A8F6D" : "#F0EBE3"}
+          fill={n <= rating ? "#D9A441" : "#EFEAE0"}
           aria-hidden="true"
         >
           <path d="M7 1L8.8 4.7L13 5.3L10 8.2L10.7 12.3L7 10.4L3.3 12.3L4 8.2L1 5.3L5.2 4.7L7 1Z" />

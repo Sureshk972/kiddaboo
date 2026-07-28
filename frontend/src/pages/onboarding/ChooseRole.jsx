@@ -13,8 +13,8 @@ export default function ChooseRole() {
   return (
     <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-6 py-10">
       <h1
-        className="text-3xl font-bold tracking-tight mb-2"
-        style={{ fontFamily: "'Inter', sans-serif", color: "#8B3FE0" }}
+        className="text-3xl font-bold tracking-tight mb-2 font-display"
+        style={{ color: "#C2673C" }}
       >
         Kiddaboo
       </h1>
@@ -42,7 +42,7 @@ export default function ChooseRole() {
 
       <p className="text-sm text-taupe mt-8">
         Already have an account?{" "}
-        <Link to="/verify?mode=signin" className="underline underline-offset-4" style={{ color: '#8B3FE0' }}>Sign in</Link>
+        <Link to="/verify?mode=signin" className="underline underline-offset-4" style={{ color: '#C2673C' }}>Sign in</Link>
       </p>
     </div>
   );

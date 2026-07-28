@@ -30,11 +30,11 @@ export default function AppLayout({ children }) {
 
   return (
     <div className="h-dvh bg-cream flex flex-col">
-      <div className="w-full" style={{ backgroundColor: '#8B3FE0' }}>
+      <div className="w-full" style={{ backgroundColor: '#1C1814' }}>
         <div className="max-w-md mx-auto px-5 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] flex items-center gap-2">
           <span
-            className="text-base text-white tracking-tight"
-            style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 800 }}
+            className="text-base text-white tracking-tight font-display"
+            style={{ fontWeight: 800 }}
           >
             Kiddaboo
           </span>
