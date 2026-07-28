@@ -146,7 +146,7 @@ export default function PhoneVerification() {
             </svg>
           </div>
           <div>
-            <h1 className="text-2xl font-heading font-bold mb-2" style={{ color: '#8B3FE0' }}>
+            <h1 className="text-2xl font-display font-bold mb-2 text-charcoal">
               Check your email
             </h1>
             <p className="text-taupe leading-relaxed">
@@ -181,7 +181,7 @@ export default function PhoneVerification() {
             </svg>
           </div>
           <div>
-            <h1 className="text-2xl font-heading font-bold mb-2" style={{ color: '#8B3FE0' }}>
+            <h1 className="text-2xl font-display font-bold mb-2 text-charcoal">
               Check your email
             </h1>
             <p className="text-taupe leading-relaxed">
@@ -212,7 +212,7 @@ export default function PhoneVerification() {
     <OnboardingLayout currentStep={1}>
       <div className="flex flex-col gap-6 pt-8">
         <div>
-          <h1 className="text-2xl font-heading font-bold mb-2" style={{ color: '#8B3FE0' }}>
+          <h1 className="text-2xl font-display font-bold mb-2 text-charcoal">
             {mode === "signup" ? "Create your account" : "Welcome back"}
           </h1>
           <p className="text-taupe leading-relaxed">

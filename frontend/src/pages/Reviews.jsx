@@ -26,8 +26,7 @@ export default function Reviews() {
             </svg>
           </button>
           <h1
-            className="text-2xl font-bold tracking-tight"
-            style={{ fontFamily: "'Inter', sans-serif", color: "#8B3FE0" }}
+            className="text-2xl font-display font-bold tracking-tight text-charcoal"
           >
             Parent reviews
           </h1>

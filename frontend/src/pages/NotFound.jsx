@@ -15,7 +15,7 @@ export default function NotFound() {
           <circle cx="15" cy="9" r="1" fill="#5C6B52" />
         </svg>
       </div>
-      <h1 className="text-2xl font-heading font-bold text-charcoal mb-2">
+      <h1 className="text-2xl font-display font-bold text-charcoal mb-2">
         Page not found
       </h1>
       <p className="text-sm text-taupe text-center leading-relaxed max-w-xs mb-6">
