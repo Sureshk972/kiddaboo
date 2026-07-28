@@ -44,7 +44,7 @@ export default function Welcome() {
         </div>
 
         {/* Serif wordmark */}
-        <h1 className="font-display font-serif text-6xl tracking-tight mt-6 text-charcoal">
+        <h1 className="font-display text-6xl tracking-tight mt-6 text-charcoal">
           Kiddaboo
         </h1>
 
