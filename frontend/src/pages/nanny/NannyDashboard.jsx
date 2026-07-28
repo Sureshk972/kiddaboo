@@ -484,7 +484,11 @@ export default function NannyDashboard() {
   const [params, setParams] = useSearchParams();
   const tabParam = params.get("tab");
   const [tab, setTab] = useState(tabParam || null);
-  const resolvedTab = tab || (pending.length > 0 ? "pending" : "upcoming");
+  // Default tab cascade: show Pending if any, else Upcoming if any, else Past.
+  // Only applies until the nanny manually taps a tab (which sets `tab`).
+  const defaultTab =
+    pending.length > 0 ? "pending" : upcoming.length > 0 ? "upcoming" : "past";
+  const resolvedTab = tab || defaultTab;
 
   // Parent phone lookup for the Call / Text buttons on confirmed sessions —
   // batched once per upcoming list so each card renders without a per-row
