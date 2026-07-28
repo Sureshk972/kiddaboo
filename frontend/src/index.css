@@ -126,3 +126,13 @@
 /* Hide scrollbar but keep scroll */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Cosmetic polish: a soft, warm lift on the common card pattern
+   (bg-white + cream border). Scoped to block-level card elements so
+   inputs/buttons that share the classes aren't affected. */
+div.bg-white.border-cream-dark,
+section.bg-white.border-cream-dark,
+article.bg-white.border-cream-dark,
+li.bg-white.border-cream-dark {
+  box-shadow: 0 4px 16px rgba(90, 60, 35, 0.05);
+}

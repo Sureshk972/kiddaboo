@@ -50,7 +50,7 @@ export default function Welcome() {
 
         {/* Tagline in the accent */}
         <p className="mt-4 text-lg text-sage">
-          Find your nanny.
+          Find Your Nanny
         </p>
 
         {/* Description */}
