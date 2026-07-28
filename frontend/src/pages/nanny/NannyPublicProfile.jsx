@@ -2,6 +2,13 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { useNannyProfile } from "../../hooks/useNannyProfile";
 import { formatProfileName, profileInitial } from "../../lib/profileName";
 
+function fmtDay(iso) {
+  return new Date(iso).toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+}
+function fmtTime(iso) {
+  return new Date(iso).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
 function StarRow({ score }) {
   const full = Math.round(score);
   return (
@@ -15,7 +22,7 @@ function StarRow({ score }) {
 export default function NannyPublicProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { profile, ratings, avg, loading } = useNannyProfile(id);
+  const { profile, ratings, slots, avg, loading } = useNannyProfile(id);
 
   if (loading) {
     return (
@@ -87,6 +94,41 @@ export default function NannyPublicProfile() {
             </p>
           )}
         </header>
+
+        <section className="mt-6">
+          <h2 className="text-sm font-bold uppercase tracking-[1.5px] text-charcoal mb-3">
+            Available times
+          </h2>
+          {slots.length === 0 ? (
+            <div className="bg-white border border-cream-dark p-4 text-center">
+              <p className="text-sm text-taupe">No open times right now. Check back soon.</p>
+            </div>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {slots.map((s) => (
+                <li key={s.id}>
+                  <Link
+                    to={`/book/${s.id}`}
+                    className="bg-white border border-cream-dark p-4 flex items-center justify-between gap-3 hover:border-sage transition-colors"
+                  >
+                    <div>
+                      <div className="text-sm font-medium text-charcoal">{fmtDay(s.starts_at)}</div>
+                      <div className="text-xs text-taupe mt-0.5">
+                        {fmtTime(s.starts_at)} – {fmtTime(s.ends_at)}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="text-sm font-bold text-charcoal">
+                        ${(s.rate_cents / 100).toFixed(0)}/hr
+                      </span>
+                      <span className="text-sm font-medium text-sage whitespace-nowrap">Book &rarr;</span>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
         <section className="mt-6">
           <h2 className="text-sm font-bold uppercase tracking-[1.5px] text-charcoal mb-3">
