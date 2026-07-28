@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useNannyInbox } from "../../hooks/useNannyInbox";
 import { useNannyBlocks } from "../../hooks/useNannyBlocks";
 import { useAuth } from "../../context/AuthContext";
+import EmptyState from "../../components/ui/EmptyState";
 import { supabase } from "../../lib/supabase";
 import RatingSheet from "../../components/booking/RatingSheet";
 import InboxTabs from "../../components/inbox/InboxTabs";
@@ -347,14 +348,6 @@ function PastCard({ b, onComplete }) {
   );
 }
 
-function Empty({ children }) {
-  return (
-    <div className="bg-white border border-cream-dark p-6 text-center">
-      <p className="text-sm text-charcoal">{children}</p>
-    </div>
-  );
-}
-
 // Per-device record of which Pending/Upcoming booking ids the nanny has
 // already viewed, so the "new entries" asterisk clears once they open a tab.
 const seenKey = (uid) => `kiddaboo:nanny-inbox-seen:${uid}`;
@@ -673,7 +666,9 @@ export default function NannyDashboard() {
         <p className="text-sm text-taupe text-center py-8">Loading…</p>
       ) : resolvedTab === "pending" ? (
         pending.length === 0 ? (
-          <Empty>No requests waiting for a response.</Empty>
+          <EmptyState icon="chat" title="All caught up">
+            New booking requests will land here.
+          </EmptyState>
         ) : (
           <div className="flex flex-col gap-3">
             <AnimatePresence initial={false}>
@@ -698,7 +693,9 @@ export default function NannyDashboard() {
         )
       ) : resolvedTab === "upcoming" ? (
         upcoming.length === 0 ? (
-          <Empty>No confirmed sessions ahead.</Empty>
+          <EmptyState icon="calendar" title="Nothing scheduled yet">
+            Confirmed sessions will show up here.
+          </EmptyState>
         ) : (
           <div className="flex flex-col gap-3">
             <AnimatePresence initial={false}>
@@ -723,7 +720,9 @@ export default function NannyDashboard() {
           </div>
         )
       ) : past.length === 0 ? (
-        <Empty>No sessions yet.</Empty>
+        <EmptyState icon="clock" title="No sessions yet">
+          Your completed sessions will appear here.
+        </EmptyState>
       ) : (
         <div className="flex flex-col gap-3">
           {past.map((b) => (

@@ -1,6 +1,7 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useNannyProfile } from "../../hooks/useNannyProfile";
 import { formatProfileName, profileInitial } from "../../lib/profileName";
+import EmptyState from "../../components/ui/EmptyState";
 
 function fmtDay(iso) {
   return new Date(iso).toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
@@ -100,9 +101,9 @@ export default function NannyPublicProfile() {
             Available times
           </h2>
           {slots.length === 0 ? (
-            <div className="bg-white border border-cream-dark p-4 text-center">
-              <p className="text-sm text-taupe">No open times right now. Check back soon.</p>
-            </div>
+            <EmptyState icon="calendar" title="No open times right now">
+              This nanny will post new availability soon — check back.
+            </EmptyState>
           ) : (
             <ul className="flex flex-col gap-2">
               {slots.map((s) => (
@@ -135,9 +136,9 @@ export default function NannyPublicProfile() {
             Reviews
           </h2>
           {ratings.length === 0 ? (
-            <div className="bg-white border border-cream-dark p-4 text-center">
-              <p className="text-sm text-taupe">No reviews yet.</p>
-            </div>
+            <EmptyState icon="heart" title="No reviews yet">
+              Reviews from parents will show up here after their first session.
+            </EmptyState>
           ) : (
             <ul className="flex flex-col gap-2">
               {ratings.map((r, i) => (
