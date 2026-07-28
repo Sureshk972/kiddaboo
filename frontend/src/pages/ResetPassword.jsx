@@ -50,7 +50,7 @@ export default function ResetPassword() {
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
               <path
                 d="M20 6L9 17L4 12"
-                stroke="#5C6B52"
+                stroke="#C2673C"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
