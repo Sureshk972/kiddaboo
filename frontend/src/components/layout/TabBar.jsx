@@ -210,7 +210,7 @@ export default function TabBar({ badges = {} }) {
   const TABS = isNanny ? NANNY_TABS : PARENT_TABS;
 
   return (
-    <nav aria-label="Main navigation" className="fixed bottom-0 left-0 right-0 z-30 bg-sage shadow-[0_-2px_8px_rgba(0,0,0,0.04)] pb-[env(safe-area-inset-bottom)]">
+    <nav aria-label="Main navigation" className="fixed bottom-0 left-0 right-0 z-30 bg-charcoal shadow-[0_-2px_8px_rgba(0,0,0,0.08)] pb-[env(safe-area-inset-bottom)]">
       <div className="max-w-md mx-auto flex items-center justify-around px-2 h-16">
         {TABS.map((tab) => {
           const isActive = tab.matchPaths
@@ -230,8 +230,8 @@ export default function TabBar({ badges = {} }) {
                 transition-colors duration-150 cursor-pointer
                 border-none min-w-[60px] relative
                 ${isActive
-                  ? "text-white bg-sage-dark active:scale-[0.98]"
-                  : "text-white bg-sage hover:bg-sage-dark active:scale-[0.98]"}
+                  ? "text-white bg-white/10 active:scale-[0.98]"
+                  : "text-white/60 bg-transparent hover:bg-white/5 active:scale-[0.98]"}
               `}
             >
               <div className="relative">
@@ -242,9 +242,7 @@ export default function TabBar({ badges = {} }) {
                   </span>
                 )}
               </div>
-              <span
-                className="text-[10px] font-medium text-white"
-              >
+              <span className="text-[10px] font-medium">
                 {tab.label}
               </span>
             </button>
@@ -253,7 +251,7 @@ export default function TabBar({ badges = {} }) {
         <button
           onClick={async () => { await signOut(); navigate("/"); }}
           aria-label="Sign out"
-          className="flex flex-col items-center gap-0.5 px-3 py-1.5 transition-all duration-150 cursor-pointer bg-sage hover:bg-sage-dark active:scale-[0.98] border-none min-w-[60px] text-white"
+          className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all duration-150 cursor-pointer bg-transparent hover:bg-white/5 active:scale-[0.98] border-none min-w-[60px] text-white/60"
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
             <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
