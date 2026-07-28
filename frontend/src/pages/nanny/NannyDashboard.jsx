@@ -355,6 +355,19 @@ function Empty({ children }) {
   );
 }
 
+// Per-device record of which Pending/Upcoming booking ids the nanny has
+// already viewed, so the "new entries" asterisk clears once they open a tab.
+const seenKey = (uid) => `kiddaboo:nanny-inbox-seen:${uid}`;
+function loadSeenInbox(uid) {
+  if (!uid) return { pending: [], upcoming: [] };
+  try {
+    const raw = JSON.parse(localStorage.getItem(seenKey(uid)));
+    return { pending: raw?.pending ?? [], upcoming: raw?.upcoming ?? [] };
+  } catch {
+    return { pending: [], upcoming: [] };
+  }
+}
+
 function SetupStep({ done, title, desc, cta, to }) {
   return (
     <li className="flex items-start gap-3">
@@ -429,11 +442,17 @@ export default function NannyDashboard() {
     removePast,
   } = useNannyInbox();
   const { refresh: refreshAttention } = useInboxAttention();
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const { blocks, loading: blocksLoading } = useNannyBlocks();
   const hasAvailability = blocks.length > 0;
   const hasPayouts = !!profile?.stripe_connect_payouts_enabled;
   const needsSetup = !blocksLoading && (!hasAvailability || !hasPayouts);
+
+  // "New entries" asterisk state: a tab is flagged if it holds a booking id
+  // the nanny hasn't seen. Persisted per-device (localStorage).
+  const [seen, setSeen] = useState(() => loadSeenInbox(user?.id));
+  const hasNewPending = pending.some((b) => !seen.pending.includes(b.id));
+  const hasNewUpcoming = upcoming.some((b) => !seen.upcoming.includes(b.id));
 
   // Catch pending bookings created since app boot — the provider only
   // auto-loads at mount, so a parent who books while the nanny is
@@ -489,6 +508,26 @@ export default function NannyDashboard() {
   const defaultTab =
     pending.length > 0 ? "pending" : upcoming.length > 0 ? "upcoming" : "past";
   const resolvedTab = tab || defaultTab;
+
+  // Viewing Pending/Upcoming marks its current entries as seen → asterisk clears.
+  useEffect(() => {
+    if (loading || !user?.id) return;
+    if (resolvedTab !== "pending" && resolvedTab !== "upcoming") return;
+    const ids = (resolvedTab === "pending" ? pending : upcoming).map((b) => b.id);
+    setSeen((prev) => {
+      const prevIds = prev[resolvedTab];
+      const unchanged =
+        prevIds.length === ids.length && ids.every((id) => prevIds.includes(id));
+      if (unchanged) return prev;
+      const next = { ...prev, [resolvedTab]: ids };
+      try {
+        localStorage.setItem(seenKey(user.id), JSON.stringify(next));
+      } catch {
+        /* ignore quota / private mode */
+      }
+      return next;
+    });
+  }, [resolvedTab, loading, pending, upcoming, user?.id]);
 
   // Parent phone lookup for the Call / Text buttons on confirmed sessions —
   // batched once per upcoming list so each card renders without a per-row
@@ -610,6 +649,7 @@ export default function NannyDashboard() {
             key: "pending",
             label: "Pending",
             attention: pending.length > 0 ? "alert" : null,
+            isNew: hasNewPending,
           },
           {
             key: "upcoming",
@@ -621,6 +661,7 @@ export default function NannyDashboard() {
             )
               ? "info"
               : null,
+            isNew: hasNewUpcoming,
           },
           { key: "past", label: "Past" },
         ]}
