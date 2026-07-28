@@ -22,16 +22,13 @@ export default function ParentLayout({ children }) {
       <div className="hidden md:block bg-sage-dark text-center py-2 text-xs text-white">
         Kiddaboo is designed for mobile — open this on your phone for the best experience.
       </div>
-      <div className="w-full" style={{ backgroundColor: '#1C1814' }}>
+      <div className="w-full bg-cream">
         <div className="max-w-md mx-auto px-5 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] flex items-center gap-2">
-          <span
-            className="text-base text-white tracking-tight font-display"
-            style={{ fontWeight: 800 }}
-          >
+          <span className="text-lg text-charcoal tracking-tight font-display font-semibold">
             Kiddaboo
           </span>
-          <span className="text-white/50 text-[10px]">·</span>
-          <span className="text-[10px] font-bold tracking-[1.5px] text-white uppercase">
+          <span className="text-taupe text-[10px]">·</span>
+          <span className="text-[10px] font-bold tracking-[1.5px] text-taupe uppercase">
             Parent
           </span>
         </div>
