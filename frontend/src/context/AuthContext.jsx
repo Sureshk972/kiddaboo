@@ -127,7 +127,7 @@ export function AuthProvider({ children }) {
       .from("profiles")
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq("id", user.id)
-      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, is_phone_verified, created_at, updated_at, notification_prefs, role, account_type")
+      .select("id, first_name, last_name, bio, photo_url, philosophy_tags, trust_score, is_verified, is_phone_verified, created_at, updated_at, notification_prefs, role, account_type, timezone, stripe_connect_account_id, stripe_connect_charges_enabled, stripe_connect_payouts_enabled, analytics_opt_out")
       .single();
 
     if (error) {
