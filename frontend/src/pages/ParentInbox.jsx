@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import InboxTabs from "../components/inbox/InboxTabs";
 import { useParentBookings } from "../hooks/useParentBookings";
 import { useInboxAttention } from "../context/InboxAttentionContext";
+import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 import { formatProfileName } from "../lib/profileName";
 import RatingSheet from "../components/booking/RatingSheet";
@@ -491,7 +492,22 @@ export default function ParentInbox() {
   const tabParam = params.get("tab");
   const [tab, setTab] = useState(tabParam || null);
   const { pending, today, refresh: refreshAttention } = useInboxAttention();
-  const resolvedTab = tab || (pending > 0 ? "pending" : "upcoming");
+  const { user } = useAuth();
+
+  const [upcomingCount, setUpcomingCount] = useState(null);
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("bookings")
+      .select("id", { count: "exact", head: true })
+      .eq("parent_id", user.id)
+      .eq("status", "confirmed")
+      .then(({ count }) => setUpcomingCount(count ?? 0));
+  }, [user]);
+
+  const defaultTab =
+    pending > 0 ? "pending" : (upcomingCount ?? 1) > 0 ? "upcoming" : "past";
+  const resolvedTab = tab || defaultTab;
 
   // Catch counts created elsewhere (Book flow, accept/decline from the
   // other party, etc.) the moment the inbox page mounts. The provider
