@@ -13,7 +13,7 @@ export default function InboxTabs({ tabs, active, onChange }) {
     <div
       role="tablist"
       aria-label="Inbox sections"
-      className="flex gap-1 bg-cream-dark/40 p-1 rounded-xl"
+      className="flex gap-4 border-b border-cream-dark"
     >
       {tabs.map((t) => {
         const isActive = t.key === active;
@@ -28,10 +28,10 @@ export default function InboxTabs({ tabs, active, onChange }) {
             role="tab"
             aria-selected={isActive}
             onClick={() => onChange(t.key)}
-            className={`flex-1 inline-flex items-center justify-center gap-1 text-xs font-medium py-2 rounded-lg transition-colors ${
+            className={`inline-flex items-center justify-center gap-1 text-xs font-medium py-2 -mb-px transition-colors duration-200 border-b-2 ${
               isActive
-                ? "bg-sage text-white"
-                : "text-taupe-dark hover:text-charcoal"
+                ? "border-sage text-sage font-semibold"
+                : "border-transparent text-taupe-dark hover:text-charcoal"
             }`}
           >
             <span>{t.label}</span>
