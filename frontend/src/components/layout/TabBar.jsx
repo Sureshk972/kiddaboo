@@ -234,6 +234,9 @@ export default function TabBar({ badges = {} }) {
                   : "text-taupe bg-transparent hover:bg-cream-dark active:scale-[0.98]"}
               `}
             >
+              {isActive && (
+                <span className="absolute top-0 left-2 right-2 h-0.5 bg-sage rounded-full" />
+              )}
               <div className="relative">
                 {tab.icon(isActive)}
                 {badgeCount > 0 && (
@@ -258,7 +261,7 @@ export default function TabBar({ badges = {} }) {
             <polyline points="16 17 21 12 16 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <span className="text-[10px] font-medium text-white">Sign out</span>
+          <span className="text-[10px] font-medium text-taupe">Sign out</span>
         </button>
       </div>
     </nav>
