@@ -108,7 +108,7 @@ export default function NannyEarnings() {
         <h1 className="text-2xl font-display font-bold tracking-tight" style={{ color: '#1C1814' }}>
           Earnings
         </h1>
-        <div className="bg-white border border-black/5 p-6 text-center">
+        <div className="bg-white border border-black/5 rounded-xl p-6 text-center">
           <p className="text-sm text-charcoal">Checking with Stripe…</p>
           <p className="text-xs text-taupe mt-2">
             Confirming your payout setup. This usually takes a few seconds.
@@ -125,7 +125,7 @@ export default function NannyEarnings() {
       </h1>
 
       {needsOnboarding ? (
-        <section className="bg-white border border-cream-dark p-5 flex flex-col gap-3">
+        <section className="bg-white border border-cream-dark rounded-xl p-5 flex flex-col gap-3">
           <h2 className="text-base font-heading font-bold text-charcoal">
             {hasStartedOnboarding ? "Finish setting up payouts" : "Set up payouts"}
           </h2>
@@ -137,7 +137,7 @@ export default function NannyEarnings() {
 
           {/* Surface what Stripe is waiting on, if we have it from sync */}
           {syncStatus?.requirementsDue?.length > 0 && (
-            <div className="bg-cream/60 border border-cream-dark p-3 text-xs text-charcoal">
+            <div className="bg-cream/60 border border-cream-dark rounded-lg p-3 text-xs text-charcoal">
               <p className="font-medium mb-1">Stripe still needs:</p>
               <ul className="list-disc list-inside text-taupe">
                 {syncStatus.requirementsDue.slice(0, 5).map((r) => (
@@ -164,7 +164,7 @@ export default function NannyEarnings() {
         <p className="text-sm text-taupe text-center py-8">Loading earnings…</p>
       ) : (
         <>
-          <section className="bg-white border border-black/[0.06] px-5 pt-6 pb-5 flex flex-col items-center">
+          <section className="bg-white border border-black/[0.06] rounded-xl px-5 pt-6 pb-5 flex flex-col items-center">
             <div className="text-[10px] font-medium tracking-[0.14em] uppercase text-taupe">
               This week
             </div>

@@ -127,12 +127,16 @@
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Cosmetic polish: a soft, warm lift on the common card pattern
-   (bg-white + cream border). Scoped to block-level card elements so
-   inputs/buttons that share the classes aren't affected. */
+/* Cosmetic polish: soft warm lift + rounded corners on the common card
+   pattern (bg-white + cream/subtle border). Scoped to block-level card
+   elements so inputs/buttons that share the classes aren't affected. */
 div.bg-white.border-cream-dark,
 section.bg-white.border-cream-dark,
 article.bg-white.border-cream-dark,
-li.bg-white.border-cream-dark {
+li.bg-white.border-cream-dark,
+div.bg-white.border-black\/\[0\.06\],
+section.bg-white.border-black\/\[0\.06\],
+header.bg-white.border-cream-dark {
   box-shadow: 0 4px 16px rgba(90, 60, 35, 0.05);
+  border-radius: 0.75rem;
 }
