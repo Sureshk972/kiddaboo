@@ -67,7 +67,7 @@ export default function Welcome() {
             className="text-sm bg-transparent border-none py-2 cursor-pointer text-taupe"
           >
             Already have an account?{" "}
-            <span className="underline underline-offset-4 text-sage">
+            <span className="underline underline-offset-4 text-sage hover:text-sage-dark transition-colors">
               Sign in
             </span>
           </button>
@@ -83,7 +83,7 @@ export default function Welcome() {
         <div className="mt-5 text-center">
           <button
             onClick={() => navigate("/reviews")}
-            className="text-sm bg-transparent border-none py-2 cursor-pointer underline underline-offset-4 text-sage"
+            className="text-sm bg-transparent border-none py-2 cursor-pointer underline underline-offset-4 text-sage hover:text-sage-dark transition-colors"
           >
             See all reviews →
           </button>
@@ -94,13 +94,13 @@ export default function Welcome() {
       <div className="mt-10 flex gap-2">
         <button
           onClick={() => navigate("/terms")}
-          className="text-xs bg-transparent border-none underline underline-offset-2 px-3 py-3 cursor-pointer text-taupe"
+          className="text-xs bg-transparent border-none underline underline-offset-2 px-3 py-3 cursor-pointer text-taupe hover:text-taupe-dark transition-colors"
         >
           Terms of Service
         </button>
         <button
           onClick={() => navigate("/privacy")}
-          className="text-xs bg-transparent border-none underline underline-offset-2 px-3 py-3 cursor-pointer text-taupe"
+          className="text-xs bg-transparent border-none underline underline-offset-2 px-3 py-3 cursor-pointer text-taupe hover:text-taupe-dark transition-colors"
         >
           Privacy Policy
         </button>
