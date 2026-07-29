@@ -109,7 +109,7 @@ async function invokeFn(name, body) {
 function StatusPill({ status }) {
   return (
     <span
-      className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 whitespace-nowrap ${STATUS_TONE[status] || "bg-cream-dark text-taupe-dark"}`}
+      className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-md whitespace-nowrap ${STATUS_TONE[status] || "bg-cream-dark text-taupe-dark"}`}
     >
       {STATUS_LABEL[status] || status.replace(/_/g, " ")}
     </span>
@@ -124,7 +124,7 @@ function PendingCard({ b, onRespond, rating }) {
     onRespond(b, decision);
   };
   return (
-    <article className="bg-white border border-cream-dark p-4 flex flex-col gap-3">
+    <article className="bg-white border border-cream-dark rounded-xl p-4 flex flex-col gap-3">
       <div className="flex items-start justify-between gap-2">
         <div>
           <div className="text-base font-heading font-bold text-charcoal">
@@ -142,7 +142,7 @@ function PendingCard({ b, onRespond, rating }) {
         </span>
       </div>
       {b.note_from_parent && (
-        <p className="text-sm text-charcoal whitespace-pre-line bg-cream/60 p-3">
+        <p className="text-sm text-charcoal whitespace-pre-line bg-cream/60 rounded-lg p-3">
           {b.note_from_parent}
         </p>
       )}
@@ -150,7 +150,7 @@ function PendingCard({ b, onRespond, rating }) {
         <button
           type="button"
           onClick={() => handle("accept")}
-          className="flex-1 text-sm font-medium bg-sage text-white py-2"
+          className="flex-1 text-sm font-medium bg-sage text-white py-2 rounded-lg"
           data-track="nanny_accept"
         >
           Accept
@@ -158,7 +158,7 @@ function PendingCard({ b, onRespond, rating }) {
         <button
           type="button"
           onClick={() => handle("decline")}
-          className="flex-1 text-sm font-medium bg-white border border-cream-dark text-charcoal py-2"
+          className="flex-1 text-sm font-medium bg-white border border-cream-dark text-charcoal py-2 rounded-lg"
           data-track="nanny_decline"
         >
           Decline
@@ -181,7 +181,7 @@ function UpcomingCard({ b, onCancel, rating, parentPhone }) {
   const today = isToday(b.slot.starts_at);
   return (
     <article
-      className={`bg-white border border-cream-dark p-4 flex flex-col gap-2 ${
+      className={`bg-white border border-cream-dark rounded-xl p-4 flex flex-col gap-2 ${
         today ? "border-l-4 border-l-sage" : ""
       }`}
     >
@@ -195,7 +195,7 @@ function UpcomingCard({ b, onCancel, rating, parentPhone }) {
           </div>
           <div className="text-xs text-taupe mt-1 flex items-center gap-2">
             {today && (
-              <span className="text-[10px] font-bold tracking-wide uppercase bg-sage text-white px-1.5 py-0.5">
+              <span className="text-[10px] font-bold tracking-wide uppercase bg-sage text-white px-1.5 py-0.5 rounded-md">
                 Today
               </span>
             )}
@@ -213,13 +213,13 @@ function UpcomingCard({ b, onCancel, rating, parentPhone }) {
         <div className="flex gap-2">
           <a
             href={`tel:${parentPhone}`}
-            className="flex-1 text-center text-sm font-medium bg-sage text-white py-2"
+            className="flex-1 text-center text-sm font-medium bg-sage text-white py-2 rounded-lg"
           >
             Call
           </a>
           <a
             href={`sms:${parentPhone}`}
-            className="flex-1 text-center text-sm font-medium bg-white border border-sage text-sage-dark py-2"
+            className="flex-1 text-center text-sm font-medium bg-white border border-sage text-sage-dark py-2 rounded-lg"
           >
             Text
           </a>
@@ -234,7 +234,7 @@ function UpcomingCard({ b, onCancel, rating, parentPhone }) {
           Cancel session
         </button>
       ) : (
-        <div className="border border-cream-dark bg-cream/60 p-3 flex flex-col gap-2">
+        <div className="border border-cream-dark bg-cream/60 rounded-lg p-3 flex flex-col gap-2">
           <p className="text-xs text-charcoal">
             Parent will receive a full refund. This can't be undone.
           </p>
@@ -242,14 +242,14 @@ function UpcomingCard({ b, onCancel, rating, parentPhone }) {
             <button
               type="button"
               onClick={cancel}
-              className="flex-1 text-xs font-medium bg-terracotta text-white py-2"
+              className="flex-1 text-xs font-medium bg-terracotta text-white py-2 rounded-lg"
             >
               Confirm cancel
             </button>
             <button
               type="button"
               onClick={() => setConfirming(false)}
-              className="flex-1 text-xs font-medium bg-white border border-cream-dark text-charcoal py-2"
+              className="flex-1 text-xs font-medium bg-white border border-cream-dark text-charcoal py-2 rounded-lg"
             >
               Keep session
             </button>
@@ -307,7 +307,7 @@ function PastCard({ b, onComplete }) {
   };
 
   return (
-    <article className="bg-white border border-cream-dark p-4 flex flex-col gap-2">
+    <article className="bg-white border border-cream-dark rounded-xl p-4 flex flex-col gap-2">
       <div className="flex items-start justify-between gap-2">
         <div>
           <div className="text-base font-heading font-bold text-charcoal">
@@ -338,7 +338,7 @@ function PastCard({ b, onComplete }) {
         <button
           type="button"
           onClick={complete}
-          className="text-xs font-medium bg-sage text-white px-3 py-1.5 self-start"
+          className="text-xs font-medium bg-sage text-white px-3 py-1.5 rounded-lg self-start"
         >
           Mark complete
         </button>
@@ -395,7 +395,7 @@ function SetupStep({ done, title, desc, cta, to }) {
 // (so they get paid). Auto-hides once both are done.
 function SetupChecklist({ hasAvailability, hasPayouts }) {
   return (
-    <section className="bg-white border border-cream-dark p-5 flex flex-col gap-4">
+    <section className="bg-white border border-cream-dark rounded-xl p-5 flex flex-col gap-4">
       <div>
         <div className="text-[10px] font-medium tracking-[0.14em] uppercase text-taupe">Get set up</div>
         <h2 className="text-lg font-display font-semibold text-charcoal mt-1">
@@ -562,7 +562,7 @@ export default function NannyDashboard() {
       )}
 
       {!stats.loading && (
-        <section className="bg-white border border-black/[0.06] px-5 py-4">
+        <section className="bg-white border border-black/[0.06] rounded-xl px-5 py-4">
           <div className="flex items-baseline justify-between">
             <div className="text-[10px] font-medium tracking-[0.14em] uppercase text-taupe">
               This week
