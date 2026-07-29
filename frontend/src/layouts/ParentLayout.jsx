@@ -1,6 +1,14 @@
 import TabBar from "../components/layout/TabBar";
 import LegalFooter from "../components/LegalFooter";
+import { useAuth } from "../context/AuthContext";
 import { useNotificationCounts } from "../context/NotificationsContext";
+
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
 
 /**
  * Parent-mode wrapper. Adds the small uppercase "PARENT" label at the
@@ -12,6 +20,7 @@ import { useNotificationCounts } from "../context/NotificationsContext";
  * does the accent overriding.
  */
 export default function ParentLayout({ children }) {
+  const { profile } = useAuth();
   const { unreadMessages, pendingRequests } = useNotificationCounts();
   const badges = {
     "/my-groups": pendingRequests,
@@ -31,6 +40,11 @@ export default function ParentLayout({ children }) {
           <span className="text-[10px] font-bold tracking-[1.5px] text-taupe uppercase">
             Parent
           </span>
+          {profile?.first_name && (
+            <span className="ml-auto text-sm text-taupe tracking-tight">
+              {greeting()}, {profile.first_name}
+            </span>
+          )}
         </div>
       </div>
       <div className="max-w-md mx-auto w-full flex-1 flex flex-col">
