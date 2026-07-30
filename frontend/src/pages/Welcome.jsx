@@ -15,7 +15,7 @@ export default function Welcome() {
       } else if (profile.account_type === "nanny") {
         navigate("/nanny/dashboard");
       } else {
-        navigate("/browse");
+        navigate("/");
       }
     }
   }, [user, profile, loading, navigate]);

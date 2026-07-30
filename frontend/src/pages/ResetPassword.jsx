@@ -83,10 +83,10 @@ export default function ResetPassword() {
                 .single();
               if (!prof?.first_name) {
                 navigate("/profile");
-              } else if (prof?.account_type === "organizer") {
-                navigate("/host/dashboard");
+              } else if (prof?.account_type === "nanny") {
+                navigate("/nanny/dashboard");
               } else {
-                navigate("/browse");
+                navigate("/");
               }
             }}
           >
