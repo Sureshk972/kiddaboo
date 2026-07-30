@@ -51,7 +51,16 @@ export default function AdminUsers() {
       ),
     },
     { key: "account_type", header: "Type" },
-    { key: "role", header: "Role" },
+    {
+      key: "role",
+      header: "Role",
+      render: (r) =>
+        r.role === "admin" ? (
+          <span className="bg-sage/10 text-sage-dark text-xs font-medium px-2 py-0.5 rounded-full">admin</span>
+        ) : (
+          r.role
+        ),
+    },
     {
       key: "is_suspended",
       header: "Status",
@@ -104,6 +113,7 @@ export default function AdminUsers() {
           rows={rows}
           columns={columns}
           rowKey={(r) => r.id}
+          rowClassName={(r) => r.role === "admin" ? "bg-sage/5" : ""}
           emptyMessage="No users match these filters"
         />
       )}

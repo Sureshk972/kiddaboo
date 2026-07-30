@@ -5,6 +5,7 @@ export default function DataTable({
   columns,
   rowKey,
   onRowClick,
+  rowClassName,
   emptyMessage = "No rows",
 }) {
   const [sortKey, setSortKey] = useState(null);
@@ -96,7 +97,8 @@ export default function DataTable({
               onClick={onRowClick ? () => onRowClick(row) : undefined}
               className={
                 "border-b border-cream-dark last:border-b-0 " +
-                (onRowClick ? "cursor-pointer hover:bg-cream" : "")
+                (onRowClick ? "cursor-pointer hover:bg-cream " : "") +
+                (rowClassName ? rowClassName(row) : "")
               }
             >
               {columns.map((col) => (
