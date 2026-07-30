@@ -33,6 +33,24 @@ export default function AdminUserDetail() {
     };
   }, [id]);
 
+  async function handleDelete() {
+    if (!profile || profile.role === "admin") return;
+    const name = `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim() || "(no name)";
+    if (!window.confirm(`Permanently delete ${name} and all their data? This cannot be undone.`)) return;
+    setActing(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await supabase.functions.invoke("admin-delete-user", {
+      body: { userId: profile.id },
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    if (res.error) {
+      alert(res.error.message || "Delete failed");
+      setActing(false);
+      return;
+    }
+    window.location.href = "/admin/users";
+  }
+
   async function toggleSuspend() {
     if (!profile) return;
     setActing(true);
@@ -89,13 +107,24 @@ export default function AdminUserDetail() {
         <h1 className="font-heading font-bold text-charcoal text-xl">
           {`${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim() || "(no name)"}
         </h1>
-        <button
-          disabled={acting}
-          onClick={toggleSuspend}
-          className="border border-cream-dark text-charcoal text-sm rounded-md px-3 py-1 disabled:opacity-50"
-        >
-          {acting ? "Saving…" : profile.is_suspended ? "Unsuspend" : "Suspend"}
-        </button>
+        <div className="flex gap-2">
+          <button
+            disabled={acting}
+            onClick={toggleSuspend}
+            className="border border-cream-dark text-charcoal text-sm rounded-md px-3 py-1 disabled:opacity-50"
+          >
+            {acting ? "Saving…" : profile.is_suspended ? "Unsuspend" : "Suspend"}
+          </button>
+          {profile.role !== "admin" && (
+            <button
+              disabled={acting}
+              onClick={handleDelete}
+              className="border border-terracotta/30 text-terracotta text-sm rounded-md px-3 py-1 disabled:opacity-50"
+            >
+              {acting ? "Deleting…" : "Delete"}
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 mb-6 text-sm">
