@@ -93,7 +93,7 @@ export default function AdminUsers() {
         >
           <option value="all">All types</option>
           <option value="parent">Parent</option>
-          <option value="nanny">Nanny</option>
+          <option value="nanny">Provider</option>
         </select>
         <select
           value={statusFilter}

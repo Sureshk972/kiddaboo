@@ -217,7 +217,7 @@ export default function PhoneVerification() {
           </h1>
           <p className="text-taupe leading-relaxed">
             {mode === "signup"
-              ? "Sign up to book a Nanny or offer childcare."
+              ? "Sign up to book day care or offer childcare."
               : "Sign in to continue."}
           </p>
         </div>

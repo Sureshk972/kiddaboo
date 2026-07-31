@@ -21,7 +21,7 @@ export default function Requests() {
         <div className="bg-white border border-cream-dark p-6 text-center">
           <p className="text-sm text-charcoal">No pending requests.</p>
           <p className="text-xs text-taupe mt-1">
-            Booking requests waiting on a nanny will show up here.
+            Booking requests waiting on a provider will show up here.
           </p>
         </div>
       ) : (

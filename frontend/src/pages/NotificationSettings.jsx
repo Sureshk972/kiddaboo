@@ -11,7 +11,7 @@ const PARENT_NOTIFICATION_TYPES = [
   {
     key: "booking_accepted",
     label: "Booking Accepted",
-    description: "When a Nanny accepts your booking request",
+    description: "When a provider accepts your booking request",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -21,8 +21,8 @@ const PARENT_NOTIFICATION_TYPES = [
   },
   {
     key: "booking_cancelled_by_nanny",
-    label: "Nanny Cancelled",
-    description: "When a Nanny cancels your confirmed booking",
+    label: "Provider Cancelled",
+    description: "When a provider cancels your confirmed booking",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
         <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
@@ -32,8 +32,8 @@ const PARENT_NOTIFICATION_TYPES = [
   },
   {
     key: "rate_nanny",
-    label: "Rate Your Nanny",
-    description: "A reminder to rate your Nanny after the session",
+    label: "Rate Your Provider",
+    description: "A reminder to rate your provider after the session",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>

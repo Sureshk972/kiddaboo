@@ -218,10 +218,10 @@ export default function Book() {
             This slot is no longer available
           </h1>
           <p className="text-sm text-taupe mb-4">
-            The nanny just updated their availability. Pick another slot.
+            The provider just updated their availability. Pick another slot.
           </p>
           <Link to="/" className="text-sm font-medium text-sage hover:underline">
-            Back to find a nanny
+            Back to find day care
           </Link>
         </div>
       </div>

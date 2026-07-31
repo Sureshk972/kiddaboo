@@ -47,7 +47,7 @@ function RatingPrompt({ booking }) {
         onClick={() => setOpened(true)}
         className="text-xs font-medium bg-sage text-white px-3 py-1.5 self-start"
       >
-        Rate nanny
+        Rate provider
       </button>
     );
   }

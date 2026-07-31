@@ -105,7 +105,7 @@ function CancelRequestButton({ booking, onCancel }) {
   return (
     <div role="alertdialog" className="border border-cream-dark bg-cream/60 p-3 flex flex-col gap-2">
       <p className="text-xs text-charcoal">
-        The nanny will be notified. You won't be charged.
+        The provider will be notified. You won't be charged.
       </p>
       <div className="flex gap-2">
         <button
@@ -148,7 +148,7 @@ function PendingList() {
   };
   if (loading) return <ListSkeleton />;
   if (bookings.length === 0)
-    return <Empty>No pending requests. Booking requests waiting on a nanny will show up here.</Empty>;
+    return <Empty>No pending requests. Booking requests waiting on a provider will show up here.</Empty>;
   return (
     <ul className="flex flex-col gap-3">
       <AnimatePresence initial={false}>
@@ -307,7 +307,7 @@ function UpcomingList() {
 
   if (loading) return <ListSkeleton />;
   if (bookings.length === 0)
-    return <Empty>No upcoming bookings. Confirmed sessions will appear here with the nanny's contact info.</Empty>;
+    return <Empty>No upcoming bookings. Confirmed sessions will appear here with the provider's contact info.</Empty>;
   return (
     <ul className="flex flex-col gap-3">
       <AnimatePresence initial={false}>
@@ -403,7 +403,7 @@ function RateNannyPrompt({ booking }) {
         onClick={() => setOpened(true)}
         className="text-xs font-medium bg-sage text-white px-3 py-1.5 self-start"
       >
-        Rate nanny
+        Rate provider
       </button>
     );
   }

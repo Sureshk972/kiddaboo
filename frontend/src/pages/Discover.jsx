@@ -64,7 +64,7 @@ export default function Discover() {
   return (
     <div className="px-5 py-4 flex flex-col gap-4">
       <h1 className="text-2xl font-display font-bold tracking-tight text-charcoal">
-        Find a nanny
+        Find day care
       </h1>
 
       <NewSlotsBanner count={pendingCount} onTap={applyUpdates} />
@@ -88,7 +88,7 @@ export default function Discover() {
         </ul>
       ) : groups.length === 0 ? (
         <div className="bg-white border border-cream-dark p-6 text-center">
-          <p className="text-sm text-charcoal">No nannies available in that window.</p>
+          <p className="text-sm text-charcoal">No day care providers available in that window.</p>
           <p className="text-xs text-taupe mt-1">
             Try widening your date range or removing the max rate.
           </p>

@@ -37,7 +37,7 @@ export default function AppLayout({ children }) {
           </span>
           <span className="text-taupe text-[10px]">·</span>
           <span className="text-[10px] font-bold tracking-[1.5px] text-taupe uppercase">
-            {isNanny ? 'Nanny' : 'Parent'}
+            {isNanny ? 'Provider' : 'Parent'}
           </span>
         </div>
       </div>

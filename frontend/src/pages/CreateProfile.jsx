@@ -119,8 +119,8 @@ export default function CreateProfile() {
           </h1>
           <p className="text-taupe leading-relaxed">
             {isNanny
-              ? "Parents will see this when browsing Nannies."
-              : "Nannies will see this when you send a booking request."}
+              ? "Parents will see this when browsing day care providers."
+              : "Providers will see this when you send a booking request."}
           </p>
         </div>
 
@@ -163,8 +163,8 @@ export default function CreateProfile() {
             {/* trust microcopy */}
             <p className="text-[11px] text-taupe/50 text-center mt-1">
               {isNanny
-                ? "Shown to parents searching for a Nanny. Helps build trust."
-                : "Shown to Nannies when you make a booking request."}
+                ? "Shown to parents searching for day care. Helps build trust."
+                : "Shown to providers when you make a booking request."}
             </p>
           </label>
         </div>
@@ -202,7 +202,7 @@ export default function CreateProfile() {
               inputMode="numeric"
             />
             <p className="text-[11px] text-taupe/50 -mt-4">
-              Helps us show you Nannies nearby. Never shared publicly.
+              Helps us show you day care providers nearby. Never shared publicly.
             </p>
           </>
         )}
@@ -221,7 +221,7 @@ export default function CreateProfile() {
             placeholder={
               isNanny
                 ? "Your experience with kids, certifications, availability preferences, and anything else parents should know..."
-                : "A little about your family and what you're looking for in a Nanny..."
+                : "A little about your family and what you're looking for in a day care provider..."
             }
             maxLength={200}
             rows={3}

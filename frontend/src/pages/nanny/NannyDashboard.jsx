@@ -70,7 +70,7 @@ function ParentRatingPill({ rating }) {
       <span className="text-gold">★</span>
       {rating.avg.toFixed(1)}
       <span className="text-taupe ml-1">
-        · {rating.n} rating{rating.n === 1 ? "" : "s"} from nannies
+        · {rating.n} rating{rating.n === 1 ? "" : "s"} from providers
       </span>
     </span>
   );

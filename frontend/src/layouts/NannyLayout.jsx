@@ -22,7 +22,7 @@ export default function NannyLayout({ children }) {
           </span>
           <span className="text-taupe text-[10px]">·</span>
           <span className="text-[10px] font-bold tracking-[1.5px] text-taupe uppercase">
-            Nanny
+            Provider
           </span>
         </div>
       </div>

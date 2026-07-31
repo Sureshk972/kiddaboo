@@ -2,7 +2,7 @@
 // Schema uses first_name + last_name (NOT full_name) — these helpers
 // keep call sites consistent and tolerate missing fields.
 
-export function formatProfileName(p, fallback = "Nanny") {
+export function formatProfileName(p, fallback = "Provider") {
   if (!p) return fallback;
   const joined = `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim();
   return joined || fallback;

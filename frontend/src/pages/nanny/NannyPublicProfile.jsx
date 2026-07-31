@@ -35,7 +35,7 @@ export default function NannyPublicProfile() {
   if (!profile) {
     return (
       <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-5 gap-3">
-        <p className="text-base text-charcoal">Nanny not found.</p>
+        <p className="text-base text-charcoal">Provider not found.</p>
         <Link to="/" className="text-sm text-sage-dark underline">
           Back to discover
         </Link>
@@ -102,7 +102,7 @@ export default function NannyPublicProfile() {
           </h2>
           {slots.length === 0 ? (
             <EmptyState icon="calendar" title="No open times right now">
-              This nanny will post new availability soon — check back.
+              This provider will post new availability soon — check back.
             </EmptyState>
           ) : (
             <ul className="flex flex-col gap-2">

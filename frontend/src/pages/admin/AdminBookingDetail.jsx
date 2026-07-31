@@ -64,7 +64,7 @@ export default function AdminBookingDetail() {
           </Link>
         </div>
         <div>
-          <span className="text-taupe-dark">Nanny:</span>{" "}
+          <span className="text-taupe-dark">Provider:</span>{" "}
           <Link to={`/admin/users/${b.nanny_id}`} className="text-sage-dark underline">
             {`${b.nanny?.first_name ?? ""} ${b.nanny?.last_name ?? ""}`.trim()}
           </Link>

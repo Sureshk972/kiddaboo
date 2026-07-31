@@ -35,8 +35,8 @@ export default function PrivacyPolicy() {
           </p>
           <ul className="text-sm text-taupe-dark leading-relaxed list-disc pl-5 space-y-1">
             <li><strong>Account information:</strong> name, phone number, email address, profile photo</li>
-            <li><strong>Booking notes:</strong> free-form notes you provide when requesting a Nanny (e.g. child details, preferences)</li>
-            <li><strong>Nanny profile data:</strong> service area, availability, bio, photos, ratings</li>
+            <li><strong>Booking notes:</strong> free-form notes you provide when requesting day care (e.g. child details, preferences)</li>
+            <li><strong>Provider profile data:</strong> service area, availability, bio, photos, ratings</li>
             <li><strong>Booking data:</strong> booking requests, confirmations, cancellations, payment records</li>
             <li><strong>Device information:</strong> push notification tokens, browser type</li>
             <li><strong>Location data:</strong> only when you use the "Near Me" feature (not stored permanently)</li>
@@ -47,9 +47,9 @@ export default function PrivacyPolicy() {
           <h2 className="font-heading font-bold text-charcoal text-sm mb-2">2. How We Use Your Information</h2>
           <ul className="text-sm text-taupe-dark leading-relaxed list-disc pl-5 space-y-1">
             <li>Create and manage your account</li>
-            <li>Connect parents with available Nannies</li>
+            <li>Connect parents with available day care providers</li>
             <li>Send notifications about booking activity (requests, acceptances, cancellations, ratings)</li>
-            <li>Display Nanny locations and service areas on maps</li>
+            <li>Display provider locations and service areas on maps</li>
             <li>Process payments and payouts via Stripe</li>
             <li>Process reports and maintain community safety</li>
             <li>Improve the App's features and user experience</li>
@@ -59,7 +59,7 @@ export default function PrivacyPolicy() {
         <section className="mb-6">
           <h2 className="font-heading font-bold text-charcoal text-sm mb-2">3. Children's Privacy</h2>
           <p className="text-sm text-taupe-dark leading-relaxed">
-            Kiddaboo takes children's privacy seriously. We do not store child profiles. Any details about your children (name, age, allergies, preferences) are provided only in the free-form note field when making a booking request, and are shared solely with the Nanny you are booking. Children cannot create accounts or use the App directly.
+            Kiddaboo takes children's privacy seriously. We do not store child profiles. Any details about your children (name, age, allergies, preferences) are provided only in the free-form note field when making a booking request, and are shared solely with the provider you are booking. Children cannot create accounts or use the App directly.
           </p>
         </section>
 
@@ -69,7 +69,7 @@ export default function PrivacyPolicy() {
             We do not sell your personal information. We share information only in these circumstances:
           </p>
           <ul className="text-sm text-taupe-dark leading-relaxed list-disc pl-5 space-y-1">
-            <li><strong>With other users:</strong> Your public profile and ratings are visible to other users. Booking notes are shared only with the Nanny you book.</li>
+            <li><strong>With other users:</strong> Your public profile and ratings are visible to other users. Booking notes are shared only with the provider you book.</li>
             <li><strong>Payment processors:</strong> We use Stripe for payment processing. Stripe's privacy policy governs their handling of your payment data.</li>
             <li><strong>Service providers:</strong> We use Supabase for data storage and authentication</li>
             <li><strong>Legal requirements:</strong> We may disclose information if required by law or to protect safety</li>

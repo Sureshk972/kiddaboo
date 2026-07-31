@@ -50,12 +50,12 @@ export default function Welcome() {
 
         {/* Tagline in the accent */}
         <p className="mt-4 text-lg text-sage">
-          Find Your Nanny
+          Find Trusted Day Care
         </p>
 
         {/* Description */}
         <p className="mt-6 leading-relaxed text-taupe">
-          Book trusted, background-checked nannies near you — on your schedule.
+          Book trusted, background-checked day care providers near you — on your schedule.
           No agencies, no waitlists. Just great care, close by.
         </p>
 

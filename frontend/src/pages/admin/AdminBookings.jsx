@@ -47,7 +47,7 @@ export default function AdminBookings() {
     },
     {
       key: "nanny",
-      header: "Nanny",
+      header: "Provider",
       render: (r) => `${r.nanny?.first_name ?? ""} ${r.nanny?.last_name ?? ""}`.trim(),
     },
     { key: "status", header: "Status" },

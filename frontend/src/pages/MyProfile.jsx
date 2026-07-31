@@ -100,7 +100,7 @@ export default function MyProfile() {
         {isParent && selfRating.avg != null && (
           <div className="bg-white border border-cream-dark p-5">
             <div className="text-[10px] font-medium tracking-[0.14em] uppercase text-taupe">
-              Your standing with nannies
+              Your standing with providers
             </div>
             <div className="flex items-baseline gap-2 mt-1">
               <span
@@ -115,7 +115,7 @@ export default function MyProfile() {
               </span>
             </div>
             <p className="text-xs text-taupe mt-3 leading-relaxed">
-              Nannies rate parents privately after each session — they're the
+              Providers rate parents privately after each session — they're the
               only ones who see this score. It signals how clear your requests
               are and how easy you are to coordinate with.
             </p>

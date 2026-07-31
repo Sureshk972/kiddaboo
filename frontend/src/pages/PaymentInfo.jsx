@@ -29,7 +29,7 @@ export default function PaymentInfo() {
           Kiddaboo uses Stripe for every payment. Your card details never
           touch our servers — they go straight from your device to Stripe.
           Here's exactly what happens, from the moment you request a session
-          to the moment the nanny gets paid.
+          to the moment the provider gets paid.
         </p>
 
         <section className="mb-6">
@@ -37,11 +37,11 @@ export default function PaymentInfo() {
             1. You request a session
           </h2>
           <p className="text-sm text-taupe-dark leading-relaxed">
-            You pick a nanny's slot, enter your card, and tap{" "}
+            You pick a provider's slot, enter your card, and tap{" "}
             <strong>Request</strong>. At this moment Stripe places an{" "}
             <strong>authorization hold</strong> on your card for the full
             amount. No money has actually moved — your bank just sets aside
-            that amount so it's available if the nanny accepts. If your card
+            that amount so it's available if the provider accepts. If your card
             requires 3D Secure (most non-US cards do), Stripe will step you
             through the bank challenge before the hold is placed.
           </p>
@@ -49,12 +49,12 @@ export default function PaymentInfo() {
 
         <section className="mb-6">
           <h2 className="font-heading font-bold text-charcoal text-sm mb-2">
-            2. The nanny accepts (or declines)
+            2. The provider accepts (or declines)
           </h2>
           <p className="text-sm text-taupe-dark leading-relaxed">
-            If the nanny accepts, your card is <strong>charged</strong> right
-            then and the nanny's share is transferred to their Stripe
-            balance. If the nanny declines or doesn't respond before the
+            If the provider accepts, your card is <strong>charged</strong> right
+            then and the provider's share is transferred to their Stripe
+            balance. If the provider declines or doesn't respond before the
             request expires, the authorization hold is released — typically
             within minutes, sometimes up to 7 days depending on your bank.
           </p>
@@ -66,8 +66,8 @@ export default function PaymentInfo() {
           </h2>
           <ul className="text-sm text-taupe-dark leading-relaxed list-disc pl-5 space-y-1">
             <li>
-              <strong>Session rate</strong> — the nanny's posted rate ×
-              hours booked. This goes entirely to the nanny.
+              <strong>Session rate</strong> — the provider's posted rate ×
+              hours booked. This goes entirely to the provider.
             </li>
             <li>
               <strong>Kiddaboo service fee — 15%</strong> of the session
@@ -78,7 +78,7 @@ export default function PaymentInfo() {
           </ul>
           <p className="text-sm text-taupe-dark leading-relaxed mt-3">
             Example: a $100 session rate means you pay <strong>$115</strong>{" "}
-            total — $100 to the nanny, $15 to Kiddaboo. No hidden charges
+            total — $100 to the provider, $15 to Kiddaboo. No hidden charges
             after the fact, no recurring subscription — you only pay when
             you book.
           </p>
@@ -90,17 +90,17 @@ export default function PaymentInfo() {
           </h2>
           <ul className="text-sm text-taupe-dark leading-relaxed list-disc pl-5 space-y-1">
             <li>
-              <strong>Cancel before nanny accepts:</strong> nothing was
+              <strong>Cancel before provider accepts:</strong> nothing was
               charged, so nothing to refund — the hold is released.
             </li>
             <li>
-              <strong>Cancel after nanny accepts:</strong> Stripe refunds the
+              <strong>Cancel after provider accepts:</strong> Stripe refunds the
               full amount back to your original card and reverses the
-              transfer from the nanny's balance. Refunds usually appear in
+              transfer from the provider's balance. Refunds usually appear in
               5–10 business days, depending on your bank.
             </li>
             <li>
-              <strong>Nanny cancels:</strong> full refund, same path.
+              <strong>Provider cancels:</strong> full refund, same path.
             </li>
           </ul>
         </section>

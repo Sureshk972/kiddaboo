@@ -128,7 +128,7 @@ export default function Upcoming() {
         <div className="bg-white border border-cream-dark p-6 text-center">
           <p className="text-sm text-charcoal">No upcoming bookings.</p>
           <p className="text-xs text-taupe mt-1">
-            Confirmed sessions will appear here with the nanny's contact info.
+            Confirmed sessions will appear here with the provider's contact info.
           </p>
         </div>
       ) : (

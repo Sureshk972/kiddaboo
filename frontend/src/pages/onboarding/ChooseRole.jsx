@@ -27,15 +27,15 @@ export default function ChooseRole() {
         >
           <div className="text-xs text-cream/70 uppercase tracking-widest font-bold mb-2">Parent</div>
           <div className="text-2xl font-bold mb-1">I'm a Parent</div>
-          <div className="text-sm text-cream/80">Find and book a trusted Nanny</div>
+          <div className="text-sm text-cream/80">Find and book trusted day care</div>
         </button>
 
         <button
           onClick={() => navigate("/verify?role=nanny")}
           className="bg-charcoal hover:bg-sage active:scale-[0.98] text-cream p-6 text-left cursor-pointer transition-all duration-150 ease-out"
         >
-          <div className="text-xs text-cream/70 uppercase tracking-widest font-bold mb-2">Nanny</div>
-          <div className="text-2xl font-bold mb-1">I'm a Nanny</div>
+          <div className="text-xs text-cream/70 uppercase tracking-widest font-bold mb-2">Day Care Provider</div>
+          <div className="text-2xl font-bold mb-1">I'm a Day Care Provider</div>
           <div className="text-sm text-cream/80">Offer your availability, accept bookings</div>
         </button>
       </div>
