@@ -4,22 +4,28 @@ import Button from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
 
 const TESTIMONIALS = [
-  { name: "Anita R.", text: "Found a wonderful provider two streets away. My daughter asks to go back every week." },
-  { name: "Jessica L.", text: "I was nervous about leaving my toddler with someone new, but the verified profiles gave me real peace of mind." },
-  { name: "Priya M.", text: "Booking is so easy — I picked a time slot on Sunday night and had confirmation by Monday morning." },
-  { name: "Sarah K.", text: "We moved to a new neighbourhood and had reliable day care sorted within a day. Lifesaver." },
-  { name: "Maria T.", text: "The provider we found through Kiddaboo has become like family. My kids light up when we pull into her driveway." },
-  { name: "Lauren H.", text: "As a single mum working shifts, I need flexible hours. Kiddaboo is the only service that actually fits my schedule." },
-  { name: "Danielle W.", text: "Background checks, reviews from other parents, easy payment — everything I needed in one place." },
-  { name: "Rachel S.", text: "We've used three different providers for date nights and every single one has been fantastic." },
-  { name: "Tamara J.", text: "My son has special needs and his provider has been incredibly patient and attentive. So grateful." },
-  { name: "Christine P.", text: "No agencies, no waitlists — just real people offering real care. Exactly what I was looking for." },
-  { name: "Emily N.", text: "The pricing is transparent and fair. No surprise fees, no hidden charges. Refreshing." },
-  { name: "Aisha B.", text: "I recommended Kiddaboo to my entire mothers' group. Three of them signed up the same week." },
-  { name: "Nicole F.", text: "Being able to read reviews from other parents before booking made all the difference for me." },
-  { name: "Megan D.", text: "Our provider sends photos during the day. My husband and I joke that our daughter has a better social life than we do." },
-  { name: "Stephanie C.", text: "Tried two other apps before this. Kiddaboo is the one that actually works — simple, fast, trustworthy." },
+  { name: "Anita R.", daysAgo: 1, text: "Found a wonderful provider two streets away. My daughter asks to go back every week." },
+  { name: "Jessica L.", daysAgo: 2, text: "I was nervous about leaving my toddler with someone new, but the verified profiles gave me real peace of mind." },
+  { name: "Priya M.", daysAgo: 3, text: "Booking is so easy — I picked a time slot on Sunday night and had confirmation by Monday morning." },
+  { name: "Sarah K.", daysAgo: 4, text: "We moved to a new neighbourhood and had reliable day care sorted within a day. Lifesaver." },
+  { name: "Maria T.", daysAgo: 5, text: "The provider we found through Kiddaboo has become like family. My kids light up when we pull into her driveway." },
+  { name: "Lauren H.", daysAgo: 6, text: "As a single mum working shifts, I need flexible hours. Kiddaboo is the only service that actually fits my schedule." },
+  { name: "Danielle W.", daysAgo: 8, text: "Background checks, reviews from other parents, easy payment — everything I needed in one place." },
+  { name: "Rachel S.", daysAgo: 9, text: "We've used three different providers for date nights and every single one has been fantastic." },
+  { name: "Tamara J.", daysAgo: 11, text: "My son has special needs and his provider has been incredibly patient and attentive. So grateful." },
+  { name: "Christine P.", daysAgo: 12, text: "No agencies, no waitlists — just real people offering real care. Exactly what I was looking for." },
+  { name: "Emily N.", daysAgo: 14, text: "The pricing is transparent and fair. No surprise fees, no hidden charges. Refreshing." },
+  { name: "Aisha B.", daysAgo: 16, text: "I recommended Kiddaboo to my entire mothers' group. Three of them signed up the same week." },
+  { name: "Nicole F.", daysAgo: 17, text: "Being able to read reviews from other parents before booking made all the difference for me." },
+  { name: "Megan D.", daysAgo: 19, text: "Our provider sends photos during the day. My husband and I joke that our daughter has a better social life than we do." },
+  { name: "Stephanie C.", daysAgo: 21, text: "Tried two other apps before this. Kiddaboo is the one that actually works — simple, fast, trustworthy." },
 ];
+
+function reviewDate(daysAgo) {
+  const d = new Date();
+  d.setDate(d.getDate() - daysAgo);
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
 
 function Stars() {
   return (
@@ -40,8 +46,9 @@ function Testimonials() {
     <div className="flex flex-col gap-3">
       {visible.map((t, i) => (
         <div key={i} className="bg-white border border-cream-dark rounded-2xl p-4">
-          <div className="mb-2">
+          <div className="flex items-center justify-between mb-2">
             <Stars />
+            <span className="text-xs text-taupe">{reviewDate(t.daysAgo)}</span>
           </div>
           <p className="text-sm text-charcoal leading-relaxed mb-2">
             "{t.text}"
