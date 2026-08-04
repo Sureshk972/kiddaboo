@@ -153,7 +153,7 @@ export default function Upcoming() {
                       </span>
                     )}
                     <span>
-                      {b.slot?.starts_at ? fmtSessionTime(b.slot.starts_at) : "Time TBD"}
+                      {b.slot?.starts_at ? <span className="text-amber font-medium">{fmtSessionTime(b.slot.starts_at)}</span> : "Time TBD"}
                     </span>
                   </div>
                 </div>

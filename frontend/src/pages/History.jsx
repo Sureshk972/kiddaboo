@@ -117,13 +117,15 @@ export default function History() {
                   </span>
                 </div>
                 <div className="text-xs text-taupe">
-                  {new Date(b.slot.starts_at).toLocaleString([], {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                    hour: "numeric",
-                    minute: "2-digit",
-                  })}
+                  <span className="text-amber font-medium">
+                    {new Date(b.slot.starts_at).toLocaleString([], {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
+                  </span>
                 </div>
                 {(b.status === "completed" || b.status === "confirmed") && (
                   <RatingPrompt booking={b} />

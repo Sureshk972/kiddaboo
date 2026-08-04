@@ -85,17 +85,18 @@ export default function NannyCard({ group }) {
             {avgRating != null ? (
               <span className="flex items-center gap-1">
                 <StarRow score={avgRating} />
-                <span>
-                  {avgRating.toFixed(1)} ({ratingCount})
+                <span className="text-steel font-medium">
+                  {avgRating.toFixed(1)}
                 </span>
+                <span>({ratingCount})</span>
               </span>
             ) : (
               <span className="italic">New on Kiddaboo</span>
             )}
-            <span>·</span>
+            <span className="text-gold-warm text-[6px]">&#9679;</span>
             <span>
               {slots.length} slot{slots.length === 1 ? "" : "s"} from{" "}
-              {fmtDayLabel(earliest)}
+              <span className="text-amber font-medium">{fmtDayLabel(earliest)}</span>
             </span>
           </div>
           {nanny.bio && (
@@ -104,7 +105,9 @@ export default function NannyCard({ group }) {
         </div>
       </header>
 
-      <ul className="border-t border-cream-dark divide-y divide-cream-dark">
+      <div className="mx-4 h-px" style={{ background: "linear-gradient(90deg, #B5996D 0%, #B5996D 40%, transparent 100%)" }} />
+
+      <ul className="divide-y divide-cream-dark">
         {visibleSlots.map((s) => {
           const start = new Date(s.starts_at);
           const end = new Date(s.ends_at);
@@ -115,7 +118,7 @@ export default function NannyCard({ group }) {
                 className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-cream/40"
               >
                 <div>
-                  <div className="text-sm font-medium text-charcoal">
+                  <div className="text-sm font-medium text-amber">
                     {fmtDayLabel(start)}
                   </div>
                   <div className="text-xs text-taupe">

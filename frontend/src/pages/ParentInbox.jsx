@@ -178,13 +178,15 @@ function PendingList() {
             </div>
             {b.slot?.starts_at && (
               <div className="text-xs text-taupe">
-                {new Date(b.slot.starts_at).toLocaleString([], {
-                  weekday: "short",
-                  month: "short",
-                  day: "numeric",
-                  hour: "numeric",
-                  minute: "2-digit",
-                })}
+                <span className="text-amber font-medium">
+                  {new Date(b.slot.starts_at).toLocaleString([], {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })}
+                </span>
               </div>
             )}
             {b.acceptance_expires_at && (
@@ -342,7 +344,7 @@ function UpcomingList() {
                       </span>
                     )}
                     <span>
-                      {b.slot?.starts_at ? fmtSessionTime(b.slot.starts_at) : "Time TBD"}
+                      {b.slot?.starts_at ? <span className="text-amber font-medium">{fmtSessionTime(b.slot.starts_at)}</span> : "Time TBD"}
                     </span>
                   </div>
                 </div>
@@ -455,13 +457,15 @@ function PastList() {
                 </span>
               </div>
               <div className="text-xs text-taupe">
-                {new Date(b.slot.starts_at).toLocaleString([], {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                  hour: "numeric",
-                  minute: "2-digit",
-                })}
+                <span className="text-amber font-medium">
+                  {new Date(b.slot.starts_at).toLocaleString([], {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })}
+                </span>
               </div>
               {b.status === "cancelled_refunded" ? (
                 <div className="text-xs text-charcoal">

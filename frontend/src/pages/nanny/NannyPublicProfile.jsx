@@ -76,27 +76,32 @@ export default function NannyPublicProfile() {
           </h1>
           <div className="flex items-center gap-2 mt-1.5">
             {profile.verified_at && (
-              <span className="text-[10px] font-bold uppercase tracking-wide bg-gold text-white px-2 py-0.5">
+              <span className="text-[10px] font-bold uppercase tracking-wide bg-steel/10 text-steel px-2 py-0.5 rounded-full">
                 Verified
               </span>
             )}
             {avg != null && (
-              <span className="text-sm text-charcoal flex items-center gap-1">
+              <span className="text-sm flex items-center gap-1">
                 <StarRow score={avg} />
-                <span className="text-taupe">
-                  {avg.toFixed(1)} ({ratings.length})
+                <span className="text-steel font-medium">
+                  {avg.toFixed(1)}
                 </span>
+                <span className="text-taupe">({ratings.length})</span>
               </span>
             )}
           </div>
           {profile.bio && (
-            <p className="text-sm text-charcoal mt-4 text-left whitespace-pre-line">
-              {profile.bio}
-            </p>
+            <div className="mt-4 border-l-[2.5px] border-steel pl-3.5 bg-steel-light/30 rounded-r-lg py-2.5 pr-3 text-left">
+              <p className="text-sm text-charcoal whitespace-pre-line">
+                {profile.bio}
+              </p>
+            </div>
           )}
         </header>
 
-        <section className="mt-6">
+        <div className="mt-6 h-px" style={{ background: "linear-gradient(90deg, #B5996D 0%, #B5996D 40%, transparent 100%)" }} />
+
+        <section className="mt-4">
           <h2 className="text-sm font-bold uppercase tracking-[1.5px] text-charcoal mb-3">
             Available times
           </h2>
@@ -113,7 +118,7 @@ export default function NannyPublicProfile() {
                     className="bg-white border border-cream-dark p-4 flex items-center justify-between gap-3 hover:border-sage transition-colors"
                   >
                     <div>
-                      <div className="text-sm font-medium text-charcoal">{fmtDay(s.starts_at)}</div>
+                      <div className="text-sm font-medium text-amber">{fmtDay(s.starts_at)}</div>
                       <div className="text-xs text-taupe mt-0.5">
                         {fmtTime(s.starts_at)} – {fmtTime(s.ends_at)}
                       </div>
@@ -131,7 +136,9 @@ export default function NannyPublicProfile() {
           )}
         </section>
 
-        <section className="mt-6">
+        <div className="mt-6 h-px" style={{ background: "linear-gradient(90deg, #B5996D 0%, #B5996D 40%, transparent 100%)" }} />
+
+        <section className="mt-4">
           <h2 className="text-sm font-bold uppercase tracking-[1.5px] text-charcoal mb-3">
             Reviews
           </h2>

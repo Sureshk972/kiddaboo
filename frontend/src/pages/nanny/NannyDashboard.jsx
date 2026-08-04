@@ -134,7 +134,7 @@ function PendingCard({ b, onRespond, rating }) {
             <ParentRatingPill rating={rating} />
           </div>
           <div className="text-xs text-taupe mt-1">
-            {fmtDateTime(b.slot.starts_at)} – {new Date(b.slot.ends_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+            <span className="text-amber font-medium">{fmtDateTime(b.slot.starts_at)}</span> – {new Date(b.slot.ends_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
           </div>
         </div>
         <span className="text-sm font-bold text-charcoal whitespace-nowrap">
@@ -562,9 +562,9 @@ export default function NannyDashboard() {
       )}
 
       {!stats.loading && (
-        <section className="bg-white border border-black/[0.06] rounded-xl px-5 py-4">
+        <section className="bg-white border border-black/[0.06] rounded-xl px-5 py-4 border-l-[2.5px] border-l-gold-warm">
           <div className="flex items-baseline justify-between">
-            <div className="text-[10px] font-medium tracking-[0.14em] uppercase text-taupe">
+            <div className="text-[10px] font-medium tracking-[0.14em] uppercase text-amber">
               This week
             </div>
             {stats.weekDeltaCents !== 0 && (
@@ -608,7 +608,7 @@ export default function NannyDashboard() {
                 Sessions
               </div>
             </div>
-            <div className="w-px bg-black/10 self-stretch" />
+            <div className="w-px bg-gold-warm/30 self-stretch" />
             <div>
               <div
                 className="text-base text-charcoal leading-none"
@@ -620,7 +620,7 @@ export default function NannyDashboard() {
                 Hours
               </div>
             </div>
-            <div className="w-px bg-black/10 self-stretch" />
+            <div className="w-px bg-gold-warm/30 self-stretch" />
             <div>
               <div
                 className="text-base text-charcoal leading-none"
