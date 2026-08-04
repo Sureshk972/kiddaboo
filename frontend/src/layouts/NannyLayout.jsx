@@ -1,15 +1,16 @@
 import TabBar from "../components/layout/TabBar";
 import LegalFooter from "../components/LegalFooter";
+import { useAuth } from "../context/AuthContext";
 
-/**
- * Nanny-mode wrapper. Adds a small "NANNY" label at the top of the
- * page and reserves space for the bottom TabBar. TabBar picks the
- * correct nanny tabs automatically via useAccountType().
- *
- * Uses the same sage palette as ParentLayout — design polish (accent
- * colour per role) can be layered on in a later phase.
- */
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
+
 export default function NannyLayout({ children }) {
+  const { profile } = useAuth();
   return (
     <div className="min-h-screen bg-cream flex flex-col" data-mode="nanny">
       <div className="hidden md:block bg-sage-dark text-center py-2 text-xs text-white">
@@ -24,6 +25,11 @@ export default function NannyLayout({ children }) {
           <span className="text-[10px] font-bold tracking-[1.5px] text-taupe uppercase">
             Provider
           </span>
+          {profile?.first_name && (
+            <span className="ml-auto text-sm text-taupe tracking-tight">
+              {greeting()}, {profile.first_name}
+            </span>
+          )}
         </div>
       </div>
       <div className="max-w-md mx-auto w-full flex-1 flex flex-col">
