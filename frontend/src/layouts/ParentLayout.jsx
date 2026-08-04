@@ -41,7 +41,7 @@ export default function ParentLayout({ children }) {
             Parent
           </span>
           {profile?.first_name && (
-            <span className="ml-auto text-sm text-taupe tracking-tight">
+            <span className="ml-auto text-sm text-taupe tracking-tight underline underline-offset-4 decoration-gold-warm/40">
               {greeting()}, {profile.first_name}
             </span>
           )}
