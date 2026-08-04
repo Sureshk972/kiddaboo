@@ -128,7 +128,7 @@ function BookForm({ slot }) {
           <span>Service fee</span>
           <span>${(platformFee / 100).toFixed(2)}</span>
         </div>
-        <div className="mt-3 h-px" style={{ background: "linear-gradient(90deg, #B5996D 0%, #B5996D 40%, transparent 100%)" }} />
+        <div className="mt-3 h-px" style={{ background: "#B5996D" }} />
         <div className="pt-3 flex justify-between font-bold text-charcoal">
           <span>Total today</span>
           <span className="text-sage-dark">${(total / 100).toFixed(2)}</span>

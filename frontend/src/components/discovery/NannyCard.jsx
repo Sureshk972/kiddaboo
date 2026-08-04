@@ -105,7 +105,7 @@ export default function NannyCard({ group }) {
         </div>
       </header>
 
-      <div className="mx-4 h-px" style={{ background: "linear-gradient(90deg, #B5996D 0%, #B5996D 40%, transparent 100%)" }} />
+      <div className="mx-4 h-px" style={{ background: "#B5996D" }} />
 
       <ul className="divide-y divide-cream-dark">
         {visibleSlots.map((s) => {

@@ -99,7 +99,7 @@ export default function NannyPublicProfile() {
           )}
         </header>
 
-        <div className="mt-6 h-px" style={{ background: "linear-gradient(90deg, #B5996D 0%, #B5996D 40%, transparent 100%)" }} />
+        <div className="mt-6 h-px" style={{ background: "#B5996D" }} />
 
         <section className="mt-4">
           <h2 className="text-sm font-bold uppercase tracking-[1.5px] text-charcoal mb-3">
@@ -136,7 +136,7 @@ export default function NannyPublicProfile() {
           )}
         </section>
 
-        <div className="mt-6 h-px" style={{ background: "linear-gradient(90deg, #B5996D 0%, #B5996D 40%, transparent 100%)" }} />
+        <div className="mt-6 h-px" style={{ background: "#B5996D" }} />
 
         <section className="mt-4">
           <h2 className="text-sm font-bold uppercase tracking-[1.5px] text-charcoal mb-3">
