@@ -108,9 +108,9 @@ export default function Welcome() {
           Trusted childcare
         </div>
 
-        {/* Serif wordmark */}
-        <h1 className="font-display text-6xl tracking-tight mt-6 text-charcoal">
-          Kiddaboo
+        {/* Wordmark logo */}
+        <h1 className="mt-6">
+          <img src="/Kiddaboo_logo.svg" alt="Kiddaboo" className="h-14 mx-auto" />
         </h1>
 
         {/* Tagline in the accent */}

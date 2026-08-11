@@ -25,9 +25,7 @@ export default function TopBar() {
 
         {/* Brand — right */}
         <div className="flex items-center gap-1.5">
-          <span className="font-display text-lg text-charcoal tracking-tight font-semibold">
-            Kiddaboo
-          </span>
+          <img src="/Kiddaboo_logo.svg" alt="Kiddaboo" className="h-5" />
           <span className="text-[9px] font-bold tracking-[1.5px] text-sage uppercase">
             {isNanny ? "Provider" : "Parent"}
           </span>
