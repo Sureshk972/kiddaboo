@@ -13,7 +13,7 @@ export default function TopBar() {
   const { isNanny } = useAccountType();
 
   return (
-    <header className="shrink-0 bg-white border-b border-cream-dark">
+    <header className="sticky top-0 z-30 bg-white border-b border-cream-dark">
       <div className="max-w-md mx-auto flex items-center justify-between px-5 py-2 pt-[calc(0.5rem+env(safe-area-inset-top))]">
         {/* Greeting — left */}
         <div className="text-sm text-charcoal">
