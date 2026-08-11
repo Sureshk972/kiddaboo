@@ -147,7 +147,7 @@ export default function Welcome() {
         <Testimonials />
       </section>
 
-      {/* Legal links */}
+      {/* Legal links — copyright is in StandaloneShell's LegalFooter */}
       <div className="mt-10 flex gap-2">
         <button
           onClick={() => navigate("/terms")}
