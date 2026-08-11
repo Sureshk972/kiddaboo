@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
+import TopBar from "./TopBar";
 import TabBar from "./TabBar";
 import { useAuth } from "../../context/AuthContext";
 import usePushNotifications from "../../hooks/usePushNotifications";
@@ -30,25 +31,13 @@ export default function AppLayout({ children }) {
 
   return (
     <div className="h-dvh bg-cream flex flex-col">
-      <div className="w-full bg-cream">
-        <div className="max-w-md mx-auto px-5 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] flex items-center gap-2">
-          <span className="text-lg text-charcoal tracking-tight font-display font-semibold">
-            Kiddaboo
-          </span>
-          <span className="text-taupe text-[10px]">·</span>
-          <span className="text-[10px] font-bold tracking-[1.5px] text-taupe uppercase">
-            {isNanny ? 'Provider' : 'Parent'}
-          </span>
-        </div>
-      </div>
+      <TopBar />
       <div ref={scrollRef} className="flex-1 overflow-y-auto flex flex-col min-h-0 pb-[calc(4rem+env(safe-area-inset-bottom))]">
         {shouldShowPrompt && (
-          <div className="pt-[calc(0.75rem+env(safe-area-inset-top))]">
-            <PushPermissionPrompt
-              onEnable={subscribe}
-              onDismiss={dismissPrompt}
-            />
-          </div>
+          <PushPermissionPrompt
+            onEnable={subscribe}
+            onDismiss={dismissPrompt}
+          />
         )}
         <PageTransition>
           {children}
